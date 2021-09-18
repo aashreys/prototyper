@@ -1,4 +1,4 @@
-# Prototyper
+# Prototyper BETA
 
 ![Cover Art - Figma](https://user-images.githubusercontent.com/6137765/133889456-00830879-b5a8-41de-b92f-1236169923c2.jpg)
 
