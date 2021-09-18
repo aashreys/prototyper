@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "@create-figma-plugin/ui": "^1.4.0",
+    "@create-figma-plugin/utilities": "^1.4.0",
+    "preact": "^10.5.14"
+  },
+  "devDependencies": {
+    "@create-figma-plugin/build": "^1.4.0",
+    "@create-figma-plugin/tsconfig": "^1.4.0",
+    "@figma/plugin-typings": "1.33.0",
+    "typescript": "^4"
+  },
+  "scripts": {
+    "build": "build-figma-plugin --typecheck --minify",
+    "watch": "build-figma-plugin --typecheck --watch"
+  },
+  "figma-plugin": {
+    "id": "Prototyper",
+    "editorType": [
+      "figma"
+    ],
+    "name": "Prototyper",
+    "main": "src/main.ts",
+    "ui": "src/ui.tsx"
+  }
+}
