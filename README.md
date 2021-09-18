@@ -1,2 +1,2 @@
 # Prototyper
-A Figma plugin for automating common Gamepad navigation prototyping.
+A Figma plugin for automating common gamepad navigation patterns.
