@@ -8,6 +8,7 @@ export default function () {
   const TITLE = 'Prototyper (BETA)';
   const WIDTH = 240;
   const MIN_HEIGHT = 412;
+  const STARTING_POINT_NAME = 'Generated Prototype';
   
   enum Direction {
     LEFT = 0,
@@ -69,7 +70,7 @@ export default function () {
   }
   
   class PrototypeFrame {
-    readonly node: InstanceNode
+    readonly instance: InstanceNode
     readonly parent: FrameNode
     
     leftNeighbor: PrototypeFrame
@@ -77,8 +78,8 @@ export default function () {
     rightNeighbor: PrototypeFrame
     bottomNeighbor: PrototypeFrame
     
-    constructor(node, parent) {
-      this.node = node;
+    constructor(instance, parent) {
+      this.instance = instance;
       this.parent = parent;
     }
     
@@ -168,23 +169,25 @@ export default function () {
       // Sort nodes left -> right & top -> bottom regardless of canvas layer order
       sortNodes(protoNodes);
       
-      // Create prototype frames to wire later from the nodes list
-      let frames = createFrames(protoNodes);
+      // Create prototype frames to wire later
+      let protoFrames = createFrames(protoNodes);
       
-      // Assign left, top, right and bottom neighbors for wiring the prototype later
-      assignNeighbors(frames, protoNodes);
+      // Assign left, top, right and bottom neighbors for wiring the prototype
+      assignNeighbors(protoFrames, protoNodes);
       
       // Arrange the frames on the canvas based on their relative position
-      arrangeFrames(frames);
+      arrangeFrames(protoFrames);
       
       // Swap variants
-      swapVariants(frames);
+      swapVariants(protoFrames);
+
+      let isFrameAlreadyLinked = hasReactions(protoFrames[0].parent);
       
       // Create Interactions
-      createInteractions(frames);
+      createInteractions(protoFrames);
 
       // Post process frames
-      postProcessFrames(frames);
+      postProcessFrames(protoFrames, isFrameAlreadyLinked);
     }
     else {
       postError(0, Constants.ERROR_NO_INSTANCES);
@@ -205,8 +208,10 @@ export default function () {
     }
   }
 
-  function postProcessFrames(frames: Array<PrototypeFrame>) {
-    addFlowStartingPoint(frames[0].parent, 'Generated Prototype');
+  function postProcessFrames(frames: Array<PrototypeFrame>, isAlreadyLinked) {
+    if (!isAlreadyLinked) {
+      addFlowStartingPoint(frames[0].parent, STARTING_POINT_NAME);
+    }
   }
   
   function sortNodes(nodes: Array<PrototypeNode>) {
@@ -265,8 +270,8 @@ export default function () {
   
   function swapVariants(frames: Array<PrototypeFrame>) {
     for (let frame of frames) {
-      if (hasVariantProperty(frame.node, config.variantProperty)) {
-        setVariantProperty(frame.node, config.variantProperty, config.variantToValue);
+      if (hasVariantProperty(frame.instance, config.variantProperty)) {
+        setVariantProperty(frame.instance, config.variantProperty, config.variantToValue);
       }
     }
   }
@@ -487,6 +492,10 @@ export default function () {
 
   function isComponentSet(node) {
     return node && node.type === 'COMPONENT_SET';
+  }
+
+  function hasReactions(frame) {
+    return frame.reactions && frame.reactions.length > 0;
   }
 
   function removeFlowStartingPoint(node) {
