@@ -119,7 +119,7 @@ export default function () {
         postError(0, Constants.ERROR_NOTHING_SELECTED);
       }
     } catch (error) {
-      postError(0, JSON.stringify(error));
+      postError(0, error.message);
     } finally {
       emit(Constants.EVENT_DONE);
     }
@@ -150,23 +150,29 @@ export default function () {
   }
   
   function processMultiSelection(selection) {
+
     // Filter selection to only contain component instances
-    selection = selection.filter(node => isInstance(node) && hasVariantProperty(node, config.variantProperty));
-    if (selection.length > 0) {
-      // Map component instance nodes to our node wrapper object
-      let nodes: Array<PrototypeNode> = selection.map(node => PrototypeNode.fromInstance(node));
-      
-      // Perform general cleanup like reverting all node variant states etc.
-      sanitizeNodes(nodes);
-      
+    let instances = selection.filter(node => isInstance(node));
+
+    if (instances.length > 0) {
+
+      // Validate selected instances and notify user of errors before we begin
+      validateInstances(instances, config.variantProperty, config.variantFromValue, config.variantToValue);
+
+      // Perform general cleanup like reverting all variants to from value, if specifies
+      sanitizeNodes(instances);
+
+      // Map component instance nodes to our prototype node wrapper object
+      let protoNodes: Array<PrototypeNode> = selection.map(node => PrototypeNode.fromInstance(node));
+  
       // Sort nodes left -> right & top -> bottom regardless of canvas layer order
-      sortNodes(nodes);
+      sortNodes(protoNodes);
       
       // Create prototype frames to wire later from the nodes list
-      let frames = createFrames(nodes);
+      let frames = createFrames(protoNodes);
       
       // Assign left, top, right and bottom neighbors for wiring the prototype later
-      assignNeighbors(frames, nodes);
+      assignNeighbors(frames, protoNodes);
       
       // Arrange the frames on the canvas based on their relative position
       arrangeFrames(frames);
@@ -182,6 +188,20 @@ export default function () {
     }
     else {
       postError(0, Constants.ERROR_NO_INSTANCES);
+    }
+  }
+
+  function validateInstances(instances: Array<InstanceNode>, property: string, from: string, to: string) {
+    for (let instance of instances) {
+      if (!hasVariantProperty(instance, property)) {
+        throw new Error(`"${instance.name}" does not have the variant property "${property}"`);
+      }
+      if (from.length > 0 && !hasVariantValue(instance, property, from)) {
+        throw new Error(`"${instance.name}" does not have the variant value "${from}"`);
+      }
+      if (!hasVariantValue(instance, property, to)) {
+        throw new Error(`"${instance.name}" does not have the variant value "${to}"`);
+      }
     }
   }
 
@@ -251,29 +271,39 @@ export default function () {
     }
   }
   
-  function hasVariantProperty(node, property) {
-    let properties = node.variantProperties;
+  function hasVariantProperty(instance, property) {
+    let properties = instance.variantProperties;
     if (properties === null) console.warn('Variant property not found');
     return properties !== null && property in properties;
   }
+
+  function hasVariantValue(instance, property, value) {
+    if (isComponent(instance.mainComponent) && isComponentSet(instance.mainComponent.parent)) {
+      let componentSet = instance.mainComponent.parent;
+      return componentSet.variantGroupProperties[property].values.indexOf(value) >= 0;
+    } 
+    else {
+      return false;
+    }
+  }
   
-  function sanitizeNodes(nodes: Array<PrototypeNode>) {
+  function sanitizeNodes(instances: Array<InstanceNode>) {
     // Remove flow staring point on parent node else it will be duplicated in the prototype
-    let parent = findParentFrame(nodes[0].instance);
+    let parent = findParentFrame(instances[0]);
     removeFlowStartingPoint(parent);
 
-    // Reset the variant state of all nodes being linked in the prototype
-    for (let node of nodes) {
-      if (hasVariantProperty(node.instance, config.variantProperty)) {
-        setVariantProperty(node.instance, config.variantProperty, config.variantFromValue);
+    // If variant from value is defined, reset all variants to their from value
+    if (config.variantFromValue.length > 0) {
+      for (let instance of instances) {
+        setVariantProperty(instance, config.variantProperty, config.variantFromValue);
       }
     }
   }
   
   function setVariantProperty(node, propertyName, propertyValue) {
-    let variantProperties = node.variantProperties;
-    variantProperties[propertyName] = propertyValue;
-    node.setProperties(variantProperties);
+      let variantProperties = node.variantProperties;
+      variantProperties[propertyName] = propertyValue;
+      node.setProperties(variantProperties);
   }
   
   function arrangeFrames(frames: Array<PrototypeFrame>) {
@@ -432,23 +462,31 @@ export default function () {
   }
   
   function isInstance(node) {
-    return node.type === 'INSTANCE';
+    return node && node.type === 'INSTANCE';
   }
   
   function isFrame(node) {
-    return node.type === 'FRAME';
+    return node && node.type === 'FRAME';
   }
   
   function isGroup(node) {
-    return node.type === 'GROUP';
+    return node && node.type === 'GROUP';
   }
   
   function isPage(node) {
-    return node.type === 'PAGE';
+    return node && node.type === 'PAGE';
   }
 
   function hasChildren(node) {
-    return 'children' in node;
+    return node && 'children' in node;
+  }
+
+  function isComponent(node) {
+    return node && node.type === 'COMPONENT';
+  }
+
+  function isComponentSet(node) {
+    return node && node.type === 'COMPONENT_SET';
   }
 
   function removeFlowStartingPoint(node) {
@@ -471,6 +509,7 @@ export default function () {
   }
 
   function postError(code: number, message: string) {
+    console.error(message);
     emit(Constants.EVENT_ERROR, { code: code, message: message });
   }
   
