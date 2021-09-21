@@ -14,6 +14,7 @@ Subject to change based on personal availablity etc.
 
 * Playstation Controller support
 * Shoulder / Trigger button support
+* Configure animation properties
 * Better nearest neighbor detection algorithm for more accurate directional mapping
 * Link existing frames based on relative position
 * Stats and minutes saved (because nothing is better than being able to quantify how much time you've saved)
