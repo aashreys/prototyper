@@ -7,3 +7,13 @@ Prototyper is a Figma plugin that allows you to automatically create gamepad nav
 This is a BETA release and currently only supports D-Pad and Left Stick navigation with an Xbox Controller. Support for more navigation inputs such as Trigger/Shoulder buttons and Playstation controllers coming soon.
 
 While in BETA, I'm actively looking for feedback to improve the plugin. If you have any thoughts you'd like to share, please shoot me an email at aashrey9sharma@gmail.com.
+
+# Roadmap
+
+Subject to change based on personal availablity etc.
+
+* Playstation Controller support
+* Shoulder / Trigger button support
+* Better nearest neighbor detection algorithm for more accurate directional mapping
+* Link existing frames based on relative position
+* Stats and minutes saved (because nothing is better than being able to quantify how much time you've saved)
