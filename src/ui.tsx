@@ -1,4 +1,4 @@
-import { render, Container, VerticalSpace, Button, SegmentedControl, SegmentedControlOption, Text, Dropdown, DropdownOption, Textbox, Stack } from '@create-figma-plugin/ui'
+import { render, Container, VerticalSpace, Button, SegmentedControl, SegmentedControlOption, Text, Dropdown, DropdownOption, Textbox, Stack, Columns } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
 import { h, JSX, Component, Fragment } from 'preact'
 import { useState } from 'preact/hooks'
@@ -54,7 +54,7 @@ const VariantPropertyTextbox = function (props) {
     props.onConfigChange('variantProperty', newValue);
   }
   return (
-    <Textbox onInput={handleInput} placeholder="Variant Property (Required)" value={value} />
+    <Textbox onInput={handleInput} placeholder="Variant Property" value={value} />
   )
 }
 
@@ -66,7 +66,7 @@ const VariantFromValueTextbox = function (props) {
     props.onConfigChange('variantFromValue', newValue)
   }
   return (
-    <Textbox onInput={handleInput} placeholder="From Value (Optional)" value={value} />
+    <Textbox onInput={handleInput} placeholder="From" value={value} />
   )
 }
 
@@ -78,7 +78,7 @@ const VariantToValueTextbox = function (props) {
     props.onConfigChange('variantToValue', newValue)
   }
   return (
-    <Textbox onInput={handleInput} placeholder="To Value (Required)" value={value} />
+    <Textbox onInput={handleInput} placeholder="To" value={value} />
   )
 }
 
@@ -259,17 +259,21 @@ class PrototypeForm extends Component< any, any >  {
             this.state.ui.showVariantPropertyError &&
             <Text style="color:red">Variant Property required</Text>
           }
-          
+
           <VariantPropertyTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantProperty}/>
-          
-          <VariantFromValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantFromValue}/>
           
           {
             this.state.ui.showVariantToValueError &&
             <Text style="color:red">To Value required</Text>
           }
 
-          <VariantToValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantToValue}/>
+          <Columns space='extraSmall'>
+          
+            <VariantFromValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantFromValue}/>
+
+            <VariantToValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantToValue}/>
+
+          </Columns>
           
         </Stack>
 
