@@ -5,6 +5,7 @@ import { Constants } from './constants';
 
 export default function () {
 
+  const TITLE = 'Prototyper (BETA)';
   const WIDTH = 240;
   const MIN_HEIGHT = 412;
   
@@ -91,7 +92,7 @@ export default function () {
 
   /* Main Program */
   showUI(
-    { width: WIDTH, height: MIN_HEIGHT },
+    { title: TITLE, width: WIDTH, height: MIN_HEIGHT },
     { config: Config.isConfigSaved() ? Config.getSavedConfig() : Config.getDefaultConfig() }
   )
   
