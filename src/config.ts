@@ -90,7 +90,7 @@ export class Config {
       '',
       '',
       {
-        type: AnimationType.EASE_IN,
+        animType: AnimationType.EASE_IN,
         duration: 200
       }
     );

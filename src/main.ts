@@ -267,12 +267,12 @@ export default function () {
 
   function createTransition(animation: Animation) {
     let transition;
-    if (animation.type === AnimationType.INSTANT) {
+    if (animation.animType === AnimationType.INSTANT) {
       transition = null;
     } else {
       transition = {
         type: "SMART_ANIMATE",
-        easing: { type: animation.type },
+        easing: { type: animation.animType },
         duration: animation.duration / 1000, // Figma expects duration in seconds
       }
     }

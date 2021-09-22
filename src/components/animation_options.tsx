@@ -138,7 +138,7 @@ export class AnimationOptions extends Component <any, any> {
   render(props, state) {
     return (
       <Fragment>
-        <Text bold>Animation</Text>
+        <Text bold>Transition</Text>
         <VerticalSpace space='small' />
         <Columns space='extraSmall'>
             <AnimationDropdown onAnimChange={this.onAnimChange} value={this.getAnimationUIValue(props.animation)}/>

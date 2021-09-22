@@ -1,6 +1,6 @@
 export interface Animation {
 
-  readonly type: AnimationType
+  readonly animType: AnimationType
   readonly duration: number // in milliseconds
 
 }

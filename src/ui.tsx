@@ -155,7 +155,6 @@ class PrototypeForm extends Component< any, any >  {
   }
 
   onError(code: number, message: string) {
-    console.log('Error received in UI: ' + code);
     this.setErrorMessage(message);
     this.onDone();
   }
@@ -166,7 +165,6 @@ class PrototypeForm extends Component< any, any >  {
   
   onClick = e => {
     this.setErrorMessage('')
-    console.log(this.state.config);
     this.updateValidationUi()
     if (this.validate()) {
       emit(Constants.EVENT_SUBMIT, this.state.config);
@@ -226,7 +224,7 @@ class PrototypeForm extends Component< any, any >  {
         ...prevState.config,
         animation: {
           ...prevState.config.animation,
-          type: animation
+          animType: animation
         }
       }
     }));
@@ -280,7 +278,7 @@ class PrototypeForm extends Component< any, any >  {
         <VerticalSpace space='large' />
 
         <AnimationOptions
-          animation={this.state.config.animation.type}
+          animation={this.state.config.animation.animType}
           duration={this.state.config.animation.duration}
           onAnimChange={this.onAnimChange}
           onAnimDurationChange={this.onAnimDurationChange}
