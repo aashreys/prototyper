@@ -18,3 +18,7 @@ Subject to change based on personal availablity etc.
 * Better nearest neighbor detection algorithm for more accurate directional mapping
 * Link existing frames based on relative position
 * Stats and minutes saved (because nothing is better than being able to quantify how much time you've saved)
+
+
+To Do:
+* Elegantly upgrade configuration when adding new fields, else plugin crashes when using it on a Page which had an old version of the configuration data.
