@@ -144,10 +144,10 @@ export default function () {
   
   function processSingleSelection(node) {
     // Only allow Frames or Groups to be processed since other nodes cannot have children nodes
-    if (hasChildren(node)) {
+    if (hasChildren(node) && node.children.length > 1) {
       processMultiSelection(node.children);
     } else {
-      postError(0, Constants.ERROR_NO_INSTANCES);
+      postError(0, Constants.ERROR_MORE_THAN_1_CHILD);
     }
   }
   
@@ -289,7 +289,7 @@ export default function () {
   
   function hasVariantProperty(instance, property) {
     let properties = instance.variantProperties;
-    if (properties === null) console.warn('Variant property not found');
+    if (properties === null)
     return properties !== null && property in properties;
   }
 
