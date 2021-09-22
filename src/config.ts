@@ -82,8 +82,8 @@ export class Config {
   }
 
   private static getConfigVersion() {
-    let configVersion = JSON.parse(figma.root.getPluginData(Config.CONFIG_VERSION_KEY));
-    return configVersion && configVersion > 0 ? configVersion : 0;
+    let versionString = figma.root.getPluginData(Config.CONFIG_VERSION_KEY);
+    return versionString && versionString.length > 0 ? JSON.parse(versionString) : 0;
   }
 
   private static saveConfigVersion(version: number) {
@@ -114,8 +114,6 @@ export class Config {
       this.clear(); // Clear configuration
       this.save(this.getDefaultConfig()); // Save default configuration with updated config version
       this.saveConfigVersion(this.CONFIG_VERSION);
-      console.log('Migrated config: ');
-      console.log(this.getSavedConfig());
     }
   }
 
