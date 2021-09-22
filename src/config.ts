@@ -4,7 +4,6 @@ import { Platform, InputScheme, Keycode } from "./controller";
 export class Config {
 
   static CONFIG_KEY = 'config';
-  static ANIM_DURATION = 0.2;
   static GAP = 100;
 
   readonly platform: Platform
