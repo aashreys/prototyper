@@ -92,7 +92,10 @@ export default function () {
 
   let config: Config;
 
+
   /* Main Program */
+  Config.migrateConfig();
+
   showUI(
     { title: TITLE, width: WIDTH, height: MIN_HEIGHT },
     { config: Config.isConfigSaved() ? Config.getSavedConfig() : Config.getDefaultConfig() }
