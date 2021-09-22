@@ -15,7 +15,7 @@
     "watch": "build-figma-plugin --typecheck --watch"
   },
   "figma-plugin": {
-    "id": "Prototyper",
+    "id": "1020894954864594118",
     "editorType": [
       "figma"
     ],
