@@ -1,13 +1,14 @@
-import { emit, on, once, showUI } from '@create-figma-plugin/utilities'
+import { emit, on, showUI } from '@create-figma-plugin/utilities'
 import { Config } from './config.js'
 import { Controller } from './controller.js';
 import { Constants } from './constants';
+import { Animation, AnimationType } from './animation';
 
 export default function () {
 
   const TITLE = 'Prototyper (BETA)';
   const WIDTH = 240;
-  const MIN_HEIGHT = 412;
+  const MIN_HEIGHT = 428;
   const STARTING_POINT_NAME = 'Generated Prototype';
   
   enum Direction {
@@ -238,25 +239,21 @@ export default function () {
   function createInteractions(frames: Array<PrototypeFrame>) {
     for (let frame of frames) {
       let reactions: Array<Reaction> = clone(frame.parent.reactions);
-      if (frame.leftNeighbor) reactions.push(createReaction(frame.leftNeighbor.parent, config.leftInput));
-      if (frame.topNeighbor) reactions.push(createReaction(frame.topNeighbor.parent, config.upInput));
-      if (frame.rightNeighbor) reactions.push(createReaction(frame.rightNeighbor.parent, config.rightInput));
-      if (frame.bottomNeighbor) reactions.push(createReaction(frame.bottomNeighbor.parent, config.downInput));
+      if (frame.leftNeighbor) reactions.push(createReaction(frame.leftNeighbor.parent, config.animation, config.leftInput));
+      if (frame.topNeighbor) reactions.push(createReaction(frame.topNeighbor.parent, config.animation, config.upInput));
+      if (frame.rightNeighbor) reactions.push(createReaction(frame.rightNeighbor.parent, config.animation, config.rightInput));
+      if (frame.bottomNeighbor) reactions.push(createReaction(frame.bottomNeighbor.parent, config.animation, config.downInput));
       frame.parent.reactions = reactions;
     }
   }
   
-  function createReaction(toNode: FrameNode, keycode: number) {
+  function createReaction(toNode: FrameNode, animation: Animation, keycode: number) {
     let reaction: Reaction = {
       action: {
         type: "NODE",
         destinationId: toNode.id,
         navigation: "NAVIGATE",
-        transition: {
-          type: "SMART_ANIMATE",
-          easing: { type: "EASE_OUT" },
-          duration: Config.ANIM_DURATION,
-        },
+        transition: createTransition(animation),
         preserveScrollPosition: false,
       },
       trigger: {
@@ -266,6 +263,20 @@ export default function () {
       }
     };
     return reaction;
+  }
+
+  function createTransition(animation: Animation) {
+    let transition;
+    if (animation.type === AnimationType.INSTANT) {
+      transition = null;
+    } else {
+      transition = {
+        type: "SMART_ANIMATE",
+        easing: { type: animation.type },
+        duration: animation.duration / 1000, // Figma expects duration in seconds
+      }
+    }
+    return transition;
   }
   
   function swapVariants(frames: Array<PrototypeFrame>) {

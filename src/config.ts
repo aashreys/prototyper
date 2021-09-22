@@ -1,3 +1,4 @@
+import { Animation, AnimationType } from "./animation";
 import { Platform, InputScheme, Keycode } from "./controller";
 
 export class Config {
@@ -18,6 +19,8 @@ export class Config {
   readonly variantProperty: string;
   readonly variantFromValue: string;
   readonly variantToValue: string;
+
+  readonly animation: Animation
   
   constructor(
     platform,
@@ -28,7 +31,8 @@ export class Config {
     downInput,
     variantProperty,
     variantFromValue,
-    variantToValue
+    variantToValue,
+    animation
   ) {
     this.platform = platform;
     this.inputScheme = inputScheme;
@@ -39,6 +43,7 @@ export class Config {
     this.variantProperty = variantProperty;
     this.variantFromValue = variantFromValue,
     this.variantToValue = variantToValue;
+    this.animation = animation;
   }
 
   static assignInputs(config: Config, leftInput, upInput, rightInput, downInput) {
@@ -51,7 +56,8 @@ export class Config {
       downInput,
       config.variantProperty,
       config.variantFromValue,
-      config.variantToValue
+      config.variantToValue,
+      config.animation,
     );
   }
 
@@ -82,7 +88,11 @@ export class Config {
       Keycode.XBX_DPAD_DOWN,
       '',
       '',
-      ''
+      '',
+      {
+        type: AnimationType.EASE_IN,
+        duration: 200
+      }
     );
   }
 }

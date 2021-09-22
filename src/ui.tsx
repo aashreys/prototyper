@@ -4,6 +4,8 @@ import { h, JSX, Component, Fragment } from 'preact'
 import { useState } from 'preact/hooks'
 import { Platform, InputScheme } from "./controller";
 import { Constants } from './constants';
+import { AnimationOptions } from './components/animation_options';
+import { AnimationType } from './animation';
 
 const PlatformSelect = function (props) {
   const [value, setValue] = useState(props.value)
@@ -110,11 +112,11 @@ class PrototypeForm extends Component< any, any >  {
   constructor(props) {
     super(props);
     this.state.config = props.value.config;
-    this.bind();
+    this.bindMethods();
     this.registerEventHandlers();
   }
 
-  bind() {
+  bindMethods() {
     this.onClick = this.onClick.bind(this);
     this.onConfigChange = this.onConfigChange.bind(this);
     this.validate = this.validate.bind(this);
@@ -123,6 +125,8 @@ class PrototypeForm extends Component< any, any >  {
     this.onDone = this.onDone.bind(this);
     this.componentDidUpdate = this.componentDidUpdate.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.onAnimChange = this.onAnimChange.bind(this);
+    this.onAnimDurationChange = this.onAnimDurationChange.bind(this);
   }
 
   componentDidMount() {
@@ -162,6 +166,7 @@ class PrototypeForm extends Component< any, any >  {
   
   onClick = e => {
     this.setErrorMessage('')
+    console.log(this.state.config);
     this.updateValidationUi()
     if (this.validate()) {
       emit(Constants.EVENT_SUBMIT, this.state.config);
@@ -215,7 +220,32 @@ class PrototypeForm extends Component< any, any >  {
     return variantProperty.length > 0 && variantToValue.length > 0;
   }
 
+  onAnimChange(animation: AnimationType) {
+    this.setState(prevState => ({
+      config: {
+        ...prevState.config,
+        animation: {
+          ...prevState.config.animation,
+          type: animation
+        }
+      }
+    }));
+  }
+
+  onAnimDurationChange(duration: number) {
+    this.setState(prevState => ({
+      config: {
+        ...prevState.config,
+        animation: {
+          ...prevState.config.animation,
+          duration: duration
+        }
+      }
+    }));
+  }
+
   render() {
+    
     return (
       <Container space='medium' ref={ (container) => {this.container = container }}>
 
@@ -246,6 +276,15 @@ class PrototypeForm extends Component< any, any >  {
         <VerticalSpace space='small' />
 
         <InputSelect onConfigChange={this.onConfigChange} value={this.state.config.inputScheme}/>
+
+        <VerticalSpace space='large' />
+
+        <AnimationOptions
+          animation={this.state.config.animation.type}
+          duration={this.state.config.animation.duration}
+          onAnimChange={this.onAnimChange}
+          onAnimDurationChange={this.onAnimDurationChange}
+        />
         
         <VerticalSpace space='large' />
         
