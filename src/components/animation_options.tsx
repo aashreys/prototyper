@@ -142,7 +142,7 @@ export class AnimationOptions extends Component <any, any> {
         <VerticalSpace space='small' />
         <Columns space='extraSmall'>
             <AnimationDropdown onAnimChange={this.onAnimChange} value={this.getAnimationUIValue(props.animation)}/>
-            <AnimationDurationTextbox disabled={state.animUiValue && state.animUivalue === INSTANT} onAnimDurationChange={this.onAnimDurationChange} value={props.duration}/>
+            <AnimationDurationTextbox disabled={state.animUiValue && state.animUiValue === INSTANT} onAnimDurationChange={this.onAnimDurationChange} value={props.duration}/>
         </Columns>
       </Fragment>
     )
