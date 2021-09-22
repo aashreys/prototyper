@@ -289,7 +289,6 @@ export default function () {
   
   function hasVariantProperty(instance, property) {
     let properties = instance.variantProperties;
-    if (properties === null)
     return properties !== null && property in properties;
   }
 
