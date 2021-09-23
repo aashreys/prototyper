@@ -131,8 +131,6 @@ export default function () {
   }
 
   function initializeConfig(configData: Config) {
-    console.log('Config data recieved')
-    console.log(configData)
     config = configData
     Config.save(config)
   }

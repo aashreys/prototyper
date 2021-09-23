@@ -4,6 +4,7 @@ import { useState } from 'preact/hooks'
 import { AnimationType } from '../animation'
 
 const INSTANT = 'Instant'
+const LINEAR = 'Linear'
 const EASE_IN = 'Ease in'
 const EASE_OUT = 'Ease out'
 const EASE_IN_OUT = 'Ease in and out'
@@ -19,6 +20,7 @@ const AnimationDropdown = function (props) {
     { value: INSTANT },
     { separator: true },
     { header: 'Smart Animate' },
+    { value: LINEAR },
     { value: EASE_IN },
     { value: EASE_OUT },
     { value: EASE_IN_OUT },
@@ -113,7 +115,8 @@ export class AnimationOptions extends Component<any, any> {
 
   getAnimationUIValue(anim: AnimationType) {
     switch (anim) {
-      case AnimationType.INSTANT: return INSTANT;
+      case AnimationType.INSTANT: return INSTANT
+      case AnimationType.LINEAR: return LINEAR
       case AnimationType.EASE_IN: return EASE_IN
       case AnimationType.EASE_OUT: return EASE_OUT
       case AnimationType.EASE_IN_OUT: return EASE_IN_OUT
@@ -126,6 +129,7 @@ export class AnimationOptions extends Component<any, any> {
   getAnimConfigValue(anim: string) {
     switch (anim) {
       case INSTANT: return AnimationType.INSTANT
+      case LINEAR: return AnimationType.LINEAR
       case EASE_IN: return AnimationType.EASE_IN
       case EASE_OUT: return AnimationType.EASE_OUT
       case EASE_IN_OUT: return AnimationType.EASE_IN_OUT
