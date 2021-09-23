@@ -27,3 +27,7 @@ Features:
 Tech Debt:
 * Elegantly upgrade configuration when adding new fields, else plugin crashes when using it on a Page which had an old version of the configuration data.
 * Enable strict type checking in Typescript
+
+# Contribution Suggestions
+Contributions are most welcome. Below is a list of suggestions, but of course you are welcome to contribute anything you think will be helpful...
+* Switch Pro controller support
