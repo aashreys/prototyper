@@ -9,7 +9,7 @@ This is a BETA release and currently only supports D-Pad and Left Stick navigati
 While in BETA, I'm actively looking for feedback to improve the plugin. If you have any thoughts you'd like to share, please shoot me an email at aashrey9sharma@gmail.com.
 
 # Build
-Currently the project only builds if you disable strict type checking. Set `"strict": false` in `@create-figma-plugin/tsconfig`.
+Run `npm run watch` or `npm run build` to build the plugin to the `build` folder.
 
 # Roadmap
 
