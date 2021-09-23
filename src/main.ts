@@ -1,8 +1,8 @@
 import { emit, on, showUI } from '@create-figma-plugin/utilities'
 import { Config } from './config.js'
-import { Controller } from './controller.js';
 import { Constants } from './constants';
 import { Animation, AnimationType } from './animation';
+import { Navigation } from './navigation.js';
 
 export default function () {
 
@@ -10,25 +10,25 @@ export default function () {
   const WIDTH = 240;
   const MIN_HEIGHT = 428;
   const STARTING_POINT_NAME = 'Generated Prototype';
-  
+
   enum Direction {
     LEFT = 0,
     TOP, // 1
     RIGHT, // 2
     BOTTOM // 3
   }
-  
+
   class PrototypeNode {
     readonly instance; InstanceNode
     readonly nodeMap: Array<Number> // A map describing this nodes position in it's parent frame
-    
+
     readonly x;
     readonly y;
     readonly centerX;
     readonly centerY;
     readonly width;
     readonly height;
-    
+
     constructor(instance, x, y, width, height) {
       if (instance) {
         this.instance = instance;
@@ -43,7 +43,7 @@ export default function () {
         throw new Error('Instance Node cannot be null');
       }
     }
-    
+
     private buildNodeMap(instance) {
       let nodeMap = new Array();
       let currentNode = instance;
@@ -55,35 +55,35 @@ export default function () {
       }
       return nodeMap;
     }
-    
+
     id() {
       return this.instance.id;
     }
-    
+
     offset(x, y) {
       return new PrototypeNode(this.instance, this.x - x, this.y - y, this.width, this.height);
     }
-    
+
     static fromInstance(node: InstanceNode) {
       return new PrototypeNode(node, node.absoluteTransform[0][2], node.absoluteTransform[1][2], node.width, node.height);
     }
-    
+
   }
-  
+
   class PrototypeFrame {
     readonly instance: InstanceNode
     readonly parent: FrameNode
-    
+
     leftNeighbor: PrototypeFrame
     topNeighbor: PrototypeFrame
     rightNeighbor: PrototypeFrame
     bottomNeighbor: PrototypeFrame
-    
+
     constructor(instance, parent) {
       this.instance = instance;
       this.parent = parent;
     }
-    
+
     moveTo(x, y) {
       this.parent.x = x;
       this.parent.y = y;
@@ -100,12 +100,12 @@ export default function () {
     { title: TITLE, width: WIDTH, height: MIN_HEIGHT },
     { config: Config.isConfigSaved() ? Config.getSavedConfig() : Config.getDefaultConfig() }
   )
-  
+
   on(Constants.EVENT_SUBMIT, (data) => {
     runPlugin(data);
   });
 
-  on(Constants.EVENT_UI_RESIZE, (height) =>  {
+  on(Constants.EVENT_UI_RESIZE, (height) => {
     figma.ui.resize(WIDTH, height);
   })
 
@@ -130,21 +130,13 @@ export default function () {
     }
   }
 
-  function assignInputKeycodes(config: Config) {
-    return Config.assignInputs(
-      config,
-      Controller.getLeftNavKeycode(config.platform, config.inputScheme),
-      Controller.getUpNavKeycode(config.platform, config.inputScheme),
-      Controller.getRightNavKeycode(config.platform, config.inputScheme),
-      Controller.getDownNavKeycode(config.platform, config.inputScheme)
-    )
+  function initializeConfig(configData: Config) {
+    console.log('Config data recieved')
+    console.log(configData)
+    config = configData
+    Config.save(config)
   }
 
-  function initializeConfig(configData: Config) {
-    config = assignInputKeycodes(configData);
-    Config.save(config);
-  }
-  
   function processSingleSelection(node) {
     // Only allow Frames or Groups to be processed since other nodes cannot have children nodes
     if (hasChildren(node) && node.children.length > 1) {
@@ -153,7 +145,7 @@ export default function () {
       postError(0, Constants.ERROR_MORE_THAN_1_CHILD);
     }
   }
-  
+
   function processMultiSelection(selection) {
 
     // Filter selection to only contain component instances
@@ -169,24 +161,24 @@ export default function () {
 
       // Map component instance nodes to our prototype node wrapper object
       let protoNodes: Array<PrototypeNode> = selection.map(node => PrototypeNode.fromInstance(node));
-  
+
       // Sort nodes left -> right & top -> bottom regardless of canvas layer order
       sortNodes(protoNodes);
-      
+
       // Create prototype frames to wire later
       let protoFrames = createFrames(protoNodes);
-      
+
       // Assign left, top, right and bottom neighbors for wiring the prototype
       assignNeighbors(protoFrames, protoNodes);
-      
+
       // Arrange the frames on the canvas based on their relative position
       arrangeFrames(protoFrames);
-      
+
       // Swap variants
       swapVariants(protoFrames);
 
       let isFrameAlreadyLinked = hasReactions(protoFrames[0].parent);
-      
+
       // Create Interactions
       createInteractions(protoFrames);
 
@@ -217,7 +209,7 @@ export default function () {
       addFlowStartingPoint(frames[0].parent, STARTING_POINT_NAME);
     }
   }
-  
+
   function sortNodes(nodes: Array<PrototypeNode>) {
     nodes.sort(function (node1, node2) {
       let result = 0;
@@ -238,18 +230,19 @@ export default function () {
       return result;
     });
   }
-  
+
   function createInteractions(frames: Array<PrototypeFrame>) {
+    let nav: Navigation = config.navigation;
     for (let frame of frames) {
       let reactions: Array<Reaction> = clone(frame.parent.reactions);
-      if (frame.leftNeighbor) reactions.push(createReaction(frame.leftNeighbor.parent, config.animation, config.leftInput));
-      if (frame.topNeighbor) reactions.push(createReaction(frame.topNeighbor.parent, config.animation, config.upInput));
-      if (frame.rightNeighbor) reactions.push(createReaction(frame.rightNeighbor.parent, config.animation, config.rightInput));
-      if (frame.bottomNeighbor) reactions.push(createReaction(frame.bottomNeighbor.parent, config.animation, config.downInput));
+      if (frame.leftNeighbor) reactions.push(createReaction(frame.leftNeighbor.parent, config.animation, nav.left));
+      if (frame.topNeighbor) reactions.push(createReaction(frame.topNeighbor.parent, config.animation, nav.up));
+      if (frame.rightNeighbor) reactions.push(createReaction(frame.rightNeighbor.parent, config.animation, nav.right));
+      if (frame.bottomNeighbor) reactions.push(createReaction(frame.bottomNeighbor.parent, config.animation, nav.down));
       frame.parent.reactions = reactions;
     }
   }
-  
+
   function createReaction(toNode: FrameNode, animation: Animation, keycode: number) {
     let reaction: Reaction = {
       action: {
@@ -281,7 +274,7 @@ export default function () {
     }
     return transition;
   }
-  
+
   function swapVariants(frames: Array<PrototypeFrame>) {
     for (let frame of frames) {
       if (hasVariantProperty(frame.instance, config.variantProperty)) {
@@ -289,7 +282,7 @@ export default function () {
       }
     }
   }
-  
+
   function hasVariantProperty(instance, property) {
     let properties = instance.variantProperties;
     return properties !== null && property in properties;
@@ -299,12 +292,12 @@ export default function () {
     if (isComponent(instance.mainComponent) && isComponentSet(instance.mainComponent.parent)) {
       let componentSet = instance.mainComponent.parent;
       return componentSet.variantGroupProperties[property].values.indexOf(value) >= 0;
-    } 
+    }
     else {
       return false;
     }
   }
-  
+
   function sanitizeNodes(instances: Array<InstanceNode>) {
     // Remove flow staring point on parent node else it will be duplicated in the prototype
     let parent = findParentFrame(instances[0]);
@@ -317,65 +310,65 @@ export default function () {
       }
     }
   }
-  
+
   function setVariantProperty(node, propertyName, propertyValue) {
-      let variantProperties = node.variantProperties;
-      variantProperties[propertyName] = propertyValue;
-      node.setProperties(variantProperties);
+    let variantProperties = node.variantProperties;
+    variantProperties[propertyName] = propertyValue;
+    node.setProperties(variantProperties);
   }
-  
+
   function arrangeFrames(frames: Array<PrototypeFrame>) {
     // Since the first frame is the user's reference, use it as the starting point
     let width = frames[0].parent.width;
     let height = frames[0].parent.height;
     let gap = Config.GAP;
-    
+
     // Create a duplicate array to track what frames are left to layout
     let framesToLayout: Array<PrototypeFrame> = frames.map(frame => frame);
     // Remove the first frame since it was already arranged by the user
     framesToLayout.splice(0, 1);
-    
+
     // Use relative position of frames to arrange them on the canvas
     for (let frame of frames) {
       if (frame.leftNeighbor && framesToLayout.indexOf(frame.leftNeighbor) !== -1) {
         frame.leftNeighbor.moveTo(frame.parent.x - width - gap, frame.parent.y);
         framesToLayout.splice(framesToLayout.indexOf(frame.leftNeighbor), 1);
       }
-      
+
       if (frame.topNeighbor && framesToLayout.indexOf(frame.topNeighbor) !== -1) {
         frame.topNeighbor.moveTo(frame.parent.x, frame.parent.y - height - gap);
         framesToLayout.splice(framesToLayout.indexOf(frame.topNeighbor), 1);
       }
-      
+
       if (frame.rightNeighbor && framesToLayout.indexOf(frame.rightNeighbor) !== -1) {
         frame.rightNeighbor.moveTo(frame.parent.x + width + gap, frame.parent.y);
         framesToLayout.splice(framesToLayout.indexOf(frame.rightNeighbor), 1);
       }
-      
+
       if (frame.bottomNeighbor && framesToLayout.indexOf(frame.bottomNeighbor) !== -1) {
         frame.bottomNeighbor.moveTo(frame.parent.x, frame.parent.y + height + gap);
         framesToLayout.splice(framesToLayout.indexOf(frame.bottomNeighbor), 1);
       }
     }
   }
-  
+
   function createFrames(nodes: Array<PrototypeNode>) {
     let prototypeFrames = new Array();
-    
+
     let node = nodes[0].instance;
     let parent = findParentFrame(node);
-    
+
     prototypeFrames.push(new PrototypeFrame(node, parent));
-    
+
     for (let i = 1; i < nodes.length; i++) {
       parent = parent.clone();
       node = findNodeInParent(nodes[i].nodeMap, parent);
       prototypeFrames.push(new PrototypeFrame(node, parent));
     }
-    
+
     return prototypeFrames;
   }
-  
+
   function findNodeInParent(nodeMap, parent: FrameNode) {
     let node: any = parent;
     for (let i in nodeMap) {
@@ -383,7 +376,7 @@ export default function () {
     }
     return node;
   }
-  
+
   function assignNeighbors(frames: Array<PrototypeFrame>, nodes: Array<PrototypeNode>) {
     // For each node (let's call it origin), find neighbors and assign it to the respective prototype frame
     for (let i in nodes) {
@@ -403,21 +396,21 @@ export default function () {
               }
               break;
             }
-            
+
             case Direction.TOP: {
               if (topNode === undefined || distance < computeDistanceBetweenCenters(topNode, origin)) {
                 topNode = node;
               }
               break;
             }
-            
+
             case Direction.RIGHT: {
               if (rightNode === undefined || distance < computeDistanceBetweenCenters(rightNode, origin)) {
                 rightNode = node;
               }
               break;
             }
-            
+
             case Direction.BOTTOM: {
               if (bottomNode === undefined || distance < computeDistanceBetweenCenters(bottomNode, origin)) {
                 bottomNode = node;
@@ -435,13 +428,13 @@ export default function () {
       frames[i].bottomNeighbor = frames[nodes.indexOf(bottomNode)];
     }
   }
-  
+
   function computeRelativeDirection(target: PrototypeNode, origin: PrototypeNode) {
     // Offset coordinates to be relative to origin node
     target = target.offset(origin.centerX, origin.centerY);
     // Calculate angle in degrees between 0 to 360
     let angle = ((Math.atan2(target.centerY, target.centerX) * 180 / Math.PI) + 360) % 360;
-    
+
     // Map angle to direction and return
     let direction;
     if (angle > 150 && angle <= 210) {
@@ -457,14 +450,14 @@ export default function () {
     }
     return direction;
   }
-  
+
   function computeDistanceBetweenCenters(node1: PrototypeNode, node2: PrototypeNode) {
     // Calculate distance between center points with Pythagoras Theorem
     const a = node2.centerX - node1.centerX;
     const b = node2.centerY - node1.centerY;
     return Math.sqrt(a * a + b * b);
   }
-  
+
   function findParentFrame(node: InstanceNode) {
     let currentNode = node;
     let parentFrame;
@@ -478,19 +471,19 @@ export default function () {
     }
     return parentFrame;
   }
-  
+
   function isInstance(node) {
     return node && node.type === 'INSTANCE';
   }
-  
+
   function isFrame(node) {
     return node && node.type === 'FRAME';
   }
-  
+
   function isGroup(node) {
     return node && node.type === 'GROUP';
   }
-  
+
   function isPage(node) {
     return node && node.type === 'PAGE';
   }
@@ -534,13 +527,13 @@ export default function () {
     console.error(message);
     emit(Constants.EVENT_ERROR, { code: code, message: message });
   }
-  
+
   function clone(val) {
     const type = typeof val
     if (val === null) {
       return null
     } else if (type === 'undefined' || type === 'number' ||
-    type === 'string' || type === 'boolean') {
+      type === 'string' || type === 'boolean') {
       return val
     } else if (type === 'object') {
       if (val instanceof Array) {

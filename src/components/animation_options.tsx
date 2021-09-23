@@ -27,7 +27,7 @@ const AnimationDropdown = function (props) {
     { value: EASE_OUT_BACK },
     { value: EASE_IN_OUT_BACK },
   ]
-  
+
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setValue(newValue)
@@ -52,7 +52,7 @@ const AnimationDurationTextbox = function (props) {
     const newValue = event.currentTarget.value;
     setValue(newValue);
     props.onAnimDurationChange(newValue.length > 0 ? newValue : 0);
-  } 
+  }
 
   function onFocusGained() {
     if (value === 0) {
@@ -71,16 +71,16 @@ const AnimationDurationTextbox = function (props) {
       icon={<IconTimer32 />}
       onFocusCapture={onFocusGained}
       onBlurCapture={onFocusLost}
-      disabled={props.disabled} 
-      onInput={handleInput} 
-      placeholder="Duration" 
+      disabled={props.disabled}
+      onInput={handleInput}
+      placeholder="Duration"
       value={value}
     />
   )
 
 }
 
-export class AnimationOptions extends Component <any, any> {
+export class AnimationOptions extends Component<any, any> {
 
   state = {
     animUiValue: undefined,
@@ -112,7 +112,7 @@ export class AnimationOptions extends Component <any, any> {
   }
 
   getAnimationUIValue(anim: AnimationType) {
-    switch(anim) {
+    switch (anim) {
       case AnimationType.INSTANT: return INSTANT;
       case AnimationType.EASE_IN: return EASE_IN
       case AnimationType.EASE_OUT: return EASE_OUT
@@ -124,7 +124,7 @@ export class AnimationOptions extends Component <any, any> {
   }
 
   getAnimConfigValue(anim: string) {
-    switch(anim) {
+    switch (anim) {
       case INSTANT: return AnimationType.INSTANT
       case EASE_IN: return AnimationType.EASE_IN
       case EASE_OUT: return AnimationType.EASE_OUT
@@ -141,8 +141,8 @@ export class AnimationOptions extends Component <any, any> {
         <Text bold>Transition</Text>
         <VerticalSpace space='small' />
         <Columns space='extraSmall'>
-            <AnimationDropdown onAnimChange={this.onAnimChange} value={this.getAnimationUIValue(props.animation)}/>
-            <AnimationDurationTextbox disabled={state.animUiValue && state.animUiValue === INSTANT} onAnimDurationChange={this.onAnimDurationChange} value={props.duration}/>
+          <AnimationDropdown onAnimChange={this.onAnimChange} value={this.getAnimationUIValue(props.animation)} />
+          <AnimationDurationTextbox disabled={state.animUiValue && state.animUiValue === INSTANT} onAnimDurationChange={this.onAnimDurationChange} value={props.duration} />
         </Columns>
       </Fragment>
     )

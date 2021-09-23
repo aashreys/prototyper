@@ -1,0 +1,37 @@
+export enum Device {
+  XBOX = 'XBOX_ONE',
+  // PS4 = 'PS4',
+  // SWITCH_PRO = 'SWITCH_PRO',
+  // UNKNOWN_CONTROLLER = 'UNKNOWN_CONTROLLER',
+  // KEYBOARD = 'KEYBOARD',
+  // MOUSE = 'MOUSE'
+}
+
+export enum Keycode {
+  XBX_A = 0,
+  XBX_B = 1,
+  XBX_X = 2,
+  XBX_Y = 3,
+  XBX_LB = 4,
+  XBX_RB = 5,
+  XBX_LT = 6,
+  XBX_RT = 7,
+  XBX_VIEW = 8,
+  XBX_MENU = 9,
+  XBX_LS_PRESS = 10,
+  XBX_LS_LEFT = 1000,
+  XBX_LS_RIGHT = 1001,
+  XBX_LS_UP = 1002,
+  XBX_LS_DOWN = 1003,
+  XBX_RS_PRESS = 11,
+  XBX_RS_LEFT = 1004,
+  XBX_RS_RIGHT = 1005,
+  XBX_RS_UP = 1006,
+  XBX_RS_DOWN = 1007,
+  XBX_DPAD_UP = 12,
+  XBX_DPAD_DOWN = 13,
+  XBX_DPAD_LEFT = 14,
+  XBX_DPAD_RIGHT = 15,
+  XBX_HOME = 16,
+  XBX_SHARE = 17,
+}

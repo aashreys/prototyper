@@ -1,65 +1,49 @@
 import { Animation, AnimationType } from "./animation";
-import { Platform, InputScheme, Keycode } from "./controller";
+import { Navigation, NavScheme } from "./navigation";
+import { Device } from "./device";
 
 export class Config {
 
   static CONFIG_VERSION_KEY = 'config_version';
-  static CONFIG_VERSION = 2;
-  
+  static CONFIG_VERSION = 3;
+
   static CONFIG_KEY = 'config';
   static GAP = 100;
 
-  readonly platform: Platform
+  readonly device: Device
 
-  readonly inputScheme: InputScheme
-
-  readonly leftInput: number
-  readonly upInput: number
-  readonly rightInput: number
-  readonly downInput: number
+  readonly navigation: Navigation
 
   readonly variantProperty: string;
   readonly variantFromValue: string;
   readonly variantToValue: string;
 
   readonly animation: Animation
-  
+
   constructor(
-    platform,
-    inputScheme,
-    leftInput,
-    upInput,
-    rightInput,
-    downInput,
+    device,
+    navigation,
     variantProperty,
     variantFromValue,
     variantToValue,
     animation
   ) {
-    this.platform = platform;
-    this.inputScheme = inputScheme;
-    this.leftInput = leftInput;
-    this.upInput = upInput;
-    this.rightInput = rightInput;
-    this.downInput = downInput;
+    this.device = device;
+    this.navigation = navigation;
     this.variantProperty = variantProperty;
     this.variantFromValue = variantFromValue,
     this.variantToValue = variantToValue;
     this.animation = animation;
   }
 
-  static assignInputs(config: Config, leftInput, upInput, rightInput, downInput) {
+  updateNavigation(navigation: Navigation) {
     return new Config(
-      config.platform,
-      config.inputScheme,
-      leftInput,
-      upInput,
-      rightInput,
-      downInput,
-      config.variantProperty,
-      config.variantFromValue,
-      config.variantToValue,
-      config.animation,
+      this.device,
+      navigation,
+      this.variantProperty,
+      this.variantFromValue,
+      this.variantToValue,
+      this.animation
     );
   }
 
@@ -92,12 +76,8 @@ export class Config {
 
   static getDefaultConfig() {
     return new Config(
-      Platform.XBOX,
-      InputScheme.DPAD,
-      Keycode.XBX_DPAD_LEFT,
-      Keycode.XBX_DPAD_UP,
-      Keycode.XBX_DPAD_RIGHT,
-      Keycode.XBX_DPAD_DOWN,
+      Device.XBOX,
+      Navigation.createNavigation(Device.XBOX, NavScheme.DPAD),
       '',
       '',
       '',
@@ -105,12 +85,13 @@ export class Config {
         animType: AnimationType.EASE_IN,
         duration: 200
       }
-    );
+    )
   }
 
   static migrateConfig() {
     let prevConfigVersion = this.getConfigVersion();
     if (this.CONFIG_VERSION > prevConfigVersion) {
+      console.log(`Migrating config from version ${prevConfigVersion} to ${this.CONFIG_VERSION}`);
       this.clear(); // Clear configuration
       this.save(this.getDefaultConfig()); // Save default configuration with updated config version
       this.saveConfigVersion(this.CONFIG_VERSION);

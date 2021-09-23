@@ -1,52 +1,14 @@
-import { render, Container, VerticalSpace, Button, SegmentedControl, SegmentedControlOption, Text, Dropdown, DropdownOption, Textbox, Stack, Columns } from '@create-figma-plugin/ui'
+import { render, Container, VerticalSpace, Button, Text, Textbox, Stack, Columns } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
 import { h, JSX, Component, Fragment } from 'preact'
 import { useState } from 'preact/hooks'
-import { Platform, InputScheme } from "./controller";
+import { Navigation, NavScheme } from "./navigation";
 import { Constants } from './constants';
 import { AnimationOptions } from './components/animation_options';
 import { AnimationType } from './animation';
-
-const PlatformSelect = function (props) {
-  const [value, setValue] = useState(props.value)
-  const options: Array<SegmentedControlOption> = [
-    { value: Platform.XBOX },
-    // { value: Platform.PLAYSTATION },
-  ]
-  function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setValue(newValue)
-    props.onConfigChange('platform', newValue);
-  }
-  return (
-    <SegmentedControl onChange={handleChange} options={options} value={value} />
-  )
-}
-
-const InputSelect = function (props) {
-  const [value, setValue] = useState<null | string>(props.value)
-  const options: Array<DropdownOption> = [
-    { value: InputScheme.DPAD },
-    { value: InputScheme.LEFT_STICK },
-    // { separator: true },
-    // { header: 'Only Horizontal' },
-    // { value: InputScheme.SHOULDER_BUTTONS },
-    // { value: InputScheme.TRIGGER_BUTTONS },
-  ]
-  function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setValue(newValue)
-    props.onConfigChange('inputScheme', newValue);
-  }
-  return (
-    <Dropdown
-        onChange={handleChange}
-        options={options}
-        placeholder="Placeholder"
-        value={value}
-      />
-  )
-}
+import { Device } from './device';
+import { DeviceOptions } from './components/device_options';
+import { NavigationOptions } from './components/navigation_options';
 
 const VariantPropertyTextbox = function (props) {
   const [value, setValue] = useState(props.value)
@@ -95,7 +57,7 @@ const ErrorBox = function (props) {
   )
 }
 
-class PrototypeForm extends Component< any, any >  {
+class PrototypeForm extends Component<any, any>  {
 
   state = {
     config: undefined,
@@ -108,7 +70,7 @@ class PrototypeForm extends Component< any, any >  {
   }
 
   container: any;
-  
+
   constructor(props) {
     super(props);
     this.state.config = props.value.config;
@@ -118,7 +80,6 @@ class PrototypeForm extends Component< any, any >  {
 
   bindMethods() {
     this.onClick = this.onClick.bind(this);
-    this.onConfigChange = this.onConfigChange.bind(this);
     this.validate = this.validate.bind(this);
     this.setButtonLoading = this.setButtonLoading.bind(this);
     this.onError = this.onError.bind(this);
@@ -127,6 +88,9 @@ class PrototypeForm extends Component< any, any >  {
     this.componentDidMount = this.componentDidMount.bind(this);
     this.onAnimChange = this.onAnimChange.bind(this);
     this.onAnimDurationChange = this.onAnimDurationChange.bind(this);
+    this.onDeviceChange = this.onDeviceChange.bind(this);
+    this.onNavChange = this.onNavChange.bind(this);
+    this.onConfigChange = this.onConfigChange.bind(this);
   }
 
   componentDidMount() {
@@ -147,7 +111,7 @@ class PrototypeForm extends Component< any, any >  {
 
   registerEventHandlers() {
     on(Constants.EVENT_ERROR, (props) => {
-      this.onError(props.code, props.message) 
+      this.onError(props.code, props.message)
     });
     on(Constants.EVENT_DONE, () => {
       this.onDone();
@@ -162,7 +126,7 @@ class PrototypeForm extends Component< any, any >  {
   onDone() {
     this.setButtonLoading(false);
   }
-  
+
   onClick = e => {
     this.setErrorMessage('')
     this.updateValidationUi()
@@ -203,11 +167,20 @@ class PrototypeForm extends Component< any, any >  {
     }))
   }
 
-  onConfigChange(key, value) {
+  onDeviceChange(device: Device) {
     this.setState(prevState => ({
       config: {
         ...prevState.config,
-        [key]: value
+        device: device
+      }
+    }));
+  }
+
+  onNavChange(navScheme: NavScheme) {
+    this.setState(prevState => ({
+      config: {
+        ...prevState.config,
+        navigation: Navigation.createNavigation(this.state.config.device, navScheme)
       }
     }));
   }
@@ -242,17 +215,26 @@ class PrototypeForm extends Component< any, any >  {
     }));
   }
 
+  onConfigChange(key, value) {
+    this.setState(prevState => ({
+      config: {
+        ...prevState.config,
+        [key]: value
+      }
+    }));
+  }
+
   render() {
-    
+
     return (
-      <Container space='medium' ref={ (container) => {this.container = container }}>
+      <Container space='medium' ref={(container) => { this.container = container }}>
 
         <VerticalSpace space='large' />
-        
+
         <Text>Select the component instances you'd like to link in the prototype, and click Generate Prototype.</Text>
 
         {
-          this.state.ui.errorMessage.length > 0 && 
+          this.state.ui.errorMessage.length > 0 &&
           <Fragment>
             <VerticalSpace space='medium' />
             <ErrorBox message={this.state.ui.errorMessage} />
@@ -261,19 +243,11 @@ class PrototypeForm extends Component< any, any >  {
 
         <VerticalSpace space='large' />
 
-        <Text bold>Controller</Text>
+        <DeviceOptions onDeviceChange={this.onDeviceChange} value={this.state.config.device} />
 
-        <VerticalSpace space='small' />
-
-        <PlatformSelect onConfigChange={this.onConfigChange} value={this.state.config.platform}/>
-        
         <VerticalSpace space='large' />
-        
-        <Text bold>Navigate With</Text>
 
-        <VerticalSpace space='small' />
-
-        <InputSelect onConfigChange={this.onConfigChange} value={this.state.config.inputScheme}/>
+        <NavigationOptions onNavChange={this.onNavChange} value={this.state.config.navigation.scheme} />
 
         <VerticalSpace space='large' />
 
@@ -283,9 +257,9 @@ class PrototypeForm extends Component< any, any >  {
           onAnimChange={this.onAnimChange}
           onAnimDurationChange={this.onAnimDurationChange}
         />
-        
+
         <VerticalSpace space='large' />
-        
+
         <Text bold>Swap Variant</Text>
 
         <VerticalSpace space='small' />
@@ -297,36 +271,36 @@ class PrototypeForm extends Component< any, any >  {
             <Text style="color:red">Variant Property required</Text>
           }
 
-          <VariantPropertyTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantProperty}/>
-          
+          <VariantPropertyTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantProperty} />
+
           {
             this.state.ui.showVariantToValueError &&
             <Text style="color:red">To Value required</Text>
           }
 
           <Columns space='extraSmall'>
-          
-            <VariantFromValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantFromValue}/>
 
-            <VariantToValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantToValue}/>
+            <VariantFromValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantFromValue} />
+
+            <VariantToValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantToValue} />
 
           </Columns>
-          
+
         </Stack>
 
         <VerticalSpace space='medium' />
-        
+
         <Button fullWidth disabled={this.state.ui.buttonLoading} loading={this.state.ui.buttonLoading} onClick={this.onClick}>Generate Prototype</Button>
 
         <VerticalSpace space='medium' />
 
       </Container>
-      );
-    }
+    );
   }
-  
-  function Plugin(props) {
-    return ( <PrototypeForm value={props} /> )
-  }
-    
-    export default render(Plugin)
+}
+
+function Plugin(props) {
+  return (<PrototypeForm value={props} />)
+}
+
+export default render(Plugin)
