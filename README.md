@@ -12,13 +12,14 @@ While in BETA, I'm actively looking for feedback to improve the plugin. If you h
 
 Subject to change based on personal availablity etc.
 
+Features:
 * Playstation Controller support
 * Shoulder / Trigger button support
 * Configure animation properties
 * Better nearest neighbor detection algorithm for more accurate directional mapping
 * Link existing frames based on relative position
 * Stats and minutes saved (because nothing is better than being able to quantify how much time you've saved)
+* Add user onboarding
 
-
-To Do:
+Tech Debt:
 * Elegantly upgrade configuration when adding new fields, else plugin crashes when using it on a Page which had an old version of the configuration data.
