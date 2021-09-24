@@ -37,3 +37,4 @@ Contributions are most welcome. Below is a list of suggestions, but of course yo
 
 ## Contributors
 * Alex Tokma - PS4 Controller Keycodes
+* [Antoine Plu](https://twitter.com/AntoinePlu) - PlayStation Controller icons
