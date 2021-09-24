@@ -131,8 +131,8 @@ class PrototypeForm extends Component<any, any>  {
     this.setErrorMessage('')
     this.updateValidationUi()
     if (this.validate()) {
-      emit(Constants.EVENT_SUBMIT, this.state.config);
       this.setButtonLoading(true);
+      emit(Constants.EVENT_SUBMIT, this.state.config);
     }
   }
 
