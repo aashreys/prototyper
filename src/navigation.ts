@@ -46,6 +46,15 @@ export class Navigation {
           case NavScheme.SHOULDER_BUTTONS: return Keycode.XBX_LB;
           case NavScheme.TRIGGER_BUTTONS: return Keycode.XBX_LT;
         }
+
+      case Device.PS4:
+        switch (scheme) {
+          case NavScheme.DPAD: return Keycode.PS4_DPAD_LEFT;
+          case NavScheme.LEFT_STICK: return Keycode.PS4_LS_LEFT;
+          case NavScheme.RIGHT_STICK: return Keycode.PS4_RS_LEFT;
+          case NavScheme.SHOULDER_BUTTONS: return Keycode.PS4_L1;
+          case NavScheme.TRIGGER_BUTTONS: return Keycode.PS4_L2;
+        }
     }
   }
 
@@ -58,6 +67,15 @@ export class Navigation {
           case NavScheme.RIGHT_STICK: return Keycode.XBX_RS_RIGHT;
           case NavScheme.SHOULDER_BUTTONS: return Keycode.XBX_RB;
           case NavScheme.TRIGGER_BUTTONS: return Keycode.XBX_RT;
+        }
+
+      case Device.PS4:
+        switch (scheme) {
+          case NavScheme.DPAD: return Keycode.PS4_DPAD_RIGHT;
+          case NavScheme.LEFT_STICK: return Keycode.PS4_LS_RIGHT;
+          case NavScheme.RIGHT_STICK: return Keycode.PS4_RS_RIGHT;
+          case NavScheme.SHOULDER_BUTTONS: return Keycode.PS4_R1;
+          case NavScheme.TRIGGER_BUTTONS: return Keycode.PS4_R2;
         }
     }
   }
@@ -72,6 +90,15 @@ export class Navigation {
           case NavScheme.SHOULDER_BUTTONS: return undefined;
           case NavScheme.TRIGGER_BUTTONS: return undefined;
         }
+
+      case Device.PS4:
+        switch (scheme) {
+          case NavScheme.DPAD: return Keycode.PS4_DPAD_UP;
+          case NavScheme.LEFT_STICK: return Keycode.PS4_LS_UP;
+          case NavScheme.RIGHT_STICK: return Keycode.PS4_RS_UP;
+          case NavScheme.SHOULDER_BUTTONS: return undefined;
+          case NavScheme.TRIGGER_BUTTONS: return undefined;
+        }
     }
   }
 
@@ -82,6 +109,15 @@ export class Navigation {
           case NavScheme.DPAD: return Keycode.XBX_DPAD_DOWN;
           case NavScheme.LEFT_STICK: return Keycode.XBX_LS_DOWN;
           case NavScheme.RIGHT_STICK: return Keycode.XBX_RS_DOWN;
+          case NavScheme.SHOULDER_BUTTONS: return undefined;
+          case NavScheme.TRIGGER_BUTTONS: return undefined;
+        }
+
+      case Device.PS4:
+        switch (scheme) {
+          case NavScheme.DPAD: return Keycode.PS4_DPAD_DOWN;
+          case NavScheme.LEFT_STICK: return Keycode.PS4_LS_DOWN;
+          case NavScheme.RIGHT_STICK: return Keycode.PS4_RS_DOWN;
           case NavScheme.SHOULDER_BUTTONS: return undefined;
           case NavScheme.TRIGGER_BUTTONS: return undefined;
         }

@@ -4,6 +4,7 @@ import { useState } from 'preact/hooks'
 import { Device } from '../device';
 
 const XBOX = 'Xbox One'
+const PS4 = 'PS4'
 
 const DeviceSelect = function (props) {
 
@@ -11,6 +12,7 @@ const DeviceSelect = function (props) {
 
   const options: Array<SegmentedControlOption> = [
     { value: XBOX },
+    { value: PS4 },
   ]
 
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
@@ -37,7 +39,6 @@ export class DeviceOptions extends Component<any, any> {
   }
 
   onDeviceChange(deviceUiValue: string) {
-    console.log('Device UI value changed:' + deviceUiValue);
     this.props.onDeviceChange(this.getConfigValueFromUi(deviceUiValue));
   }
 
@@ -54,12 +55,14 @@ export class DeviceOptions extends Component<any, any> {
   getUiValueFromConfig(device: Device) {
     switch (device) {
       case Device.XBOX: return XBOX;
+      case Device.PS4: return PS4;
     }
   }
 
   getConfigValueFromUi(uiValue) {
     switch (uiValue) {
       case XBOX: return Device.XBOX;
+      case PS4: return Device.PS4;
     }
   }
 

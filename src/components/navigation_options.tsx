@@ -41,7 +41,6 @@ export class NavigationOptions extends Component<any, any> {
   }
 
   onNavChange(navSchemeUiValue: string) {
-    console.log('Navigation UI value changed: ' + navSchemeUiValue);
     this.props.onNavChange(this.getConfigValueFromUi(navSchemeUiValue));
   }
 
