@@ -3,6 +3,7 @@ import { Config } from './config.js'
 import { Constants } from './constants';
 import { Animation, AnimationType } from './animation';
 import { Navigation } from './navigation.js';
+import { Device } from './device.js';
 
 export default function () {
 
@@ -230,18 +231,20 @@ export default function () {
   }
 
   function createInteractions(frames: Array<PrototypeFrame>) {
+    let device: Device = config.device;
+    let animation: Animation = config.animation;
     let nav: Navigation = config.navigation;
     for (let frame of frames) {
       let reactions: Array<Reaction> = clone(frame.parent.reactions);
-      if (frame.leftNeighbor) reactions.push(createReaction(frame.leftNeighbor.parent, config.animation, nav.left));
-      if (frame.topNeighbor) reactions.push(createReaction(frame.topNeighbor.parent, config.animation, nav.up));
-      if (frame.rightNeighbor) reactions.push(createReaction(frame.rightNeighbor.parent, config.animation, nav.right));
-      if (frame.bottomNeighbor) reactions.push(createReaction(frame.bottomNeighbor.parent, config.animation, nav.down));
+      if (frame.leftNeighbor) reactions.push(createReaction(frame.leftNeighbor.parent, device, animation, nav.left));
+      if (frame.topNeighbor) reactions.push(createReaction(frame.topNeighbor.parent, device, animation, nav.up));
+      if (frame.rightNeighbor) reactions.push(createReaction(frame.rightNeighbor.parent, device, animation, nav.right));
+      if (frame.bottomNeighbor) reactions.push(createReaction(frame.bottomNeighbor.parent, device, animation, nav.down));
       frame.parent.reactions = reactions;
     }
   }
 
-  function createReaction(toNode: FrameNode, animation: Animation, keycode: number) {
+  function createReaction(toNode: FrameNode, device: Device, animation: Animation, keycode: number) {
     let reaction: Reaction = {
       action: {
         type: "NODE",
@@ -252,7 +255,7 @@ export default function () {
       },
       trigger: {
         type: "ON_KEY_DOWN",
-        device: "XBOX_ONE",
+        device: device,
         keyCodes: [keycode],
       }
     };
