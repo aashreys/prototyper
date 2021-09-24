@@ -1,7 +1,16 @@
-import { Columns, Dropdown, DropdownOption, TextboxNumeric, VerticalSpace, Text, Textbox, IconTimer32 } from '@create-figma-plugin/ui'
+import { Columns, Dropdown, DropdownOption, TextboxNumeric, VerticalSpace, Text, Inline} from '@create-figma-plugin/ui'
 import { Component, Fragment, h, JSX } from 'preact'
 import { useState } from 'preact/hooks'
 import { AnimationType } from '../animation'
+import { CurveEaseInIcon } from '../icons/curve_ease_in'
+import { CurveEaseInBackIcon } from '../icons/curve_ease_in_back'
+import { CurveEaseInOutIcon } from '../icons/curve_ease_in_out'
+import { CurveEaseInOutBackIcon } from '../icons/curve_ease_in_out_back'
+import { CurveEaseOutIcon } from '../icons/curve_ease_out'
+import { CurveEaseOutBackIcon } from '../icons/curve_ease_out_back'
+import { CurveInstantIcon } from '../icons/curve_instant'
+import { CurveLinearIcon } from '../icons/curve_linear'
+import { TimerIcon } from '../icons/timer'
 
 const INSTANT = 'Instant'
 const LINEAR = 'Linear'
@@ -30,6 +39,19 @@ const AnimationDropdown = function (props) {
     { value: EASE_IN_OUT_BACK },
   ]
 
+  function getIcon(value) {
+    switch (value) {
+      case INSTANT: return <CurveInstantIcon />
+      case LINEAR: return <CurveLinearIcon />
+      case EASE_IN: return <CurveEaseInIcon />
+      case EASE_OUT: return <CurveEaseOutIcon />
+      case EASE_IN_OUT: return <CurveEaseInOutIcon />
+      case EASE_IN_BACK: return <CurveEaseInBackIcon />
+      case EASE_OUT_BACK: return <CurveEaseOutBackIcon />
+      case EASE_IN_OUT_BACK: return <CurveEaseInOutBackIcon />
+    }
+  }
+
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setValue(newValue)
@@ -38,6 +60,7 @@ const AnimationDropdown = function (props) {
 
   return (
     <Dropdown
+      icon={getIcon(value)}
       onChange={handleChange}
       options={options}
       value={value}
@@ -70,7 +93,7 @@ const AnimationDurationTextbox = function (props) {
 
   return (
     <TextboxNumeric
-      icon={<IconTimer32 />}
+      icon={<TimerIcon />}
       onFocusCapture={onFocusGained}
       onBlurCapture={onFocusLost}
       disabled={props.disabled}
@@ -144,9 +167,9 @@ export class AnimationOptions extends Component<any, any> {
       <Fragment>
         <Text bold>Transition</Text>
         <VerticalSpace space='small' />
-        <Columns space='extraSmall'>
-          <AnimationDropdown onAnimChange={this.onAnimChange} value={this.getAnimationUIValue(props.animation)} />
-          <AnimationDurationTextbox disabled={state.animUiValue && state.animUiValue === INSTANT} onAnimDurationChange={this.onAnimDurationChange} value={props.duration} />
+        <Columns space='extraSmall' >
+            <AnimationDropdown onAnimChange={this.onAnimChange} value={this.getAnimationUIValue(props.animation)} /> 
+            <AnimationDurationTextbox  disabled={state.animUiValue && state.animUiValue === INSTANT} onAnimDurationChange={this.onAnimDurationChange} value={props.duration} />
         </Columns>
       </Fragment>
     )
