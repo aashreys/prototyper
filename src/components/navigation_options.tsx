@@ -1,6 +1,9 @@
 import { Dropdown, DropdownOption, VerticalSpace, Text } from '@create-figma-plugin/ui'
 import { Component, Fragment, h, JSX } from 'preact'
 import { useState } from 'preact/hooks'
+import { DPadIcon } from '../icons/dpad';
+import { LeftStickIcon } from '../icons/left_stick';
+import { RightStickIcon } from '../icons/right_stick';
 import { NavScheme } from '../navigation';
 
 const DPAD = 'D-Pad'
@@ -23,8 +26,16 @@ const NavigationSelect = function (props) {
     props.onNavChange(newValue);
   }
 
+  function getIcon(value) {
+    switch (value) {
+      case DPAD: return <DPadIcon />
+      case LEFT_STICK: return <LeftStickIcon />
+      case RIGHT_STICK: return <RightStickIcon />
+    }
+  }
+
   return (
-    <Dropdown onChange={handleChange} options={options} value={value} />
+    <Dropdown icon={getIcon(value)} onChange={handleChange} options={options} value={value} />
   )
 
 }
