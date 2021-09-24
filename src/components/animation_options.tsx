@@ -179,5 +179,5 @@ export class AnimationOptions extends Component<any, any> {
         </div>
       </Fragment>
     )
-  }0
+  }
 }
