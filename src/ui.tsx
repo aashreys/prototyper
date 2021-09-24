@@ -1,4 +1,4 @@
-import { render, Container, VerticalSpace, Button, Text, Textbox, Stack, Columns } from '@create-figma-plugin/ui'
+import { render, Container, VerticalSpace, Button, Text, Textbox, Stack, Columns, IconArrowRight16, MiddleAlign, IconSwap32, IconMoveRight16 } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
 import { h, JSX, Component, Fragment } from 'preact'
 import { useState } from 'preact/hooks'
@@ -282,6 +282,8 @@ class PrototypeForm extends Component<any, any>  {
 
             <VariantFromValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantFromValue} />
 
+            <MiddleAlign> <IconArrowRight16 /> </MiddleAlign>
+            
             <VariantToValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantToValue} />
 
           </Columns>
