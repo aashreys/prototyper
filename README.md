@@ -15,7 +15,7 @@ Run `npm run watch` to continously build the plugin as you make changes, or `npm
 Subject to change based on personal availability.
 
 Features:
-* ~~Playstation Controller support~~ (added in Version 3)
+* ~~Playstation 4 Controller support~~ (added in Version 3)
 * Shoulder / Trigger button support
 * ~~Configure animation properties~~ (added in Version 2)
 * Better nearest neighbor detection algorithm for more accurate directional mapping
@@ -26,6 +26,10 @@ Features:
 Tech Debt:
 * Elegantly upgrade configuration when adding new fields, else plugin crashes when using it on a Page which had an old version of the configuration data.
 * Enable strict type checking in Typescript
+
+# Known Issues
+* PS5 controllers are unsupported by Figma and hence do not work properly
+* Navigation through staggered grids in unreliable
 
 # Contributing
 Contributions are most welcome. Below is a list of suggestions, but of course you are welcome to contribute anything you think will be helpful...
