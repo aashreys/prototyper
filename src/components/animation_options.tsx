@@ -167,12 +167,17 @@ export class AnimationOptions extends Component<any, any> {
       <Fragment>
         <Text bold>Transition</Text>
         <VerticalSpace space='small' />
-        <Columns space='extraSmall' >
+        <div style="width: 100%; display: flex;"> 
+          <div style="width: 55%"> 
             <AnimationDropdown onAnimChange={this.onAnimChange} value={this.getAnimationUIValue(props.animation)} /> 
+          </div>
+          <div style="width: 4%"> 
+          </div>
+          <div style="width: 41%"> 
             <AnimationDurationTextbox  disabled={state.animUiValue && state.animUiValue === INSTANT} onAnimDurationChange={this.onAnimDurationChange} value={props.duration} />
-        </Columns>
+          </div>
+        </div>
       </Fragment>
     )
-  }
-
+  }0
 }
