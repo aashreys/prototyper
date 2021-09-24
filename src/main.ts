@@ -192,13 +192,13 @@ export default function () {
   function validateInstances(instances: Array<InstanceNode>, property: string, from: string, to: string) {
     for (let instance of instances) {
       if (!hasVariantProperty(instance, property)) {
-        throw new Error(`"${instance.name}" does not have the variant property "${property}"`);
+        throw new Error(`Cannot find the property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
       }
       if (from.length > 0 && !hasVariantValue(instance, property, from)) {
-        throw new Error(`"${instance.name}" does not have the variant value "${from}"`);
+        throw new Error(`Cannot find the value "${from}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
       }
       if (!hasVariantValue(instance, property, to)) {
-        throw new Error(`"${instance.name}" does not have the variant value "${to}"`);
+        throw new Error(`Cannot find the value "${to}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
       }
     }
   }
