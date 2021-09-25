@@ -268,14 +268,14 @@ class PrototypeForm extends Component<any, any>  {
 
           {
             this.state.ui.showVariantPropertyError &&
-            <Text style="color:red">Variant Property required</Text>
+            <Text style="color:red">Property Name required</Text>
           }
 
           <VariantPropertyTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantProperty} />
 
           {
             this.state.ui.showVariantToValueError &&
-            <Text style="color:red">To Value required</Text>
+            <Text style="color:red">To Variant required</Text>
           }
 
           <Columns space='extraSmall'>
