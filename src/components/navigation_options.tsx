@@ -35,7 +35,7 @@ const NavigationSelect = function (props) {
   }
 
   return (
-    <Dropdown icon={getIcon(value)} onChange={handleChange} options={options} value={value} />
+    <Dropdown noBorder icon={getIcon(value)} onChange={handleChange} options={options} value={value} />
   )
 
 }

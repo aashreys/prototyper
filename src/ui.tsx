@@ -1,4 +1,4 @@
-import { render, Container, VerticalSpace, Button, Text, Textbox, Stack, Columns, IconArrowRight16, MiddleAlign, IconSwap32, IconMoveRight16 } from '@create-figma-plugin/ui'
+import { render, Container, VerticalSpace, Button, Text, Textbox, Stack, Columns, IconArrowRight16, MiddleAlign, IconSwap32, IconMoveRight16, Inline } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
 import { h, JSX, Component, Fragment } from 'preact'
 import { useState } from 'preact/hooks'
@@ -18,7 +18,7 @@ const VariantPropertyTextbox = function (props) {
     props.onConfigChange('variantProperty', newValue);
   }
   return (
-    <Textbox onInput={handleInput} placeholder="Variant Property" value={value} />
+    <Textbox noBorder onInput={handleInput} placeholder="Property Name" value={value} />
   )
 }
 
@@ -30,7 +30,7 @@ const VariantFromValueTextbox = function (props) {
     props.onConfigChange('variantFromValue', newValue)
   }
   return (
-    <Textbox onInput={handleInput} placeholder="From" value={value} />
+    <Textbox noBorder onInput={handleInput} placeholder="From Variant" value={value} />
   )
 }
 
@@ -42,7 +42,7 @@ const VariantToValueTextbox = function (props) {
     props.onConfigChange('variantToValue', newValue)
   }
   return (
-    <Textbox onInput={handleInput} placeholder="To" value={value} />
+    <Textbox noBorder onInput={handleInput} placeholder="To Variant" value={value} />
   )
 }
 

@@ -93,6 +93,7 @@ const AnimationDurationTextbox = function (props) {
 
   return (
     <TextboxNumeric
+      noBorder
       icon={<TimerIcon />}
       onFocusCapture={onFocusGained}
       onBlurCapture={onFocusLost}
