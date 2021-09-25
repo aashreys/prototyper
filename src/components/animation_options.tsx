@@ -79,24 +79,16 @@ const AnimationDurationTextbox = function (props) {
     props.onAnimDurationChange(newValue.length > 0 ? newValue : 0);
   }
 
-  function onFocusGained() {
-    if (value === 0) {
-      setValue('');
-    }
-  }
-
-  function onFocusLost() {
-    if (value.length === 0) {
-      setValue(0);
-    }
+  function validateOnBlur(value: null | number): null | number | boolean {
+    console.log(value)
+    return value !== null
   }
 
   return (
     <TextboxNumeric
       noBorder
       icon={<TimerIcon />}
-      onFocusCapture={onFocusGained}
-      onBlurCapture={onFocusLost}
+      validateOnBlur={validateOnBlur}
       disabled={props.disabled}
       onInput={handleInput}
       placeholder="Duration"
