@@ -12,8 +12,6 @@ While in BETA, I'm actively looking for feedback to improve the plugin. If you h
 Run `npm run watch` to continously build the plugin as you make changes, or `npm run build` to build just once.
 
 # Roadmap
-Subject to change based on personal availability.
-
 Features:
 * ~~Playstation 4 Controller support~~ (added in Version 3)
 * Shoulder / Trigger button support
@@ -26,13 +24,14 @@ Features:
 Tech Debt:
 * Elegantly upgrade configuration when adding new fields, else plugin crashes when using it on a Page which had an old version of the configuration data.
 * Enable strict type checking in Typescript
+* Write unit tests to prevent regression over time
 
 # Known Issues
-* PS5 controllers are unsupported by Figma and hence do not work properly
-* Navigation through staggered grids in unreliable
+* PS5 controllers are not supported by Figma and hence do not work properly
+* Navigation through staggered grids in unreliable - I plan to investigate and potentially address this in the future
 
 # Contributing
-Contributions are most welcome. Below is a list of suggestions, but of course you are welcome to contribute anything you think will be helpful...
+Contributions are most welcome. Below is a list of suggestions, but of course you are welcome to contribute anything you think will be helpful.
 * Switch Pro controller support
 
 ## Contributors
