@@ -8,10 +8,10 @@ This is a BETA release and currently only supports D-Pad and Left Stick navigati
 
 While in BETA, I'm actively looking for feedback to improve the plugin. If you have any thoughts you'd like to share, please shoot me an email at aashrey9sharma@gmail.com.
 
-# Build
+## Build
 Run `npm run watch` to continously build the plugin as you make changes, or `npm run build` to build just once.
 
-# Roadmap
+## Roadmap
 Features:
 * ~~Playstation 4 Controller support~~ (added in Version 3)
 * Shoulder / Trigger button support
@@ -26,11 +26,11 @@ Tech Debt:
 * Enable strict type checking in Typescript
 * Write unit tests to prevent regression over time
 
-# Known Issues
+## Known Issues
 * PS5 controllers are not supported by Figma and hence do not work properly
 * Navigation through staggered grids in unreliable - I plan to investigate and potentially address this in the future
 
-# Contributing
+## Contributing
 Contributions are most welcome. Below is a list of suggestions, but of course you are welcome to contribute anything you think will be helpful.
 * Switch Pro controller support
 
