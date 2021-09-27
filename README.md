@@ -20,6 +20,7 @@ Features:
 * Link existing frames based on relative position
 * Stats and minutes saved (because nothing is better than being able to quantify how much time you've saved)
 * Add user onboarding
+* Define multiple inputs for navigation at the same time i.e. DPad, LS, RS all together
 
 Tech Debt:
 * Elegantly upgrade configuration when adding new fields, else plugin crashes when using it on a Page which had an old version of the configuration data.
