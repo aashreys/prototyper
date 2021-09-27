@@ -86,7 +86,6 @@ const AnimationDurationTextbox = function (props) {
 
   return (
     <TextboxNumeric
-      noBorder
       icon={<TimerIcon />}
       validateOnBlur={validateOnBlur}
       disabled={props.disabled}

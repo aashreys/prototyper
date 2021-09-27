@@ -18,7 +18,7 @@ const VariantPropertyTextbox = function (props) {
     props.onConfigChange('variantProperty', newValue);
   }
   return (
-    <Textbox noBorder onInput={handleInput} placeholder="Property Name" value={value} />
+    <Textbox onInput={handleInput} placeholder="Property Name" value={value} />
   )
 }
 
@@ -30,7 +30,7 @@ const VariantFromValueTextbox = function (props) {
     props.onConfigChange('variantFromValue', newValue)
   }
   return (
-    <Textbox noBorder onInput={handleInput} placeholder="From Variant" value={value} />
+    <Textbox onInput={handleInput} placeholder="From Variant" value={value} />
   )
 }
 
@@ -42,7 +42,7 @@ const VariantToValueTextbox = function (props) {
     props.onConfigChange('variantToValue', newValue)
   }
   return (
-    <Textbox noBorder onInput={handleInput} placeholder="To Variant" value={value} />
+    <Textbox onInput={handleInput} placeholder="To Variant" value={value} />
   )
 }
 
