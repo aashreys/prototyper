@@ -4,6 +4,7 @@ import { Constants } from './constants';
 import { Animation, AnimationType } from './animation';
 import { Navigation } from './navigation.js';
 import { Device } from './device.js';
+import { SwapVariant } from './swap_variant.js';
 
 export default function () {
 
@@ -153,10 +154,10 @@ export default function () {
     if (instances.length > 0) {
 
       // Validate selected instances and notify user of errors before we begin
-      validateInstances(instances, config.variantProperty, config.variantFromValue, config.variantToValue);
+      validateInstances(instances, config.swapVariant);
 
       // Perform general cleanup like reverting all variants to from value, if specifies
-      sanitizeNodes(instances);
+      sanitizeNodes(instances, config.swapVariant);
 
       // Map component instance nodes to our prototype node wrapper object
       let protoNodes: Array<PrototypeNode> = selection.map(node => PrototypeNode.fromInstance(node));
@@ -174,7 +175,7 @@ export default function () {
       arrangeFrames(protoFrames);
 
       // Swap variants
-      swapVariants(protoFrames);
+      swapVariants(protoFrames, config.swapVariant);
 
       let isFrameAlreadyLinked = hasReactions(protoFrames[0].parent);
 
@@ -189,7 +190,10 @@ export default function () {
     }
   }
 
-  function validateInstances(instances: Array<InstanceNode>, property: string, from: string, to: string) {
+  function validateInstances(instances: Array<InstanceNode>, swapVariant: SwapVariant) {
+    let property = swapVariant.property;
+    let from = swapVariant.from;
+    let to = swapVariant.to;
     for (let instance of instances) {
       if (!hasVariantProperty(instance, property)) {
         throw new Error(`Cannot find the property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
@@ -276,10 +280,12 @@ export default function () {
     return transition;
   }
 
-  function swapVariants(frames: Array<PrototypeFrame>) {
+  function swapVariants(frames: Array<PrototypeFrame>, swapVariant: SwapVariant) {
+    let property = swapVariant.property
+    let toVariant = swapVariant.to
     for (let frame of frames) {
-      if (hasVariantProperty(frame.instance, config.variantProperty)) {
-        setVariantProperty(frame.instance, config.variantProperty, config.variantToValue);
+      if (hasVariantProperty(frame.instance, property)) {
+        setVariantProperty(frame.instance, property, toVariant)
       }
     }
   }
@@ -299,15 +305,18 @@ export default function () {
     }
   }
 
-  function sanitizeNodes(instances: Array<InstanceNode>) {
+  function sanitizeNodes(instances: Array<InstanceNode>, swapVariant: SwapVariant) {
     // Remove flow staring point on parent node else it will be duplicated in the prototype
     let parent = findParentFrame(instances[0]);
     removeFlowStartingPoint(parent);
 
     // If variant from value is defined, reset all variants to their from value
-    if (config.variantFromValue.length > 0) {
+    console.log(swapVariant);
+    let fromVariant = swapVariant.from
+    let property = swapVariant.property
+    if (fromVariant.length > 0) {
       for (let instance of instances) {
-        setVariantProperty(instance, config.variantProperty, config.variantFromValue);
+        setVariantProperty(instance, property, fromVariant);
       }
     }
   }

@@ -42,6 +42,34 @@ export class VariantSwapOptions extends Component<any, any>  {
 
   constructor(props) {
     super(props);
+    this.bindMethods();
+  }
+
+  bindMethods() {
+    this.onPropertyChange = this.onPropertyChange.bind(this);
+    this.onFromChange = this.onFromChange.bind(this);
+    this.onToChange = this.onToChange.bind(this);
+  }
+
+  onPropertyChange(property) {
+    this.props.onSwapVariantChange({
+      ...this.props.swapVariant,
+      property: property
+    });
+  }
+
+  onFromChange(from) {
+    this.props.onSwapVariantChange({
+      ...this.props.swapVariant,
+      from: from
+    });
+  }
+
+  onToChange(to) {
+    this.props.onSwapVariantChange({
+      ...this.props.swapVariant,
+      to: to
+    });
   }
 
   render(props, state) {
@@ -51,12 +79,12 @@ export class VariantSwapOptions extends Component<any, any>  {
         <VerticalSpace space='small' />
         <Stack space='extraSmall'>
           { props.showPropertyError && <Text style="color:red">Property Name required</Text> }
-          <VariantPropertyTextbox onPropertyChange={props.onPropertyChange} value={props.variantProperty} />
+          <VariantPropertyTextbox onPropertyChange={this.onPropertyChange} value={props.swapVariant.property} />
           { props.showToVariantError && <Text style="color:red">To Variant required</Text> }
           <Columns space='extraSmall'>
-            <VariantFromValueTextbox onFromChange={props.onFromChange} value={props.variantFromValue} />
+            <VariantFromValueTextbox onFromChange={this.onFromChange} value={props.swapVariant.from} />
             <MiddleAlign> <IconArrowRight16 /> </MiddleAlign>
-            <VariantToValueTextbox onToChange={props.onToChange} value={props.variantToValue} />
+            <VariantToValueTextbox onToChange={this.onToChange} value={props.swapVariant.to} />
           </Columns>
         </Stack>
       </Fragment>

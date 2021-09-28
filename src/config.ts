@@ -1,11 +1,12 @@
 import { Animation, AnimationType } from "./animation";
 import { Navigation, NavScheme } from "./navigation";
 import { Device } from "./device";
+import { SwapVariant } from "./swap_variant";
 
 export class Config {
 
   static CONFIG_VERSION_KEY = 'config_version';
-  static CONFIG_VERSION = 3;
+  static CONFIG_VERSION = 4;
 
   static CONFIG_KEY = 'config';
   static GAP = 100;
@@ -14,25 +15,19 @@ export class Config {
 
   readonly navigation: Navigation
 
-  readonly variantProperty: string;
-  readonly variantFromValue: string;
-  readonly variantToValue: string;
+  readonly swapVariant: SwapVariant
 
   readonly animation: Animation
 
   constructor(
     device,
     navigation,
-    variantProperty,
-    variantFromValue,
-    variantToValue,
+    swapVariant,
     animation
   ) {
     this.device = device;
     this.navigation = navigation;
-    this.variantProperty = variantProperty;
-    this.variantFromValue = variantFromValue,
-    this.variantToValue = variantToValue;
+    this.swapVariant = swapVariant;
     this.animation = animation;
   }
 
@@ -40,9 +35,7 @@ export class Config {
     return new Config(
       this.device,
       navigation,
-      this.variantProperty,
-      this.variantFromValue,
-      this.variantToValue,
+      this.swapVariant,
       this.animation
     );
   }
@@ -78,9 +71,7 @@ export class Config {
     return new Config(
       Device.XBOX,
       Navigation.createNavigation(Device.XBOX, NavScheme.DPAD),
-      '',
-      '',
-      '',
+      { property: '', from: '', to: '' },
       {
         animType: AnimationType.EASE_IN,
         duration: 200
@@ -92,9 +83,9 @@ export class Config {
     let prevConfigVersion = this.getConfigVersion();
     if (this.CONFIG_VERSION > prevConfigVersion) {
       console.log(`Migrating config from version ${prevConfigVersion} to ${this.CONFIG_VERSION}`);
-      this.clear(); // Clear configuration
-      this.save(this.getDefaultConfig()); // Save default configuration with updated config version
-      this.saveConfigVersion(this.CONFIG_VERSION);
+      this.clear(); // Clear old configuration
+      this.save(this.getDefaultConfig()); // Save default configuration as latest
+      this.saveConfigVersion(this.CONFIG_VERSION); // Update current config version
     }
   }
 

@@ -9,6 +9,8 @@ import { AnimationType } from './animation';
 import { Device } from './device';
 import { NavigationOptions } from './components/navigation_options';
 import { VariantSwapOptions } from './components/variant_swap_options';
+import { SwapVariant } from './swap_variant';
+import { Config } from './config';
 
 const ErrorBox = function (props) {
   const [value, setValue] = useState(props.message)
@@ -54,9 +56,7 @@ class PrototypeForm extends Component<any, any>  {
     this.onAnimDurationChange = this.onAnimDurationChange.bind(this);
     this.onDeviceChange = this.onDeviceChange.bind(this);
     this.onNavChange = this.onNavChange.bind(this);
-    this.onVariantPropertyChange = this.onVariantPropertyChange.bind(this);
-    this.onFromVariantChange = this.onFromVariantChange.bind(this);
-    this.onToVariantChange = this.onToVariantChange.bind(this);
+    this.onSwapVariantChange = this.onSwapVariantChange.bind(this);
   }
 
   componentDidMount() {
@@ -107,8 +107,8 @@ class PrototypeForm extends Component<any, any>  {
       config: prevState.config,
       ui: {
         ...prevState.ui,
-        showVariantPropertyError: this.state.config.variantProperty.length == 0,
-        showVariantToValueError: this.state.config.variantToValue.length == 0
+        showVariantPropertyError: this.state.config.swapVariant.property == 0,
+        showVariantToValueError: this.state.config.swapVariant.to == 0
       }
     }))
   }
@@ -152,9 +152,9 @@ class PrototypeForm extends Component<any, any>  {
   }
 
   validate() {
-    let variantProperty = this.state.config.variantProperty
-    let variantToValue = this.state.config.variantToValue
-    return variantProperty.length > 0 && variantToValue.length > 0;
+    let variantProperty = this.state.config.swapVariant.property
+    let variantToValue = this.state.config.swapVariant.to
+    return variantProperty.length > 0 && variantToValue.length > 0
   }
 
   onAnimChange(animation: AnimationType) {
@@ -181,29 +181,11 @@ class PrototypeForm extends Component<any, any>  {
     }));
   }
 
-  onVariantPropertyChange(property: string) {
+  onSwapVariantChange(swapVariant: SwapVariant) {
     this.setState(prevState => ({
       config: {
         ...prevState.config,
-        variantProperty: property
-      }
-    }));
-  }
-
-  onFromVariantChange(fromVariant: string) {
-    this.setState(prevState => ({
-      config: {
-        ...prevState.config,
-        variantFromValue: fromVariant
-      }
-    }));
-  }
-
-  onToVariantChange(toVariant: string) {
-    this.setState(prevState => ({
-      config: {
-        ...prevState.config,
-        variantToValue: toVariant
+        swapVariant: swapVariant
       }
     }));
   }
@@ -246,12 +228,8 @@ class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='large' />
 
         <VariantSwapOptions
-        variantProperty={this.state.config.variantProperty}
-        variantFromValue={this.state.config.variantFromValue}
-        variantToValue={this.state.config.variantToValue}
-        onPropertyChange={this.onVariantPropertyChange}
-        onFromChange={this.onFromVariantChange}
-        onToChange={this.onToVariantChange}
+        swapVariant={this.state.config.swapVariant}
+        onSwapVariantChange={this.onSwapVariantChange}
         showPropertyError={this.state.ui.showVariantPropertyError}
         showToVariantError={this.state.ui.showVariantToValueError}
         />
