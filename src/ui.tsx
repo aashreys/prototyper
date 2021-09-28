@@ -1,4 +1,4 @@
-import { render, Container, VerticalSpace, Button, Text, Textbox, Stack, Columns, IconArrowRight16, MiddleAlign, IconSwap32, IconMoveRight16, Inline } from '@create-figma-plugin/ui'
+import { render, Container, VerticalSpace, Button, Text, Textbox, Stack, Columns, IconArrowRight16, MiddleAlign } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
 import { h, JSX, Component, Fragment } from 'preact'
 import { useState } from 'preact/hooks'
@@ -7,7 +7,6 @@ import { Constants } from './constants';
 import { AnimationOptions } from './components/animation_options';
 import { AnimationType } from './animation';
 import { Device } from './device';
-import { DeviceOptions } from './components/device_options';
 import { NavigationOptions } from './components/navigation_options';
 
 const VariantPropertyTextbox = function (props) {
@@ -243,11 +242,16 @@ class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='large' />
 
-        <DeviceOptions onDeviceChange={this.onDeviceChange} value={this.state.config.device} />
+        {/* <DeviceOptions onDeviceChange={this.onDeviceChange} value={this.state.config.device} />
 
-        <VerticalSpace space='large' />
+        <VerticalSpace space='large' /> */}
 
-        <NavigationOptions onNavChange={this.onNavChange} value={this.state.config.navigation.scheme} />
+        <NavigationOptions
+        onDeviceChange={this.onDeviceChange} 
+        onNavChange={this.onNavChange} 
+        device={this.state.config.device}
+        navigation={this.state.config.navigation.scheme} 
+        />
 
         <VerticalSpace space='large' />
 
