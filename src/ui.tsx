@@ -8,42 +8,7 @@ import { AnimationOptions } from './components/animation_options';
 import { AnimationType } from './animation';
 import { Device } from './device';
 import { NavigationOptions } from './components/navigation_options';
-
-const VariantPropertyTextbox = function (props) {
-  const [value, setValue] = useState(props.value)
-  function handleInput(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setValue(newValue)
-    props.onConfigChange('variantProperty', newValue);
-  }
-  return (
-    <Textbox onInput={handleInput} placeholder="Property Name" value={value} />
-  )
-}
-
-const VariantFromValueTextbox = function (props) {
-  const [value, setValue] = useState(props.value)
-  function handleInput(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setValue(newValue)
-    props.onConfigChange('variantFromValue', newValue)
-  }
-  return (
-    <Textbox onInput={handleInput} placeholder="From Variant" value={value} />
-  )
-}
-
-const VariantToValueTextbox = function (props) {
-  const [value, setValue] = useState(props.value)
-  function handleInput(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setValue(newValue)
-    props.onConfigChange('variantToValue', newValue)
-  }
-  return (
-    <Textbox onInput={handleInput} placeholder="To Variant" value={value} />
-  )
-}
+import { VariantSwapOptions } from './components/variant_swap_options';
 
 const ErrorBox = function (props) {
   const [value, setValue] = useState(props.message)
@@ -89,7 +54,9 @@ class PrototypeForm extends Component<any, any>  {
     this.onAnimDurationChange = this.onAnimDurationChange.bind(this);
     this.onDeviceChange = this.onDeviceChange.bind(this);
     this.onNavChange = this.onNavChange.bind(this);
-    this.onConfigChange = this.onConfigChange.bind(this);
+    this.onVariantPropertyChange = this.onVariantPropertyChange.bind(this);
+    this.onFromVariantChange = this.onFromVariantChange.bind(this);
+    this.onToVariantChange = this.onToVariantChange.bind(this);
   }
 
   componentDidMount() {
@@ -214,11 +181,29 @@ class PrototypeForm extends Component<any, any>  {
     }));
   }
 
-  onConfigChange(key, value) {
+  onVariantPropertyChange(property: string) {
     this.setState(prevState => ({
       config: {
         ...prevState.config,
-        [key]: value
+        variantProperty: property
+      }
+    }));
+  }
+
+  onFromVariantChange(fromVariant: string) {
+    this.setState(prevState => ({
+      config: {
+        ...prevState.config,
+        variantFromValue: fromVariant
+      }
+    }));
+  }
+
+  onToVariantChange(toVariant: string) {
+    this.setState(prevState => ({
+      config: {
+        ...prevState.config,
+        variantToValue: toVariant
       }
     }));
   }
@@ -242,10 +227,6 @@ class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='large' />
 
-        {/* <DeviceOptions onDeviceChange={this.onDeviceChange} value={this.state.config.device} />
-
-        <VerticalSpace space='large' /> */}
-
         <NavigationOptions
         onDeviceChange={this.onDeviceChange} 
         onNavChange={this.onNavChange} 
@@ -264,35 +245,16 @@ class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='large' />
 
-        <Text bold>Swap Variant</Text>
-
-        <VerticalSpace space='small' />
-
-        <Stack space='extraSmall'>
-
-          {
-            this.state.ui.showVariantPropertyError &&
-            <Text style="color:red">Property Name required</Text>
-          }
-
-          <VariantPropertyTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantProperty} />
-
-          {
-            this.state.ui.showVariantToValueError &&
-            <Text style="color:red">To Variant required</Text>
-          }
-
-          <Columns space='extraSmall'>
-
-            <VariantFromValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantFromValue} />
-
-            <MiddleAlign> <IconArrowRight16 /> </MiddleAlign>
-            
-            <VariantToValueTextbox onConfigChange={this.onConfigChange} value={this.state.config.variantToValue} />
-
-          </Columns>
-
-        </Stack>
+        <VariantSwapOptions
+        variantProperty={this.state.config.variantProperty}
+        variantFromValue={this.state.config.variantFromValue}
+        variantToValue={this.state.config.variantToValue}
+        onPropertyChange={this.onVariantPropertyChange}
+        onFromChange={this.onFromVariantChange}
+        onToChange={this.onToVariantChange}
+        showPropertyError={this.state.ui.showVariantPropertyError}
+        showToVariantError={this.state.ui.showVariantToValueError}
+        />
 
         <VerticalSpace space='medium' />
 
