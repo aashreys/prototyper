@@ -158,13 +158,12 @@ class PrototypeForm extends Component<any, any>  {
   }
 
   onAnimChange(animation: AnimationType) {
+    console.log('onAnimChange:')
+    console.log(animation);
     this.setState(prevState => ({
       config: {
         ...prevState.config,
-        animation: {
-          ...prevState.config.animation,
-          animType: animation
-        }
+        animation: animation
       }
     }));
   }
@@ -219,8 +218,7 @@ class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='large' />
 
         <AnimationOptions
-          animation={this.state.config.animation.animType}
-          duration={this.state.config.animation.duration}
+          animation={this.state.config.animation}
           onAnimChange={this.onAnimChange}
           onAnimDurationChange={this.onAnimDurationChange}
         />

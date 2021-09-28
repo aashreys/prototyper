@@ -120,12 +120,18 @@ export class AnimationOptions extends Component<any, any> {
     this.setState(prevState => ({
       ...prevState,
       animUiValue: animUiValue,
-    }));
-    this.props.onAnimChange(this.getAnimConfigValue(animUiValue));
+    }))
+    this.props.onAnimChange({
+      ...this.props.animation,
+      animType: this.getAnimConfigValue(animUiValue)
+    })
   }
 
   onAnimDurationChange(duration) {
-    this.props.onAnimDurationChange(duration);
+    this.props.onAnimChange({
+      ...this.props.animation,
+      duration: duration
+    })
   }
 
   getAnimationUIValue(anim: AnimationType) {
@@ -161,12 +167,17 @@ export class AnimationOptions extends Component<any, any> {
         <VerticalSpace space='small' />
         <div style="width: 100%; display: flex;"> 
           <div style="width: 55%"> 
-            <AnimationDropdown onAnimChange={this.onAnimChange} value={this.getAnimationUIValue(props.animation)} /> 
+            <AnimationDropdown 
+            onAnimChange={this.onAnimChange} 
+            value={this.getAnimationUIValue(props.animation.animType)} /> 
           </div>
           <div style="width: 4%"> 
           </div>
           <div style="width: 41%"> 
-            <AnimationDurationTextbox  disabled={state.animUiValue && state.animUiValue === INSTANT} onAnimDurationChange={this.onAnimDurationChange} value={props.duration} />
+            <AnimationDurationTextbox 
+            disabled={state.animUiValue && state.animUiValue === INSTANT} 
+            onAnimDurationChange={this.onAnimDurationChange} 
+            value={props.animation.duration} />
           </div>
         </div>
       </Fragment>
