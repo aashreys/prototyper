@@ -5,6 +5,8 @@ import { Device } from '../device';
 import { DPadIcon } from '../icons/dpad';
 import { LeftStickIcon } from '../icons/left_stick';
 import { RightStickIcon } from '../icons/right_stick';
+import { ShoulderButtonsIcon } from '../icons/shoulder_buttons';
+import { TriggerButtonsIcon } from '../icons/trigger_buttons';
 import { NavScheme } from '../navigation';
 
 const XBOX = 'Xbox One'
@@ -13,6 +15,8 @@ const PS4 = 'PS4'
 const DPAD = 'D-Pad'
 const LEFT_STICK = 'Left Stick'
 const RIGHT_STICK = 'Right Stick'
+const SHOULDER_BUTTONS = 'Shoulder Buttons'
+const TRIGGER_BUTTONS = 'Trigger Buttons'
 
 const DeviceSelect = function (props) {
 
@@ -42,7 +46,11 @@ const NavigationSelect = function (props) {
   const options: Array<DropdownOption> = [
     { value: DPAD },
     { value: LEFT_STICK },
-    { value: RIGHT_STICK }
+    { value: RIGHT_STICK },
+    { separator: true },
+    { header: 'Horizontal Only' },
+    { value: SHOULDER_BUTTONS },
+    { value: TRIGGER_BUTTONS },
   ]
 
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
@@ -56,6 +64,8 @@ const NavigationSelect = function (props) {
       case DPAD: return <DPadIcon />
       case LEFT_STICK: return <LeftStickIcon />
       case RIGHT_STICK: return <RightStickIcon />
+      case SHOULDER_BUTTONS: return <ShoulderButtonsIcon />
+      case TRIGGER_BUTTONS: return <TriggerButtonsIcon />
     }
   }
 
@@ -101,9 +111,11 @@ export class NavigationOptions extends Component<any, any> {
 
   getUiValueFromConfig(configValue) {
     switch (configValue) {
-      case NavScheme.DPAD: return DPAD;
-      case NavScheme.LEFT_STICK: return LEFT_STICK;
-      case NavScheme.RIGHT_STICK: return RIGHT_STICK;
+      case NavScheme.DPAD: return DPAD
+      case NavScheme.LEFT_STICK: return LEFT_STICK
+      case NavScheme.RIGHT_STICK: return RIGHT_STICK
+      case NavScheme.SHOULDER_BUTTONS: return SHOULDER_BUTTONS
+      case NavScheme.TRIGGER_BUTTONS: return TRIGGER_BUTTONS
       case Device.XBOX: return XBOX
       case Device.PS4: return PS4
     }
@@ -111,9 +123,11 @@ export class NavigationOptions extends Component<any, any> {
 
   getConfigValueFromUi(uiValue) {
     switch (uiValue) {
-      case DPAD: return NavScheme.DPAD;
+      case DPAD: return NavScheme.DPAD
       case LEFT_STICK: return NavScheme.LEFT_STICK
       case RIGHT_STICK: return NavScheme.RIGHT_STICK
+      case SHOULDER_BUTTONS: return NavScheme.SHOULDER_BUTTONS
+      case TRIGGER_BUTTONS: return NavScheme.TRIGGER_BUTTONS
       case XBOX: return Device.XBOX
       case PS4: return Device.PS4
     }

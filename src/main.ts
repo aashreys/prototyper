@@ -2,7 +2,7 @@ import { emit, on, showUI } from '@create-figma-plugin/utilities'
 import { Config } from './config.js'
 import { Constants } from './constants';
 import { Animation, AnimationType } from './animation';
-import { Navigation } from './navigation.js';
+import { Navigation, NavScheme } from './navigation.js';
 import { Device } from './device.js';
 import { SwapVariant } from './swap_variant.js';
 
@@ -150,43 +150,58 @@ export default function () {
 
     // Filter selection to only contain component instances
     let instances = selection.filter(node => isInstance(node));
+    let protoFrames;
 
-    if (instances.length > 0) {
+    try {
+      if (instances.length > 0) {
 
-      // Validate selected instances and notify user of errors before we begin
-      validateInstances(instances, config.swapVariant);
-
-      // Perform general cleanup like reverting all variants to from value, if specifies
-      sanitizeNodes(instances, config.swapVariant);
-
-      // Map component instance nodes to our prototype node wrapper object
-      let protoNodes: Array<PrototypeNode> = selection.map(node => PrototypeNode.fromInstance(node));
-
-      // Sort nodes left -> right & top -> bottom regardless of canvas layer order
-      sortNodes(protoNodes);
-
-      // Create prototype frames to wire later
-      let protoFrames = createFrames(protoNodes);
-
-      // Assign left, top, right and bottom neighbors for wiring the prototype
-      assignNeighbors(protoFrames, protoNodes);
-
-      // Arrange the frames on the canvas based on their relative position
-      arrangeFrames(protoFrames);
-
-      // Swap variants
-      swapVariants(protoFrames, config.swapVariant);
-
-      let isFrameAlreadyLinked = hasReactions(protoFrames[0].parent);
-
-      // Create Interactions
-      createInteractions(protoFrames);
-
-      // Post process frames
-      postProcessFrames(protoFrames, isFrameAlreadyLinked);
+        // Validate selected instances and notify user of errors before we begin
+        validateInstances(instances, config.swapVariant);
+  
+        // Perform general cleanup like reverting all variants to from value, if specifies
+        sanitizeNodes(instances, config.swapVariant);
+  
+        // Map component instance nodes to our prototype node wrapper object
+        let protoNodes: Array<PrototypeNode> = selection.map(node => PrototypeNode.fromInstance(node));
+  
+        // Sort nodes left -> right & top -> bottom regardless of canvas layer order
+        sortNodes(protoNodes);
+  
+        // Create prototype frames to wire later
+        protoFrames = createFrames(protoNodes);
+  
+        // Assign left, top, right and bottom neighbors for wiring the prototype
+        assignNeighbors(protoFrames, protoNodes);
+  
+        // Arrange the frames on the canvas based on their relative position
+        arrangeFrames(protoFrames);
+  
+        // Swap variants
+        swapVariants(protoFrames, config.swapVariant);
+  
+        let isFrameAlreadyLinked = hasReactions(protoFrames[0].parent);
+  
+        // Create Interactions
+        createInteractions(protoFrames);
+  
+        // Post process frames
+        postProcessFrames(protoFrames, isFrameAlreadyLinked);
+      }
+      else {
+        throw Error(Constants.ERROR_NO_INSTANCES);
+      }
     }
-    else {
-      postError(0, Constants.ERROR_NO_INSTANCES);
+    catch (error) {
+      cleanup(protoFrames)
+      throw error;
+    }
+  }
+
+  function cleanup(protoFrames: Array<PrototypeFrame>) {
+    if (protoFrames) {
+      for (let i = 1; i < protoFrames.length; i++) {
+        protoFrames[i].parent.remove();
+      }
     }
   }
 
@@ -431,12 +446,36 @@ export default function () {
         }
       }
 
-      // Only assign neighbors if a navigation input is available for that direction
-      frames[i].leftNeighbor = frames[nodes.indexOf(leftNode)];
-      frames[i].topNeighbor = frames[nodes.indexOf(topNode)];
-      frames[i].rightNeighbor = frames[nodes.indexOf(rightNode)];
-      frames[i].bottomNeighbor = frames[nodes.indexOf(bottomNode)];
+      console.log(`Left: ${leftNode}, Right: ${rightNode}, Top: ${topNode}, Bottom: ${bottomNode}`);
+      // Only assign neighbors if current navigation scheme supports it, else throw error
+
+      if (is4DNav(config)) {
+        frames[i].leftNeighbor = frames[nodes.indexOf(leftNode)];
+        frames[i].rightNeighbor = frames[nodes.indexOf(rightNode)];
+        frames[i].topNeighbor = frames[nodes.indexOf(topNode)];
+        frames[i].bottomNeighbor = frames[nodes.indexOf(bottomNode)];
+      }
+
+      if (isHorizontalOnlyNav(config)) {
+        if (topNode || bottomNode) {
+          throw new Error('Please only select layers that are arranged horizontally because your current navigation choice does not support vertical navigation')
+        }
+        frames[i].leftNeighbor = frames[nodes.indexOf(leftNode)];
+        frames[i].rightNeighbor = frames[nodes.indexOf(rightNode)];
+      }
+
     }
+  }
+
+  function is4DNav(config: Config) {
+    let scheme = config.navigation.scheme
+    return scheme === NavScheme.DPAD || scheme === NavScheme.LEFT_STICK || scheme === NavScheme.RIGHT_STICK
+  }
+
+  function isHorizontalOnlyNav(config: Config) {
+    let scheme = config.navigation.scheme
+    return scheme === NavScheme.SHOULDER_BUTTONS || scheme === NavScheme.TRIGGER_BUTTONS
+
   }
 
   function computeRelativeDirection(target: PrototypeNode, origin: PrototypeNode) {
