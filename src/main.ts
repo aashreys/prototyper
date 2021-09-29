@@ -154,7 +154,7 @@ export default function () {
 
     try {
       if (instances.length > 0) {
-
+        console.log(instances);
         // Validate selected instances and notify user of errors before we begin
         validateInstances(instances, config.swapVariant);
   
@@ -162,7 +162,7 @@ export default function () {
         sanitizeNodes(instances, config.swapVariant);
   
         // Map component instance nodes to our prototype node wrapper object
-        let protoNodes: Array<PrototypeNode> = selection.map(node => PrototypeNode.fromInstance(node));
+        let protoNodes: Array<PrototypeNode> = instances.map(node => PrototypeNode.fromInstance(node));
   
         // Sort nodes left -> right & top -> bottom regardless of canvas layer order
         sortNodes(protoNodes);
