@@ -99,15 +99,8 @@ const AnimationDurationTextbox = function (props) {
 
 export class AnimationOptions extends Component<any, any> {
 
-  state = {
-    animUiValue: undefined,
-  };
-
   constructor(props) {
     super(props);
-    this.state = {
-      animUiValue: this.getAnimationUIValue(props.animation),
-    }
     this.bindMethods();
   }
 
@@ -117,10 +110,6 @@ export class AnimationOptions extends Component<any, any> {
   }
 
   onAnimChange(animUiValue) {
-    this.setState(prevState => ({
-      ...prevState,
-      animUiValue: animUiValue,
-    }))
     this.props.onAnimChange({
       ...this.props.animation,
       animType: this.getAnimConfigValue(animUiValue)
@@ -175,7 +164,7 @@ export class AnimationOptions extends Component<any, any> {
           </div>
           <div style="width: 41%"> 
             <AnimationDurationTextbox 
-            disabled={state.animUiValue && state.animUiValue === INSTANT} 
+            disabled={this.getAnimationUIValue(props.animation.animType) === INSTANT} 
             onAnimDurationChange={this.onAnimDurationChange} 
             value={props.animation.duration} />
           </div>
