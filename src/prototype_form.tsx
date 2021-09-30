@@ -66,13 +66,13 @@ export class PrototypeForm extends Component<any, any>  {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.container) {
-      this.onHeightChanged(this.container.base.parentNode.clientHeight);
-    }
+    // if (this.container) {
+    //   this.onHeightChanged(this.container.base.parentNode.clientHeight);
+    // }
   }
 
   onHeightChanged(height: number) {
-    emit(Constants.EVENT_UI_RESIZE, height);
+    // emit(Constants.EVENT_UI_RESIZE, height);
   }
 
   registerEventHandlers() {
@@ -190,7 +190,7 @@ export class PrototypeForm extends Component<any, any>  {
   render() {
 
     return (
-      <Container space='medium' ref={(container) => { this.container = container }}>
+      <Fragment>
 
         <VerticalSpace space='large' />
 
@@ -236,7 +236,7 @@ export class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='medium' />
 
-      </Container>
+      </Fragment>
     );
   }
 }
