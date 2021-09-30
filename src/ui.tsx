@@ -8,9 +8,11 @@ import { Constants } from './constants';
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
 
-const GENERATE_MESSAGE = "Generate a prototype from selected components instances within a single top level artboard or frame."
+const GENERATE_MESSAGE = "Generate a prototype from selected components instances within a single top-level frame."
+const LINK_MESSAGE = "Link selected top-level frames into a prototype based on their relative position."
 
-const LINK_MESSAGE = "Link selected top level frames in a prototype based on their relative position."
+const TAB_GENERATE = 'Generate'
+const TAB_LINK = 'Link'
 
 const UITabs = function (props) {
   const [value, setValue] = useState(props.value)
@@ -37,7 +39,7 @@ export class UI extends Component<any, any> {
             buttonEvent={Constants.EVENT_GENERATE}
           />
         </Container>,
-      value: 'Generate'
+      value: TAB_GENERATE
     },
     {
       children:
@@ -49,18 +51,9 @@ export class UI extends Component<any, any> {
             buttonEvent={Constants.EVENT_LINK}
           />
         </Container>,
-      value: 'Link'
-    },
-    {
-      children:
-        <Container space="medium">
-          About
-        </Container>,
-      value: 'About'
+      value: TAB_LINK
     },
   ]
-
-  defaultTab: string = 'Generate'
 
   constructor(props) {
     super(props);
@@ -95,7 +88,7 @@ export class UI extends Component<any, any> {
         <UITabs
           ref={(container) => { this.container = container }}
           options={this.tabs}
-          value={this.defaultTab}
+          value={TAB_GENERATE}
         />
       </Stack>
     )
