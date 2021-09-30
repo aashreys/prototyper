@@ -5,95 +5,19 @@ import { Animation, AnimationType } from './animation';
 import { Navigation, NavScheme } from './navigation.js';
 import { Device } from './device.js';
 import { SwapVariant } from './swap_variant.js';
+import { Direction } from './direction'
+import { PrototypeNode } from './prototype_node';
+import { PrototypeFrame } from './prototype_frame.js';
+import { Utils } from './utils.js';
 
 export default function () {
 
   const TITLE = 'Prototyper (BETA)';
   const WIDTH = 240;
   const MIN_HEIGHT = 428;
-  const STARTING_POINT_NAME = 'Generated Prototype';
-
-  enum Direction {
-    LEFT = 0,
-    TOP, // 1
-    RIGHT, // 2
-    BOTTOM // 3
-  }
-
-  class PrototypeNode {
-    readonly instance; InstanceNode
-    readonly nodeMap: Array<Number> // A map describing this nodes position in it's parent frame
-
-    readonly x;
-    readonly y;
-    readonly centerX;
-    readonly centerY;
-    readonly width;
-    readonly height;
-
-    constructor(instance, x, y, width, height) {
-      if (instance) {
-        this.instance = instance;
-        this.nodeMap = this.buildNodeMap(instance);
-        this.x = x;
-        this.y = y;
-        this.centerX = x + width / 2;
-        this.centerY = y + height / 2;
-        this.width = width;
-        this.height = height;
-      } else {
-        throw new Error('Instance Node cannot be null');
-      }
-    }
-
-    private buildNodeMap(instance) {
-      let nodeMap = new Array();
-      let currentNode = instance;
-      if (!isPage(currentNode.parent)) {
-        while (!isPage(currentNode.parent)) {
-          nodeMap.unshift(currentNode.parent.children.indexOf(currentNode));
-          currentNode = currentNode.parent;
-        }
-      }
-      return nodeMap;
-    }
-
-    id() {
-      return this.instance.id;
-    }
-
-    offset(x, y) {
-      return new PrototypeNode(this.instance, this.x - x, this.y - y, this.width, this.height);
-    }
-
-    static fromInstance(node: InstanceNode) {
-      return new PrototypeNode(node, node.absoluteTransform[0][2], node.absoluteTransform[1][2], node.width, node.height);
-    }
-
-  }
-
-  class PrototypeFrame {
-    readonly instance: InstanceNode
-    readonly parent: FrameNode
-
-    leftNeighbor: PrototypeFrame
-    topNeighbor: PrototypeFrame
-    rightNeighbor: PrototypeFrame
-    bottomNeighbor: PrototypeFrame
-
-    constructor(instance, parent) {
-      this.instance = instance;
-      this.parent = parent;
-    }
-
-    moveTo(x, y) {
-      this.parent.x = x;
-      this.parent.y = y;
-    }
-  }
+  const STARTING_POINT_NAME = 'Generated Prototype';  
 
   let config: Config;
-
 
   /* Main Program */
   Config.migrateConfig();
@@ -145,7 +69,7 @@ export default function () {
 
   function processSingleSelection(node) {
     // Only allow Frames or Groups to be processed since other nodes cannot have children nodes
-    if (hasChildren(node) && node.children.length > 1) {
+    if (Utils.hasChildren(node) && node.children.length > 1) {
       processMultiSelection(node.children);
     } else {
       postError(0, Constants.ERROR_MORE_THAN_1_CHILD);
@@ -155,7 +79,7 @@ export default function () {
   function processMultiSelection(selection) {
 
     // Filter selection to only contain component instances
-    let instances = selection.filter(node => isInstance(node));
+    let instances = selection.filter(node => Utils.isInstance(node));
     let protoFrames;
 
     try {
@@ -185,7 +109,7 @@ export default function () {
         // Swap variants
         swapVariants(protoFrames, config.swapVariant);
   
-        let isFrameAlreadyLinked = hasReactions(protoFrames[0].parent);
+        let isFrameAlreadyLinked = Utils.hasReactions(protoFrames[0].parent);
   
         // Create Interactions
         createInteractions(protoFrames);
@@ -260,7 +184,7 @@ export default function () {
     let animation: Animation = config.animation;
     let nav: Navigation = config.navigation;
     for (let frame of frames) {
-      let reactions: Array<Reaction> = clone(frame.parent.reactions);
+      let reactions: Array<Reaction> = Utils.clone(frame.parent.reactions);
       if (frame.leftNeighbor) reactions.push(createReaction(frame.leftNeighbor.parent, device, animation, nav.left));
       if (frame.topNeighbor) reactions.push(createReaction(frame.topNeighbor.parent, device, animation, nav.up));
       if (frame.rightNeighbor) reactions.push(createReaction(frame.rightNeighbor.parent, device, animation, nav.right));
@@ -317,7 +241,7 @@ export default function () {
   }
 
   function hasVariantValue(instance, property, value) {
-    if (isComponent(instance.mainComponent) && isComponentSet(instance.mainComponent.parent)) {
+    if (Utils.isComponent(instance.mainComponent) && Utils.isComponentSet(instance.mainComponent.parent)) {
       let componentSet = instance.mainComponent.parent;
       return componentSet.variantGroupProperties[property].values.indexOf(value) >= 0;
     }
@@ -516,8 +440,8 @@ export default function () {
   function findParentFrame(node: InstanceNode) {
     let currentNode = node;
     let parentFrame;
-    if (!isPage(currentNode.parent)) {
-      while (!isPage(currentNode.parent)) {
+    if (!Utils.isPage(currentNode.parent)) {
+      while (!Utils.isPage(currentNode.parent)) {
         parentFrame = currentNode.parent;
         currentNode = parentFrame;
       }
@@ -527,40 +451,8 @@ export default function () {
     return parentFrame;
   }
 
-  function isInstance(node) {
-    return node && node.type === 'INSTANCE';
-  }
-
-  function isFrame(node) {
-    return node && node.type === 'FRAME';
-  }
-
-  function isGroup(node) {
-    return node && node.type === 'GROUP';
-  }
-
-  function isPage(node) {
-    return node && node.type === 'PAGE';
-  }
-
-  function hasChildren(node) {
-    return node && 'children' in node;
-  }
-
-  function isComponent(node) {
-    return node && node.type === 'COMPONENT';
-  }
-
-  function isComponentSet(node) {
-    return node && node.type === 'COMPONENT_SET';
-  }
-
-  function hasReactions(frame) {
-    return frame.reactions && frame.reactions.length > 0;
-  }
-
   function removeFlowStartingPoint(node) {
-    let flows = clone((figma.currentPage as any).flowStartingPoints);
+    let flows = Utils.clone((figma.currentPage as any).flowStartingPoints);
     for (let i in flows) {
       if (flows[i].nodeId === node.id) flows.splice(i, 1);
     }
@@ -568,7 +460,7 @@ export default function () {
   }
 
   function addFlowStartingPoint(node, flowName) {
-    let flows = clone((figma.currentPage as any).flowStartingPoints);
+    let flows = Utils.clone((figma.currentPage as any).flowStartingPoints);
     flows.push(
       {
         nodeId: node.id,
@@ -581,28 +473,5 @@ export default function () {
   function postError(code: number, message: string) {
     console.error(message);
     emit(Constants.EVENT_ERROR, { code: code, message: message });
-  }
-
-  function clone(val) {
-    const type = typeof val
-    if (val === null) {
-      return null
-    } else if (type === 'undefined' || type === 'number' ||
-      type === 'string' || type === 'boolean') {
-      return val
-    } else if (type === 'object') {
-      if (val instanceof Array) {
-        return val.map(x => clone(x))
-      } else if (val instanceof Uint8Array) {
-        return new Uint8Array(val)
-      } else {
-        let o = {}
-        for (const key in val) {
-          o[key] = clone(val[key])
-        }
-        return o
-      }
-    }
-    throw 'unknown'
   }
 }
