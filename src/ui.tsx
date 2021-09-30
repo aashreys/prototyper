@@ -5,6 +5,13 @@ import { PrototypeForm } from './prototype_form';
 import { emit } from '@create-figma-plugin/utilities';
 import { Constants } from './constants';
 
+const BUTTON_GENERATE = 'Generate Prototype'
+const BUTTON_LINK = 'Link Frames'
+
+const GENERATE_MESSAGE = "Generate a prototype from selected components instances within a single top level artboard or frame."
+
+const LINK_MESSAGE = "Link selected top level frames in a prototype based on their relative position."
+
 const UITabs = function (props) {
   const [value, setValue] = useState(props.value)
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
@@ -23,14 +30,24 @@ export class UI extends Component<any, any> {
     {
       children:
         <Container space="medium">
-          <PrototypeForm value={this.props.config} />
+          <PrototypeForm
+            value={this.props.config}
+            buttonTitle={BUTTON_GENERATE}
+            uiMessage={GENERATE_MESSAGE}
+            buttonEvent={Constants.EVENT_GENERATE}
+          />
         </Container>,
       value: 'Generate'
     },
     {
       children:
         <Container space="medium">
-          <PrototypeForm value={this.props.config} />
+          <PrototypeForm
+            value={this.props.config}
+            buttonTitle={BUTTON_LINK}
+            uiMessage={LINK_MESSAGE}
+            buttonEvent={Constants.EVENT_LINK}
+          />
         </Container>,
       value: 'Link'
     },
@@ -74,8 +91,12 @@ export class UI extends Component<any, any> {
 
   render(props, state) {
     return (
-      <Stack ref={(container) => { this.container = container }}>
-        <UITabs options={this.tabs} value={this.defaultTab} />
+      <Stack>
+        <UITabs
+          ref={(container) => { this.container = container }}
+          options={this.tabs}
+          value={this.defaultTab}
+        />
       </Stack>
     )
   }

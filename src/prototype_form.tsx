@@ -98,7 +98,7 @@ export class PrototypeForm extends Component<any, any>  {
     this.updateValidationUi()
     if (this.validate()) {
       this.setButtonLoading(true);
-      emit(Constants.EVENT_SUBMIT, this.state.config);
+      emit(this.props.buttonEvent, this.state.config);
     }
   }
 
@@ -194,7 +194,7 @@ export class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='large' />
 
-        <Text>Select the component instances you'd like to link in the prototype, and click Generate Prototype.</Text>
+        <Text>{this.props.uiMessage}</Text>
 
         {
           this.state.ui.errorMessage.length > 0 &&
@@ -232,7 +232,7 @@ export class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='medium' />
 
-        <Button fullWidth disabled={this.state.ui.buttonLoading} loading={this.state.ui.buttonLoading} onClick={this.onClick}>Generate Prototype</Button>
+        <Button fullWidth disabled={this.state.ui.buttonLoading} loading={this.state.ui.buttonLoading} onClick={this.onClick}>{this.props.buttonTitle}</Button>
 
         <VerticalSpace space='medium' />
 

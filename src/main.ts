@@ -103,8 +103,14 @@ export default function () {
     { config: Config.isConfigSaved() ? Config.getSavedConfig() : Config.getDefaultConfig() }
   )
 
-  on(Constants.EVENT_SUBMIT, (data) => {
+  on(Constants.EVENT_GENERATE, (data) => {
     runPlugin(data);
+  });
+
+  on(Constants.EVENT_LINK, (data) => {
+    console.log('Event received: LINK, with following config...');
+    console.log(data);
+    emit(Constants.EVENT_DONE);
   });
 
   on(Constants.EVENT_UI_RESIZE, (height) => {
