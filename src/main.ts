@@ -5,19 +5,19 @@ import { Animation, AnimationType } from './animation';
 import { Navigation, NavScheme } from './navigation.js';
 import { Device } from './device.js';
 import { SwapVariant } from './swap_variant.js';
-import { Direction } from './direction'
 import { PrototypeNode } from './prototype_node';
 import { PrototypeFrame } from './prototype_frame.js';
 import { Utils } from './utils.js';
+import { NearestNeighbor, NeighborIndex, Point } from './core/nearest_neighbor.js';
 
 export default function () {
 
   const TITLE = 'Prototyper (BETA)';
   const WIDTH = 240;
   const MIN_HEIGHT = 428;
-  const STARTING_POINT_NAME = 'Generated Prototype';  
+  const STARTING_POINT_NAME = 'Generated Prototype';
 
-  let config: Config;
+  let config: Config
 
   /* Main Program */
   Config.migrateConfig();
@@ -99,15 +99,15 @@ export default function () {
   
         // Create prototype frames to wire later
         protoFrames = createFrames(protoNodes);
+
+        // Swap variants
+        swapVariants(protoFrames, config.swapVariant);
   
         // Assign left, top, right and bottom neighbors for wiring the prototype
         assignNeighbors(protoFrames, protoNodes);
   
         // Arrange the frames on the canvas based on their relative position
         arrangeFrames(protoFrames);
-  
-        // Swap variants
-        swapVariants(protoFrames, config.swapVariant);
   
         let isFrameAlreadyLinked = Utils.hasReactions(protoFrames[0].parent);
   
@@ -290,14 +290,14 @@ export default function () {
         framesToLayout.splice(framesToLayout.indexOf(frame.leftNeighbor), 1);
       }
 
-      if (frame.topNeighbor && framesToLayout.indexOf(frame.topNeighbor) !== -1) {
-        frame.topNeighbor.moveTo(frame.parent.x, frame.parent.y - height - gap);
-        framesToLayout.splice(framesToLayout.indexOf(frame.topNeighbor), 1);
-      }
-
       if (frame.rightNeighbor && framesToLayout.indexOf(frame.rightNeighbor) !== -1) {
         frame.rightNeighbor.moveTo(frame.parent.x + width + gap, frame.parent.y);
         framesToLayout.splice(framesToLayout.indexOf(frame.rightNeighbor), 1);
+      }
+
+      if (frame.topNeighbor && framesToLayout.indexOf(frame.topNeighbor) !== -1) {
+        frame.topNeighbor.moveTo(frame.parent.x, frame.parent.y - height - gap);
+        framesToLayout.splice(framesToLayout.indexOf(frame.topNeighbor), 1);
       }
 
       if (frame.bottomNeighbor && framesToLayout.indexOf(frame.bottomNeighbor) !== -1) {
@@ -333,108 +333,25 @@ export default function () {
   }
 
   function assignNeighbors(frames: Array<PrototypeFrame>, nodes: Array<PrototypeNode>) {
-    // For each node (let's call it origin), find neighbors and assign it to the respective prototype frame
-    for (let i in nodes) {
-      let origin = nodes[i];
-      let leftNode, topNode, rightNode, bottomNode;
-      // Check each node's relative position against the origin node
-      for (let j in nodes) {
-        let node = nodes[j];
-        if (i !== j) {
-          let direction = computeRelativeDirection(node, origin);
-          let distance = computeDistanceBetweenCenters(node, origin);
-          // Update closest node for each direction
-          switch (direction) {
-            case Direction.LEFT: {
-              if (leftNode === undefined || distance < computeDistanceBetweenCenters(leftNode, origin)) {
-                leftNode = node;
-              }
-              break;
-            }
-
-            case Direction.TOP: {
-              if (topNode === undefined || distance < computeDistanceBetweenCenters(topNode, origin)) {
-                topNode = node;
-              }
-              break;
-            }
-
-            case Direction.RIGHT: {
-              if (rightNode === undefined || distance < computeDistanceBetweenCenters(rightNode, origin)) {
-                rightNode = node;
-              }
-              break;
-            }
-
-            case Direction.BOTTOM: {
-              if (bottomNode === undefined || distance < computeDistanceBetweenCenters(bottomNode, origin)) {
-                bottomNode = node;
-              }
-              break;
-            }
-          }
-        }
-      }
-
-      console.log(`Left: ${leftNode}, Right: ${rightNode}, Top: ${topNode}, Bottom: ${bottomNode}`);
-      // Only assign neighbors if current navigation scheme supports it, else throw error
-
-      if (is4DNav(config)) {
-        frames[i].leftNeighbor = frames[nodes.indexOf(leftNode)];
-        frames[i].rightNeighbor = frames[nodes.indexOf(rightNode)];
-        frames[i].topNeighbor = frames[nodes.indexOf(topNode)];
-        frames[i].bottomNeighbor = frames[nodes.indexOf(bottomNode)];
-      }
-
+    let points: Array<Point> = nodes.map(node => ({x: node.centerX, y: node.centerY}));
+    let neighbors: Array<NeighborIndex> = NearestNeighbor.computeNeighbors(points);
+    for (let i in frames) {
+      frames[i].leftNeighbor = frames[neighbors[i].left];
+      frames[i].rightNeighbor = frames[neighbors[i].right];
+      frames[i].topNeighbor = frames[neighbors[i].top];
+      frames[i].bottomNeighbor = frames[neighbors[i].bottom];
       if (isHorizontalOnlyNav(config)) {
-        if (topNode || bottomNode) {
+        if (frames[i].topNeighbor || frames[i].bottomNeighbor) {
           throw new Error('Please only select layers that are arranged horizontally because your current navigation choice does not support vertical navigation')
         }
-        frames[i].leftNeighbor = frames[nodes.indexOf(leftNode)];
-        frames[i].rightNeighbor = frames[nodes.indexOf(rightNode)];
       }
-
     }
-  }
-
-  function is4DNav(config: Config) {
-    let scheme = config.navigation.scheme
-    return scheme === NavScheme.DPAD || scheme === NavScheme.LEFT_STICK || scheme === NavScheme.RIGHT_STICK
   }
 
   function isHorizontalOnlyNav(config: Config) {
     let scheme = config.navigation.scheme
     return scheme === NavScheme.SHOULDER_BUTTONS || scheme === NavScheme.TRIGGER_BUTTONS
 
-  }
-
-  function computeRelativeDirection(target: PrototypeNode, origin: PrototypeNode) {
-    // Offset coordinates to be relative to origin node
-    target = target.offset(origin.centerX, origin.centerY);
-    // Calculate angle in degrees between 0 to 360
-    let angle = ((Math.atan2(target.centerY, target.centerX) * 180 / Math.PI) + 360) % 360;
-
-    // Map angle to direction and return
-    let direction;
-    if (angle > 150 && angle <= 210) {
-      direction = Direction.LEFT;
-    }
-    else if (angle > 210 && angle <= 330) {
-      direction = Direction.TOP;
-    }
-    else if ((angle > 330 && angle < 360) || (angle >= 0 && angle <= 30)) {
-      direction = Direction.RIGHT
-    } else {
-      direction = Direction.BOTTOM;
-    }
-    return direction;
-  }
-
-  function computeDistanceBetweenCenters(node1: PrototypeNode, node2: PrototypeNode) {
-    // Calculate distance between center points with Pythagoras Theorem
-    const a = node2.centerX - node1.centerX;
-    const b = node2.centerY - node1.centerY;
-    return Math.sqrt(a * a + b * b);
   }
 
   function findParentFrame(node: InstanceNode) {
