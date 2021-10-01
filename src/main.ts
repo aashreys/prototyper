@@ -17,6 +17,11 @@ export default function () {
   const MIN_HEIGHT = 428;
   const STARTING_POINT_NAME = 'Generated Prototype';
 
+  enum Mode {
+    GENERATE,
+    LINK
+  }
+
   let config: Config
 
   /* Main Program */
@@ -28,43 +33,44 @@ export default function () {
   )
 
   on(Constants.EVENT_GENERATE, (data) => {
-    runPlugin(data);
+    runPlugin(data, Mode.GENERATE);
   });
 
   on(Constants.EVENT_LINK, (data) => {
-    console.log('Event received: LINK, with following config...');
-    console.log(data);
-    emit(Constants.EVENT_DONE);
+    runPlugin(data, Mode.LINK);
   });
 
   on(Constants.EVENT_UI_RESIZE, (height) => {
     figma.ui.resize(WIDTH, height);
   })
 
-  function runPlugin(config: Config) {
+  function initializeConfig(configData: Config) {
+    config = configData
+    Config.save(config)
+  }
+
+  function runPlugin(config: Config, mode: Mode) {
+    initializeConfig(config);
     try {
-      initializeConfig(config);
       let selection = figma.currentPage.selection;
-      if (selection.length > 0) {
-        // User has selected something to link, handle selection appropriately
-        if (selection.length === 1) {
-          processSingleSelection(selection[0]);
-        } else {
-          processMultiSelection(selection);
-        }
-      } else {
-        postError(0, Constants.ERROR_NOTHING_SELECTED);
+
+      if (mode === Mode.GENERATE) {
+        if (selection.length > 1) processMultiSelection(selection);
+        else if (selection.length === 1 )processSingleSelection(selection[0]);
+        else postError(0, Constants.ERROR_NOTHING_SELECTED);
       }
+
+      if (mode === Mode.LINK) {
+        if (selection.length > 1) doLinkFrames(config, selection);
+        else if (selection.length === 1) postError(0, 'Y U DO DIS?');
+        else postError(0, 'DESPICABLE');
+      }
+
     } catch (error) {
       postError(0, error.message);
     } finally {
       emit(Constants.EVENT_DONE);
     }
-  }
-
-  function initializeConfig(configData: Config) {
-    config = configData
-    Config.save(config)
   }
 
   function processSingleSelection(node) {
@@ -104,17 +110,18 @@ export default function () {
         swapVariants(protoFrames, config.swapVariant);
   
         // Assign left, top, right and bottom neighbors for wiring the prototype
-        assignNeighbors(protoFrames, protoNodes);
-  
-        // Arrange the frames on the canvas based on their relative position
-        arrangeFrames(protoFrames);
+        assignNeighbors(protoFrames, protoNodes.map(node => ({x: node.centerX, y: node.centerY})));
+        
 
-  
+        // Layout frames on the canvas based on their relative position
+        layoutFrames(protoFrames);
+          
         // Create Interactions
         createInteractions(protoFrames);
-  
+
         // Post process frames
         postProcessFrames(protoFrames);
+        
       }
       else {
         throw Error(Constants.ERROR_NO_INSTANCES);
@@ -123,6 +130,61 @@ export default function () {
     catch (error) {
       cleanup(protoFrames)
       throw error;
+    }
+  }
+
+  function doLinkFrames(config, selection) {
+    console.log('Running doLinkFrames, with following config...');
+    console.log(config);
+    let frames = selection;
+    
+    // Validate that selection is top level frames
+    validateFramesToLink(frames);
+
+    // Create proto frames to link layer
+    let protoFrames: Array<PrototypeFrame> = frames.map(frame => new PrototypeFrame(null, frame));
+
+    // Sort proto frames
+    sortProtoFrames(protoFrames);
+
+    // assign neighbors
+    assignNeighbors(protoFrames, protoFrames.map(frame => ({x: frame.parent.x, y: frame.parent.y})))
+
+    // Create Interactions
+    createInteractions(protoFrames);
+
+    // Post process frames
+    postProcessFrames(protoFrames);
+  }
+
+  function sortProtoFrames(protoFrames: Array<PrototypeFrame>) {
+    protoFrames.sort(function (frame1, frame2) {
+      let result = 0;
+      let parent1 = frame1.parent;
+      let parent2 = frame2.parent;
+      if (parent1.y < parent2.y) {
+        result = -1;
+      }
+      else if (parent1.y === parent2.y) {
+        if (parent1.x < parent2.x) {
+          result = -1;
+        } else if (parent1.x === parent2.x) {
+          result = 0;
+        } else {
+          result = 1;
+        }
+      } else {
+        result = 1;
+      }
+      return result;
+    });
+  }
+
+  function validateFramesToLink(frames: Array<SceneNode>) {
+    for (let frame of frames) {
+      if(!Utils.isTopLevelFrame(frame)) {
+        throw new Error(`Layer "${frame.name}" is not a top-level frame. Please select only top-level frames to link.`)
+      }
     }
   }
 
@@ -152,7 +214,9 @@ export default function () {
   }
 
   function postProcessFrames(frames: Array<PrototypeFrame>) {
-    addFlowStartingPoint(frames[0].parent, STARTING_POINT_NAME);
+    if(!Utils.hasStartingPoint(frames[0].parent)) {
+      addFlowStartingPoint(frames[0].parent, STARTING_POINT_NAME);
+    }
   }
 
   function sortNodes(nodes: Array<PrototypeNode>) {
@@ -269,7 +333,7 @@ export default function () {
     node.setProperties(variantProperties);
   }
 
-  function arrangeFrames(frames: Array<PrototypeFrame>) {
+  function layoutFrames(frames: Array<PrototypeFrame>) {
     // Since the first frame is the user's reference, use it as the starting point
     let width = frames[0].parent.width;
     let height = frames[0].parent.height;
@@ -329,8 +393,7 @@ export default function () {
     return node;
   }
 
-  function assignNeighbors(frames: Array<PrototypeFrame>, nodes: Array<PrototypeNode>) {
-    let points: Array<Point> = nodes.map(node => ({x: node.centerX, y: node.centerY}));
+  function assignNeighbors(frames: Array<PrototypeFrame>, points: Array<Point>) {
     let neighbors: Array<NeighborIndex> = NearestNeighbor.computeNeighbors(points);
     for (let i in frames) {
       frames[i].leftNeighbor = frames[neighbors[i].left];

@@ -8,6 +8,10 @@ export class Utils {
     return node && node.type === 'FRAME';
   }
 
+  static isTopLevelFrame(node) {
+    return this.isFrame(node) && this.isPage(node.parent);
+  }
+
   static isGroup(node): boolean {
     return node && node.type === 'GROUP';
   }
@@ -30,6 +34,14 @@ export class Utils {
 
   static hasReactions(frame): boolean {
     return frame.reactions && frame.reactions.length > 0;
+  }
+
+  static hasStartingPoint(node) {
+    let startingPoints = (figma.currentPage as any).flowStartingPoints;
+    for (let point of startingPoints) {
+      if (point.nodeId === node.id) return true;
+    }
+    return false;
   }
 
   static clone(val): any {
