@@ -71,7 +71,6 @@ export class NearestNeighbor {
 
   private static computeDirection(origin: Point, point: Point) {
     // Offset coordinates to be relative to origin node
-    console.log(`Origin: (${origin.x, origin.y}), Point: (${point.x, point.y})`)
     let offsetPoint: Point = {
       x: point.x - origin.x,
       y: point.y - origin.y
@@ -80,7 +79,6 @@ export class NearestNeighbor {
     // Calculate angle in degrees between 0 to 360
     let angle = ((Math.atan2(offsetPoint.y, offsetPoint.x) * 180 / Math.PI) + 360) % 360;
 
-    console.log(angle);
     // Map angle to direction and return
     let direction;
     if (angle > 150 && angle <= 210) {
