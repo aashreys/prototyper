@@ -108,14 +108,13 @@ export default function () {
   
         // Arrange the frames on the canvas based on their relative position
         arrangeFrames(protoFrames);
-  
-        let isFrameAlreadyLinked = Utils.hasReactions(protoFrames[0].parent);
+
   
         // Create Interactions
         createInteractions(protoFrames);
   
         // Post process frames
-        postProcessFrames(protoFrames, isFrameAlreadyLinked);
+        postProcessFrames(protoFrames);
       }
       else {
         throw Error(Constants.ERROR_NO_INSTANCES);
@@ -152,10 +151,8 @@ export default function () {
     }
   }
 
-  function postProcessFrames(frames: Array<PrototypeFrame>, isAlreadyLinked) {
-    if (!isAlreadyLinked) {
-      addFlowStartingPoint(frames[0].parent, STARTING_POINT_NAME);
-    }
+  function postProcessFrames(frames: Array<PrototypeFrame>) {
+    addFlowStartingPoint(frames[0].parent, STARTING_POINT_NAME);
   }
 
   function sortNodes(nodes: Array<PrototypeNode>) {
