@@ -36,5 +36,5 @@ Contributions are most welcome. Below is a list of suggestions, but of course yo
 * Switch Pro controller support
 
 ## Contributors
-* Alex Tokma - PS4 Controller Keycodes
+* [Alex Tokmakchiev](https://twitter.com/atokmakchiev) - PS4 Controller Keycodes
 * [Antoine Plu](https://twitter.com/AntoinePlu) - PlayStation Controller icons
