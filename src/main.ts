@@ -62,8 +62,8 @@ export default function () {
 
       if (mode === Mode.LINK) {
         if (selection.length > 1) doLinkFrames(config, selection);
-        else if (selection.length === 1) postError(0, 'Y U DO DIS?');
-        else postError(0, 'DESPICABLE');
+        else if (selection.length === 1) postError(0, 'Please select more than one frame to link together.');
+        else postError(0, 'Nothing selected. Please select the frames you would like to link together.');
       }
 
     } catch (error) {
@@ -134,8 +134,6 @@ export default function () {
   }
 
   function doLinkFrames(config, selection) {
-    console.log('Running doLinkFrames, with following config...');
-    console.log(config);
     let frames = selection;
     
     // Validate that selection is top level frames
