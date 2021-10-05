@@ -19,7 +19,7 @@ function validateSelection(selection: readonly SceneNode[]) {
 }
 
 function validateSelectionLength(selection: readonly SceneNode[]) {
-  if (selection.length < 1) {
+  if (selection.length < 2) {
     throw new Error('Please select at least 2 top-level frames to link.')
   }
 }
