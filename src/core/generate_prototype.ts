@@ -117,7 +117,6 @@ function createProtoFrames(protoNodes: Array<PrototypeNode>) {
 
   for (let i = 1; i < protoNodes.length; i++) {
     topLevelFrame = topLevelFrame.clone();
-    topLevelFrame.name = topLevelFrame.name + " - " + (i + 1);
     node = Utils.findNodeFromNodePath(protoNodes[i].nodePath, topLevelFrame);
     protoFrames.push(new PrototypeFrame(node, topLevelFrame));
   }

@@ -19,6 +19,7 @@ const UITabs = function (props) {
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setValue(newValue)
+    props.onTabSet(newValue);
   }
   return <Tabs onChange={handleChange} options={props.options} value={value} />
 }
@@ -50,14 +51,28 @@ export class UI extends Component<any, any> {
 
   constructor(props) {
     super(props);
+    this.state = {
+      activeTab: TAB_GENERATE
+    }
+    this.bindMethods()
+  }
+
+  bindMethods() {
+    this.onTabSet = this.onTabSet.bind(this)
+  }
+
+  onTabSet(value) {
+    if (value !== this.state.activeTab) {
+      this.setState(prevState => ({
+        activeTab: value,
+      }))
+      emit(Constants.EVENT_TAB_SWTICH)
+    }
   }
 
   render(props, state) {
     return (
-      <UITabs
-        options={this.tabs}
-        value={TAB_GENERATE}
-      />
+      <UITabs options={this.tabs} value={TAB_GENERATE} onTabSet={this.onTabSet} />
     )
   }
 }

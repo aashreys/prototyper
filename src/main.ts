@@ -37,6 +37,10 @@ export default function () {
     figma.ui.resize(WIDTH, height);
   })
 
+  on(Constants.EVENT_TAB_SWTICH, () => {
+    emit(Constants.EVENT_CLEAR_UI_ERRORS);
+  })
+
   function initializeConfig(configData: Config) {
     config = configData
     Config.save(config)

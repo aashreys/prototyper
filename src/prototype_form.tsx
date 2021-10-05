@@ -57,6 +57,7 @@ export class PrototypeForm extends Component<any, any>  {
     this.onDeviceChange = this.onDeviceChange.bind(this);
     this.onNavChange = this.onNavChange.bind(this);
     this.onSwapVariantChange = this.onSwapVariantChange.bind(this);
+    this.registerEventHandlers = this.registerEventHandlers.bind(this);
   }
 
   componentDidMount() {
@@ -80,7 +81,11 @@ export class PrototypeForm extends Component<any, any>  {
       this.onError(props.code, props.message)
     });
     on(Constants.EVENT_DONE, () => {
-      this.onDone();
+      this.onDone()
+    })
+    on(Constants.EVENT_CLEAR_UI_ERRORS, () => {
+      this.setErrorMessage('')
+      this.hideValidationUi()
     })
   }
 
@@ -109,6 +114,17 @@ export class PrototypeForm extends Component<any, any>  {
         ...prevState.ui,
         showVariantPropertyError: this.state.config.swapVariant.property == 0,
         showVariantToValueError: this.state.config.swapVariant.to == 0
+      }
+    }))
+  }
+
+  hideValidationUi() {
+    this.setState(prevState => ({
+      config: prevState.config,
+      ui: {
+        ...prevState.ui,
+        showVariantPropertyError: false,
+        showVariantToValueError: false
       }
     }))
   }
