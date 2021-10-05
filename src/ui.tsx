@@ -1,6 +1,6 @@
-import { Container, render, Stack, Tabs, TabsOption } from '@create-figma-plugin/ui'
+import { render, Tabs, TabsOption } from '@create-figma-plugin/ui'
 import { useState } from 'preact/hooks';
-import { Component, Fragment, h, JSX } from 'preact';
+import { Component, h, JSX } from 'preact';
 import { PrototypeForm } from './prototype_form';
 import { emit } from '@create-figma-plugin/utilities';
 import { Constants } from './constants';
@@ -30,26 +30,22 @@ export class UI extends Component<any, any> {
   tabs: Array<TabsOption> = [
     {
       children:
-        <Container space="medium">
-          <PrototypeForm
-            value={this.props.config}
-            buttonTitle={BUTTON_GENERATE}
-            uiMessage={GENERATE_MESSAGE}
-            buttonEvent={Constants.EVENT_GENERATE}
-          />
-        </Container>,
+        <PrototypeForm
+          value={this.props.config}
+          buttonTitle={BUTTON_GENERATE}
+          uiMessage={GENERATE_MESSAGE}
+          buttonEvent={Constants.EVENT_GENERATE}
+        />,
       value: TAB_GENERATE
     },
     {
       children:
-        <Container space="medium">
-          <PrototypeForm
-            value={this.props.config}
-            buttonTitle={BUTTON_LINK}
-            uiMessage={LINK_MESSAGE}
-            buttonEvent={Constants.EVENT_LINK}
-          />
-        </Container>,
+        <PrototypeForm
+          value={this.props.config}
+          buttonTitle={BUTTON_LINK}
+          uiMessage={LINK_MESSAGE}
+          buttonEvent={Constants.EVENT_LINK}
+        />,
       value: TAB_LINK
     },
   ]
@@ -83,13 +79,11 @@ export class UI extends Component<any, any> {
 
   render(props, state) {
     return (
-      <Stack>
-        <UITabs
-          ref={(container) => { this.container = container }}
-          options={this.tabs}
-          value={TAB_GENERATE}
-        />
-      </Stack>
+      <UITabs
+        ref={(container) => { this.container = container }}
+        options={this.tabs}
+        value={TAB_GENERATE}
+      />
     )
   }
 }

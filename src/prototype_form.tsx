@@ -190,7 +190,7 @@ export class PrototypeForm extends Component<any, any>  {
   render() {
 
     return (
-      <Fragment>
+      <Container space="medium">
 
         <VerticalSpace space='large' />
 
@@ -236,7 +236,7 @@ export class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='medium' />
 
-      </Fragment>
+      </Container>
     );
   }
 }
