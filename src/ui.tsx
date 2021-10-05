@@ -25,8 +25,6 @@ const UITabs = function (props) {
 
 export class UI extends Component<any, any> {
 
-  container: any
-
   tabs: Array<TabsOption> = [
     {
       children:
@@ -52,35 +50,11 @@ export class UI extends Component<any, any> {
 
   constructor(props) {
     super(props);
-    this.bindMethods();
-  }
-
-  bindMethods() {
-    this.componentDidUpdate = this.componentDidUpdate.bind(this);
-    this.componentDidMount = this.componentDidMount.bind(this);
-    this.onHeightChanged = this.onHeightChanged.bind(this);
-  }
-
-  componentDidMount() {
-    if (this.container) {
-      this.onHeightChanged(this.container.base.parentNode.clientHeight);
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.container) {
-      this.onHeightChanged(this.container.base.parentNode.clientHeight);
-    }
-  }
-
-  onHeightChanged(height: number) {
-    emit(Constants.EVENT_UI_RESIZE, height);
   }
 
   render(props, state) {
     return (
       <UITabs
-        ref={(container) => { this.container = container }}
         options={this.tabs}
         value={TAB_GENERATE}
       />
