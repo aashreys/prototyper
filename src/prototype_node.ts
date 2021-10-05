@@ -1,41 +1,39 @@
+import { Navigable, Neighbors, Point } from './core/nearest_neighbor';
 import { Utils } from './utils'
 
-export class PrototypeNode {
+export class PrototypeNode implements Navigable {
   readonly instance; InstanceNode
-  readonly nodeMap: Array<Number> // A map describing this nodes position in it's parent frame
+  readonly nodePath: Array<Number> // A map describing this nodes position in it's top-level frame
 
   readonly x;
   readonly y;
-  readonly centerX;
-  readonly centerY;
   readonly width;
   readonly height;
+  readonly center: Point
+
+  neighbors: Neighbors<PrototypeNode>
 
   constructor(instance, x, y, width, height) {
     if (instance) {
       this.instance = instance;
-      this.nodeMap = this.buildNodeMap(instance);
+      this.nodePath = Utils.buildNodePath(instance);
       this.x = x;
       this.y = y;
-      this.centerX = x + width / 2;
-      this.centerY = y + height / 2;
+      this.center = {
+        x: x + width / 2, // center X
+        y: y + height / 2 // center Y
+      }
       this.width = width;
       this.height = height;
     } else {
       throw new Error('Instance Node cannot be null');
     }
   }
-
-  private buildNodeMap(instance) {
-    let nodeMap = new Array();
-    let currentNode = instance;
-    if (!Utils.isPage(currentNode.parent)) {
-      while (!Utils.isPage(currentNode.parent)) {
-        nodeMap.unshift(currentNode.parent.children.indexOf(currentNode));
-        currentNode = currentNode.parent;
-      }
-    }
-    return nodeMap;
+  getNavPoint(): Point {
+    return this.center;
+  }
+  setNeighbors(neighbors: Neighbors<PrototypeNode>) {
+    this.neighbors = neighbors;
   }
 
   id() {

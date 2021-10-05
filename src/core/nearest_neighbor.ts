@@ -1,3 +1,21 @@
+export interface Navigable {
+
+  getNavPoint(): Point
+
+  setNeighbors(neighbors: Neighbors<any>)
+
+}
+
+export interface Neighbors<T> {
+
+  left: T
+  right: T
+  top: T
+  bottom: T
+  
+
+}
+
 export interface Point {
   readonly x
   readonly y
@@ -18,6 +36,57 @@ enum Direction {
 }
 
 export class NearestNeighbor {
+
+  static assignNeigbors(navigables: Array<Navigable>): void {
+    // For each navigable (let's call it origin), find neighbors and assign it to the respective index variable
+    for (let origin of navigables) {
+      let left: Navigable
+      let right: Navigable
+      let top: Navigable
+      let bottom: Navigable
+      // Check each navigable's relative position against the origin
+      for (let nav of navigables) {
+        if (origin !== nav) {
+          let direction = NearestNeighbor.computeDirection(origin.getNavPoint(), nav.getNavPoint());
+          let distance = NearestNeighbor.computeDistance(origin.getNavPoint(), nav.getNavPoint());
+          // Update closest navigable for each direction
+          switch (direction) {
+            case Direction.LEFT:
+              if (left === undefined || distance < NearestNeighbor.computeDistance(origin.getNavPoint(), left.getNavPoint())) {
+                left = nav;
+              }
+              break;
+
+            case Direction.RIGHT:
+              if (right === undefined || distance < NearestNeighbor.computeDistance(origin.getNavPoint(), right.getNavPoint())) {
+                right = nav;
+              }
+              break;
+
+            case Direction.TOP:
+              if (top === undefined || distance < NearestNeighbor.computeDistance(origin.getNavPoint(), top.getNavPoint())) {
+                top = nav;
+              }
+              break;
+
+            case Direction.BOTTOM:
+              if (bottom === undefined || distance < NearestNeighbor.computeDistance(origin.getNavPoint(), bottom.getNavPoint())) {
+                bottom = nav;
+              }
+              break;
+          }
+        }
+      }
+
+      origin.setNeighbors({
+        left: left,
+        right: right,
+        top: top,
+        bottom: bottom
+      });
+
+    }
+  }
 
   static computeNeighbors(points: Array<Point>): Array<NeighborIndex> {
     let neighbors = [];

@@ -80,7 +80,6 @@ const AnimationDurationTextbox = function (props) {
   }
 
   function validateOnBlur(value: null | number): null | number | boolean {
-    console.log(value)
     return value !== null
   }
 

@@ -1,5 +1,7 @@
 export abstract class Constants {
 
+  static readonly STARTING_POINT_NAME = 'Generated Prototype';
+
   static readonly EVENT_DONE = 'DONE';
   static readonly EVENT_ERROR = 'ERROR';
   static readonly EVENT_UI_RESIZE = 'UI_RESIZE';

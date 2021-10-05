@@ -18,7 +18,6 @@ const UITabs = function (props) {
   const [value, setValue] = useState(props.value)
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
-    console.log(newValue)
     setValue(newValue)
   }
   return <Tabs onChange={handleChange} options={props.options} value={value} />
