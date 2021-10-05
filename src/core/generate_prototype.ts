@@ -46,11 +46,8 @@ function validateInstances(instances: Array<InstanceNode>, config: Config) {
 }
 
 function validateInstancesLength(instances: Array<InstanceNode>) {
-  if (instances.length === 1) {
-    throw new Error('Only 1 component instance detected in current selection. Please select at least 2 and try again.')
-  }
-  else if (instances.length === 0) {
-    throw new Error('No component instance detected in current selection. Select at least 2 component instances to link and try again.')
+  if (instances.length < 2) {
+    throw new Error('Please select at least 2 component instances to link and try again.')
   }
 }
 
