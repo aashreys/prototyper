@@ -13,11 +13,11 @@ Run `npm run watch` to continously build the plugin as you make changes, or `npm
 
 ## Roadmap
 Features:
-* ~~Playstation 4 Controller support~~ (added in Version 3)
-* ~~Shoulder / Trigger button support~~ (added in Version 4)
-* ~~Configure animation properties~~ (added in Version 2)
+* ~~Playstation 4 Controller support~~
+* ~~Shoulder / Trigger button support~~
+* ~~Configure animation properties~~
 * Better nearest neighbor detection algorithm for more accurate directional mapping
-* Link existing frames based on relative position
+* ~~Link existing frames based on relative position~~
 * Stats and minutes saved (because nothing is better than being able to quantify how much time you've saved)
 * Add user onboarding
 * Define multiple inputs for navigation at the same time i.e. DPad, LS, RS all together
