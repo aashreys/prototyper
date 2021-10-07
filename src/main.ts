@@ -13,7 +13,7 @@ export default function () {
 
   const TITLE = 'Prototyper (BETA)';
   const WIDTH = 240;
-  const MIN_HEIGHT = 428;
+  const HEIGHT = 469;
 
   let config: Config
 
@@ -21,7 +21,7 @@ export default function () {
   Config.migrateConfig();
 
   showUI(
-    { title: TITLE, width: WIDTH, height: MIN_HEIGHT },
+    { title: TITLE, width: WIDTH, height: HEIGHT },
     { config: Config.isConfigSaved() ? Config.getSavedConfig() : Config.getDefaultConfig() }
   )
 
@@ -34,6 +34,7 @@ export default function () {
   });
 
   on(Constants.EVENT_UI_RESIZE, (height) => {
+    console.log('Setting UI height: ' + height);
     figma.ui.resize(WIDTH, height);
   })
 

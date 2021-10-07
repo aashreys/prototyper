@@ -27,6 +27,8 @@ const UITabs = function (props) {
 
 export class UI extends Component<any, any> {
 
+  container;
+
   tabs: Array<TabsOption> = [
     {
       children:
@@ -64,6 +66,20 @@ export class UI extends Component<any, any> {
     this.onTabSet = this.onTabSet.bind(this)
   }
 
+  componentDidMount() {
+    if (this.container) {
+      // console.log('UI Tab did mount')
+      // console.log(this.container.base.parentElement.clientHeight)
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.container) {
+      console.log('UI Tab did update')
+      console.log(this.container.base.parentElement.clientHeight)
+    }
+  }
+
   onTabSet(value) {
     if (value !== this.state.activeTab) {
       this.setState(prevState => ({
@@ -75,7 +91,12 @@ export class UI extends Component<any, any> {
 
   render(props, state) {
     return (
-      <UITabs options={this.tabs} value={TAB_GENERATE} onTabSet={this.onTabSet} />
+      <UITabs 
+        ref={(container) => { this.container = container }}
+        options={this.tabs} 
+        value={TAB_GENERATE} 
+        onTabSet={this.onTabSet}
+      />
     )
   }
 }

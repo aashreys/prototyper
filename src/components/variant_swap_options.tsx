@@ -1,6 +1,7 @@
 import { Columns, IconArrowRight16, MiddleAlign, Stack, Text, Textbox, VerticalSpace } from '@create-figma-plugin/ui'
 import { Component, Fragment, h, JSX } from 'preact'
 import { useState } from 'preact/hooks'
+import { ArrowRightIcon } from '../icons/arrow_right'
 
 const VariantPropertyTextbox = function (props) {
   const [value, setValue] = useState(props.value)
@@ -10,7 +11,7 @@ const VariantPropertyTextbox = function (props) {
     props.onPropertyChange(newValue);
   }
   return (
-    <Textbox onInput={handleInput} placeholder="Property Name" value={value} />
+    <Textbox disabled={props.disabled} onInput={handleInput} placeholder="Property Name" value={value} />
   )
 }
 
@@ -22,7 +23,7 @@ const VariantFromValueTextbox = function (props) {
     props.onFromChange(newValue)
   }
   return (
-    <Textbox onInput={handleInput} placeholder="From Variant" value={value} />
+    <Textbox disabled={props.disabled} onInput={handleInput} placeholder="From Variant" value={value} />
   )
 }
 
@@ -34,7 +35,7 @@ const VariantToValueTextbox = function (props) {
     props.onToChange(newValue)
   }
   return (
-    <Textbox onInput={handleInput} placeholder="To Variant" value={value} />
+    <Textbox disabled={props.disabled} onInput={handleInput} placeholder="To Variant" value={value} />
   )
 }
 
@@ -73,18 +74,32 @@ export class VariantSwapOptions extends Component<any, any>  {
   }
 
   render(props, state) {
-    return(
+    return (
       <Fragment>
-        <Text bold>Swap Variant</Text>
+        <Text muted={props.disabled} bold>Swap Variant</Text>
         <VerticalSpace space='small' />
         <Stack space='extraSmall'>
-          { props.showPropertyError && <Text style="color:red">Property Name required</Text> }
-          <VariantPropertyTextbox onPropertyChange={this.onPropertyChange} value={props.swapVariant.property} />
-          { props.showToVariantError && <Text style="color:red">To Variant required</Text> }
+          {props.showPropertyError && <Text style="color:red">Property Name required</Text>}
+          <VariantPropertyTextbox
+            disabled={this.props.disabled}
+            onPropertyChange={this.onPropertyChange}
+            value={props.swapVariant.property}
+          />
+          {props.showToVariantError && <Text style="color:red">To Variant required</Text>}
           <Columns space='extraSmall'>
-            <VariantFromValueTextbox onFromChange={this.onFromChange} value={props.swapVariant.from} />
-            <MiddleAlign> <IconArrowRight16 /> </MiddleAlign>
-            <VariantToValueTextbox onToChange={this.onToChange} value={props.swapVariant.to} />
+            <VariantFromValueTextbox
+              disabled={props.disabled}
+              onFromChange={this.onFromChange}
+              value={props.swapVariant.from}
+            />
+            <MiddleAlign>
+              <ArrowRightIcon fill={props.disabled ? "#cacaca" : "#000000"} />
+            </MiddleAlign>
+            <VariantToValueTextbox
+              disabled={props.disabled}
+              onToChange={this.onToChange}
+              value={props.swapVariant.to}
+            />
           </Columns>
         </Stack>
       </Fragment>

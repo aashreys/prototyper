@@ -62,17 +62,18 @@ export class PrototypeForm extends Component<any, any>  {
 
   componentDidMount() {
     if (this.container) {
-      this.onHeightChanged(this.container.base.parentNode.clientHeight);
+      this.onHeightChanged(this.container.base.parentElement.clientHeight)
     }
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (this.container) {
-      this.onHeightChanged(this.container.base.parentNode.clientHeight);
+      this.onHeightChanged(this.container.base.parentElement.clientHeight)
     }
   }
 
   onHeightChanged(height: number) {
+    console.log('onHeightChanged');
     emit(Constants.EVENT_UI_RESIZE, height);
   }
 
@@ -244,23 +245,23 @@ export class PrototypeForm extends Component<any, any>  {
           onAnimDurationChange={this.onAnimDurationChange}
         />
 
-        {
-          this.props.mode === Mode.GENERATE &&
-          <Fragment>
-            <VerticalSpace space='large' />
-            
-            <VariantSwapOptions
-              swapVariant={this.state.config.swapVariant}
-              onSwapVariantChange={this.onSwapVariantChange}
-              showPropertyError={this.state.ui.showVariantPropertyError}
-              showToVariantError={this.state.ui.showVariantToValueError}
-            />
-          </Fragment>
-        }
+        <VerticalSpace space='large' />
+
+        <VariantSwapOptions
+          disabled={this.props.mode === Mode.LINK}
+          swapVariant={this.state.config.swapVariant}
+          onSwapVariantChange={this.onSwapVariantChange}
+          showPropertyError={this.state.ui.showVariantPropertyError}
+          showToVariantError={this.state.ui.showVariantToValueError}
+        />
 
         <VerticalSpace space='medium' />
 
-        <Button fullWidth disabled={this.state.ui.buttonLoading} loading={this.state.ui.buttonLoading} onClick={this.onClick}>{this.props.buttonTitle}</Button>
+        <Button fullWidth 
+        disabled={this.state.ui.buttonLoading} 
+        loading={this.state.ui.buttonLoading} 
+        onClick={this.onClick}>{this.props.buttonTitle}
+        </Button>
 
         <VerticalSpace space='medium' />
 
