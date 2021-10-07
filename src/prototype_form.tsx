@@ -1,16 +1,16 @@
-import { render, Container, VerticalSpace, Button, Text, Textbox, Stack, Columns, IconArrowRight16, MiddleAlign } from '@create-figma-plugin/ui'
+import { Container, VerticalSpace, Button, Text } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
-import { h, JSX, Component, Fragment } from 'preact'
+import { h, Component, Fragment } from 'preact'
 import { useState } from 'preact/hooks'
-import { Navigation, NavScheme } from "./navigation";
-import { Constants } from './constants';
-import { AnimationOptions } from './components/animation_options';
-import { AnimationType } from './animation';
-import { Device } from './device';
-import { NavigationOptions } from './components/navigation_options';
-import { VariantSwapOptions } from './components/variant_swap_options';
-import { SwapVariant } from './swap_variant';
-import { Config } from './config';
+import { Navigation, NavScheme } from "../navigation";
+import { Constants } from '../constants';
+import { AnimationOptions } from './animation_options';
+import { AnimationType } from '../animation';
+import { Device } from '../device';
+import { NavigationOptions } from './navigation_options';
+import { VariantSwapOptions } from './variant_swap_options';
+import { SwapVariant } from '../swap_variant';
+import { Mode } from '../main';
 
 const ErrorBox = function (props) {
   const [value, setValue] = useState(props.message)
@@ -168,9 +168,14 @@ export class PrototypeForm extends Component<any, any>  {
   }
 
   validate() {
-    let variantProperty = this.state.config.swapVariant.property
-    let variantToValue = this.state.config.swapVariant.to
-    return variantProperty.length > 0 && variantToValue.length > 0
+    if (this.props.mode === Mode.GENERATE) {
+      let variantProperty = this.state.config.swapVariant.property
+      let variantToValue = this.state.config.swapVariant.to
+      return variantProperty.length > 0 && variantToValue.length > 0
+    }
+    else if (this.props.mode === Mode.LINK) {
+      return true;
+    }
   }
 
   onAnimChange(animation: AnimationType) {
@@ -206,9 +211,9 @@ export class PrototypeForm extends Component<any, any>  {
   render() {
 
     return (
-      <Container 
-      ref={(container) => { this.container = container }}
-      space="medium">
+      <Container
+        ref={(container) => { this.container = container }}
+        space="medium">
 
         <VerticalSpace space='large' />
 
@@ -225,10 +230,10 @@ export class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='large' />
 
         <NavigationOptions
-        onDeviceChange={this.onDeviceChange} 
-        onNavChange={this.onNavChange} 
-        device={this.state.config.device}
-        navigation={this.state.config.navigation.scheme} 
+          onDeviceChange={this.onDeviceChange}
+          onNavChange={this.onNavChange}
+          device={this.state.config.device}
+          navigation={this.state.config.navigation.scheme}
         />
 
         <VerticalSpace space='large' />
@@ -239,14 +244,18 @@ export class PrototypeForm extends Component<any, any>  {
           onAnimDurationChange={this.onAnimDurationChange}
         />
 
-        <VerticalSpace space='large' />
-
-        <VariantSwapOptions
-        swapVariant={this.state.config.swapVariant}
-        onSwapVariantChange={this.onSwapVariantChange}
-        showPropertyError={this.state.ui.showVariantPropertyError}
-        showToVariantError={this.state.ui.showVariantToValueError}
-        />
+        {
+          this.props.mode === Mode.GENERATE &&
+          <Fragment>
+            <VerticalSpace space='large' />
+            <VariantSwapOptions
+              swapVariant={this.state.config.swapVariant}
+              onSwapVariantChange={this.onSwapVariantChange}
+              showPropertyError={this.state.ui.showVariantPropertyError}
+              showToVariantError={this.state.ui.showVariantToValueError}
+            />
+          </Fragment>
+        }
 
         <VerticalSpace space='medium' />
 

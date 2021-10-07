@@ -1,9 +1,10 @@
 import { render, Tabs, TabsOption } from '@create-figma-plugin/ui'
 import { useState } from 'preact/hooks';
 import { Component, h, JSX } from 'preact';
-import { PrototypeForm } from './prototype_form';
+import { PrototypeForm } from './components/prototype_form';
 import { emit } from '@create-figma-plugin/utilities';
 import { Constants } from './constants';
+import { Mode } from './main';
 
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
@@ -31,6 +32,7 @@ export class UI extends Component<any, any> {
       children:
         <PrototypeForm
           value={this.props.config}
+          mode={Mode.GENERATE}
           buttonTitle={BUTTON_GENERATE}
           uiMessage={GENERATE_MESSAGE}
           buttonEvent={Constants.EVENT_GENERATE}
@@ -41,6 +43,7 @@ export class UI extends Component<any, any> {
       children:
         <PrototypeForm
           value={this.props.config}
+          mode={Mode.LINK}
           buttonTitle={BUTTON_LINK}
           uiMessage={LINK_MESSAGE}
           buttonEvent={Constants.EVENT_LINK}

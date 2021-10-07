@@ -4,16 +4,16 @@ import { Constants } from './constants';
 import { doGeneratePrototype } from './core/generate_prototype.js';
 import { doLinkFrames } from './core/link_frames.js';
 
+export enum Mode {
+  GENERATE,
+  LINK
+}
+
 export default function () {
 
   const TITLE = 'Prototyper (BETA)';
   const WIDTH = 240;
   const MIN_HEIGHT = 428;
-
-  enum Mode {
-    GENERATE,
-    LINK
-  }
 
   let config: Config
 
