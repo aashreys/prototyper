@@ -1,7 +1,7 @@
 import { render, Tabs, TabsOption } from '@create-figma-plugin/ui'
 import { useState } from 'preact/hooks';
 import { Component, h, JSX } from 'preact';
-import { PrototypeForm } from './components/prototype_form';
+import { PrototypeForm } from './prototype_form';
 import { emit } from '@create-figma-plugin/utilities';
 import { Constants } from './constants';
 import { Mode } from './main';

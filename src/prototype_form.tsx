@@ -2,15 +2,15 @@ import { Container, VerticalSpace, Button, Text } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
 import { h, Component, Fragment } from 'preact'
 import { useState } from 'preact/hooks'
-import { Navigation, NavScheme } from "../navigation";
-import { Constants } from '../constants';
-import { AnimationOptions } from './animation_options';
-import { AnimationType } from '../animation';
-import { Device } from '../device';
-import { NavigationOptions } from './navigation_options';
-import { VariantSwapOptions } from './variant_swap_options';
-import { SwapVariant } from '../swap_variant';
-import { Mode } from '../main';
+import { Navigation, NavScheme } from "./navigation";
+import { Constants } from './constants';
+import { AnimationOptions } from './components/animation_options';
+import { AnimationType } from './animation';
+import { Device } from './device';
+import { NavigationOptions } from './components/navigation_options';
+import { VariantSwapOptions } from './components/variant_swap_options';
+import { SwapVariant } from './swap_variant';
+import { Mode } from './main';
 
 const ErrorBox = function (props) {
   const [value, setValue] = useState(props.message)
@@ -248,6 +248,7 @@ export class PrototypeForm extends Component<any, any>  {
           this.props.mode === Mode.GENERATE &&
           <Fragment>
             <VerticalSpace space='large' />
+            
             <VariantSwapOptions
               swapVariant={this.state.config.swapVariant}
               onSwapVariantChange={this.onSwapVariantChange}
