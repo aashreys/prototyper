@@ -1,1 +1,10 @@
-{"api":"1.0.0","editorType":["figma"],"name":"Prototyper","id":"1020894954864594118","main":"build/main.js","ui":"build/ui.js"}
+{
+  "api": "1.0.0",
+  "editorType": [
+    "figma"
+  ],
+  "name": "Prototyper",
+  "id": "1020894954864594118",
+  "main": "build/main.js",
+  "ui": "build/ui.js"
+}

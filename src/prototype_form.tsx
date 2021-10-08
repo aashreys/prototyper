@@ -73,7 +73,6 @@ export class PrototypeForm extends Component<any, any>  {
   }
 
   onHeightChanged(height: number) {
-    console.log('onHeightChanged');
     emit(Constants.EVENT_UI_RESIZE, height);
   }
 

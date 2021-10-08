@@ -34,7 +34,6 @@ export default function () {
   });
 
   on(Constants.EVENT_UI_RESIZE, (height) => {
-    console.log('Setting UI height: ' + height);
     figma.ui.resize(WIDTH, height);
   })
 
