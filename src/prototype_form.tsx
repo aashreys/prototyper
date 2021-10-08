@@ -1,4 +1,4 @@
-import { Container, VerticalSpace, Button, Text } from '@create-figma-plugin/ui'
+import { Container, VerticalSpace, Button, Text, Columns, Inline } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
 import { h, Component, Fragment } from 'preact'
 import { useState } from 'preact/hooks'
@@ -11,6 +11,7 @@ import { NavigationOptions } from './components/navigation_options';
 import { VariantSwapOptions } from './components/variant_swap_options';
 import { SwapVariant } from './swap_variant';
 import { Mode } from './main';
+import { HelpButton } from './components/help_button';
 
 const ErrorBox = function (props) {
   const [value, setValue] = useState(props.message)
@@ -256,11 +257,19 @@ export class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='medium' />
 
-        <Button fullWidth 
-        disabled={this.state.ui.buttonLoading} 
-        loading={this.state.ui.buttonLoading} 
-        onClick={this.onClick}>{this.props.buttonTitle}
-        </Button>
+        <div style="width: 100%; display: flex;"> 
+          <div style="order: 0; flex-grow: 1"> 
+            <Button 
+            fullWidth
+            disabled={this.state.ui.buttonLoading} 
+            loading={this.state.ui.buttonLoading} 
+            onClick={this.onClick}>{this.props.buttonTitle}
+            </Button>
+          </div>
+          <div style="margin-left: 8px; order: 1; flex-grow: 0"> 
+            <HelpButton /> 
+          </div>
+        </div>
 
         <VerticalSpace space='medium' />
 
