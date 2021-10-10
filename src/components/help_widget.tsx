@@ -37,7 +37,7 @@ export class HelpWdiget extends Component<any, any> {
             <a href="https://www.youtube.com" target="_blank">Link frames</a>
             <a href="https://www.youtube.com" target="_blank">Advanced techniques</a>
             <div class={styles.separator} />
-            <a href="mailto:aashrey9sharma@gmail.com" target="_blank">Report a problem</a>
+            <a href="mailto:aashrey9sharma@gmail.com?subject=Prototyper Feedback" target="_blank">Report a problem</a>
           </div>
         }
         {
