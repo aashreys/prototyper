@@ -10,8 +10,9 @@ import { OnboardingBanner } from './components/onboarding_banner';
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
 
-const GENERATE_MESSAGE = "Generate a prototype from selected components instances within a single top-level frame."
-const LINK_MESSAGE = "Link selected top-level frames into a prototype based on their relative position."
+const GENERATE_MESSAGE = "Select 2 or more component instances in the same top-level frame to generate a prototype from."
+
+const LINK_MESSAGE = "Select 2 or more top-level frames to link into a prototype."
 
 const TAB_GENERATE = 'Generate'
 const TAB_LINK = 'Link'

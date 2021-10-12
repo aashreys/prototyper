@@ -20,14 +20,14 @@ function validateSelection(selection: readonly SceneNode[]) {
 
 function validateSelectionLength(selection: readonly SceneNode[]) {
   if (selection.length < 2) {
-    throw new Error('Please select at least 2 top-level frames to link and try again.')
+    throw new Error('Please select 2 or more top-level frames and try again.')
   }
 }
 
 function validateTopLevelFrames(selection: readonly SceneNode[]) {
   for (let node of selection) {
     if(!Utils.isTopLevelFrame(node)) {
-      throw new Error(`Layer "${node.name}" is not a top-level frame. Please select only top-level frames to link and try again.`)
+      throw new Error(`Layer "${node.name}" is not a top-level frame. Please only select top-level frames and try again.`)
     }
   }
 }

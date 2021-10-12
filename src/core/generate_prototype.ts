@@ -47,7 +47,7 @@ function validateInstances(instances: Array<InstanceNode>, config: Config) {
 
 function validateInstancesLength(instances: Array<InstanceNode>) {
   if (instances.length < 2) {
-    throw new Error('Please select at least 2 component instances to link and try again.')
+    throw new Error('Please select 2 or more component instances and try again.')
   }
 }
 
@@ -57,13 +57,13 @@ function validateVariantProperties(instances: Array<InstanceNode>, swapVariant: 
   let to = swapVariant.to;
   for (let instance of instances) {
     if (!Utils.hasVariantProperty(instance, property)) {
-      throw new Error(`Cannot find the property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
+      throw new Error(`Cannot find variant property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
     }
     if (from.length > 0 && !Utils.hasVariantValue(instance, property, from)) {
-      throw new Error(`Cannot find the value "${from}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
+      throw new Error(`Cannot find variant value "${from}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
     }
     if (!Utils.hasVariantValue(instance, property, to)) {
-      throw new Error(`Cannot find the value "${to}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
+      throw new Error(`Cannot find variant value "${to}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
     }
   }
 }

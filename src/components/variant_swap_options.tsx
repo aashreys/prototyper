@@ -11,7 +11,7 @@ const VariantPropertyTextbox = function (props) {
     props.onPropertyChange(newValue);
   }
   return (
-    <Textbox disabled={props.disabled} onInput={handleInput} placeholder="Property Name" value={value} />
+    <Textbox disabled={props.disabled} onInput={handleInput} placeholder="Variant Property" value={value} />
   )
 }
 
@@ -79,7 +79,7 @@ export class VariantSwapOptions extends Component<any, any>  {
         <Text muted={props.disabled} bold>Swap Variant</Text>
         <VerticalSpace space='small' />
         <Stack space='extraSmall'>
-          {props.showPropertyError && <Text style="color:red">Property Name required</Text>}
+          {props.showPropertyError && <Text style="color:red">Variant Property required</Text>}
           <VariantPropertyTextbox
             disabled={this.props.disabled}
             onPropertyChange={this.onPropertyChange}
