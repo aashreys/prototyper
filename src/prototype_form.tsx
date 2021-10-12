@@ -260,8 +260,6 @@ export class PrototypeForm extends Component<any, any>  {
           </div>
         </div>
 
-        <VerticalSpace space='medium' />
-
       </Container>
     );
   }

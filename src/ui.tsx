@@ -5,6 +5,7 @@ import { PrototypeForm } from './prototype_form';
 import { emit } from '@create-figma-plugin/utilities';
 import { Constants } from './constants';
 import { Mode } from './main';
+import { OnboardingBanner } from './components/onboarding_banner';
 
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
@@ -14,6 +15,8 @@ const LINK_MESSAGE = "Link selected top-level frames into a prototype based on t
 
 const TAB_GENERATE = 'Generate'
 const TAB_LINK = 'Link'
+
+const HEIGHT_OFFSET = 16;
 
 const UITabs = function (props) {
   const [value, setValue] = useState(props.value)
@@ -80,7 +83,8 @@ export class UI extends Component<any, any> {
 
   render(props, state) {
     return (
-      <Stack space="extraSmall">
+      <Stack>
+        <OnboardingBanner />
         <UITabs 
           options={this.tabs} 
           value={TAB_GENERATE} 
@@ -92,7 +96,7 @@ export class UI extends Component<any, any> {
   }
 
   static getUIHeight() {
-    return document.getElementById('create-figma-plugin').clientHeight;
+    return document.getElementById('create-figma-plugin').clientHeight + HEIGHT_OFFSET;
   }
 
 }

@@ -109,6 +109,8 @@
 .onboardingContainer {
   background-color: #edf5fa;
   padding: var(--space-medium);
+  width: 100%;
+  display: block;
 }
 
 .errorText {
