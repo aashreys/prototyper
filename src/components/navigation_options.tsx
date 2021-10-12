@@ -98,12 +98,10 @@ export class NavigationOptions extends Component<any, any> {
   render(props, state) {
     return (
       <Fragment>
-        <Text bold>Controller</Text>
-        <VerticalSpace space='small' />
-        <DeviceSelect onDeviceChange={this.onDeviceChange} value={this.getUiValueFromConfig(props.device)} />
-        <VerticalSpace space='large' />
         <Text bold>Navigate With</Text>
         <VerticalSpace space='small' />
+        <DeviceSelect onDeviceChange={this.onDeviceChange} value={this.getUiValueFromConfig(props.device)} />
+        <VerticalSpace space='extraSmall' />
         <NavigationSelect onNavChange={this.onNavChange} value={this.getUiValueFromConfig(props.navigation)} />
       </Fragment>
     )

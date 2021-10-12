@@ -208,7 +208,7 @@ export class PrototypeForm extends Component<any, any>  {
     return (
       <Container space="medium">
 
-        <VerticalSpace space='large' />
+        <VerticalSpace space='extraLarge' />
 
         <Text>{this.props.uiMessage}</Text>
 
@@ -217,7 +217,7 @@ export class PrototypeForm extends Component<any, any>  {
           message={this.state.ui.errorMessage} 
         />
 
-        <VerticalSpace space='large' />
+        <VerticalSpace space='extraLarge' />
 
         <NavigationOptions
           onDeviceChange={this.onDeviceChange}
