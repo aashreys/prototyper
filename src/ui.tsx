@@ -1,4 +1,4 @@
-import { render, Tabs, TabsOption } from '@create-figma-plugin/ui'
+import { render, Stack, Tabs, TabsOption } from '@create-figma-plugin/ui'
 import { useState } from 'preact/hooks';
 import { Component, h, JSX } from 'preact';
 import { PrototypeForm } from './prototype_form';
@@ -26,8 +26,6 @@ const UITabs = function (props) {
 }
 
 export class UI extends Component<any, any> {
-
-  container;
 
   tabs: Array<TabsOption> = [
     {
@@ -64,6 +62,7 @@ export class UI extends Component<any, any> {
 
   bindMethods() {
     this.onTabSet = this.onTabSet.bind(this)
+    this.componentDidUpdate = this.componentDidUpdate.bind(this)
   }
 
   onTabSet(value) {
@@ -75,16 +74,27 @@ export class UI extends Component<any, any> {
     }
   }
 
+  componentDidUpdate() {
+    emit(Constants.EVENT_UI_RESIZE, UI.getUIHeight())
+  }
+
   render(props, state) {
     return (
-      <UITabs 
-        ref={(container) => { this.container = container }}
-        options={this.tabs} 
-        value={TAB_GENERATE} 
-        onTabSet={this.onTabSet}
-      />
+      <Stack space="extraSmall">
+        <UITabs 
+          options={this.tabs} 
+          value={TAB_GENERATE} 
+          onTabSet={this.onTabSet}
+        />
+      </Stack>
+      
     )
   }
+
+  static getUIHeight() {
+    return document.getElementById('create-figma-plugin').clientHeight;
+  }
+
 }
 
 function Plugin(props) {

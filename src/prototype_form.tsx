@@ -1,6 +1,6 @@
 import { Container, VerticalSpace, Button, Text } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
-import { h, Component, Fragment } from 'preact'
+import { h, Component } from 'preact'
 import { useState } from 'preact/hooks'
 import { Navigation, NavScheme } from "./navigation";
 import { Constants } from './constants';
@@ -12,15 +12,15 @@ import { VariantSwapOptions } from './components/variant_swap_options';
 import { SwapVariant } from './swap_variant';
 import { Mode } from './main';
 import { HelpWdiget } from './components/help_widget';
+import { UI } from './ui';
 
 const ErrorBox = function (props) {
-  const [value, setValue] = useState(props.message)
   return (
-    <Container style="background-color: #FFF4F4; border-radius: 6px;" space='extraSmall'>
-      <VerticalSpace space='small' />
-      <Text style="color:red">{props.message}</Text>
-      <VerticalSpace space='small' />
-    </Container>
+    props.visible &&
+    <div>
+      <VerticalSpace space='large' />
+      <Text style='color: red;'>{props.message}</Text>
+    </div>
   )
 }
 
@@ -35,8 +35,6 @@ export class PrototypeForm extends Component<any, any>  {
       errorMessage: ''
     }
   }
-
-  container: any;
 
   constructor(props) {
     super(props);
@@ -62,19 +60,15 @@ export class PrototypeForm extends Component<any, any>  {
   }
 
   componentDidMount() {
-    if (this.container) {
-      this.onHeightChanged(this.container.base.parentElement.clientHeight)
-    }
+    this.onHeightChanged()
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.container) {
-      this.onHeightChanged(this.container.base.parentElement.clientHeight)
-    }
+    this.onHeightChanged()
   }
 
-  onHeightChanged(height: number) {
-    emit(Constants.EVENT_UI_RESIZE, height);
+  onHeightChanged() {
+    emit(Constants.EVENT_UI_RESIZE, UI.getUIHeight());
   }
 
   registerEventHandlers() {
@@ -212,21 +206,16 @@ export class PrototypeForm extends Component<any, any>  {
   render() {
 
     return (
-      <Container
-        ref={(container) => { this.container = container }}
-        space="medium">
+      <Container space="medium">
 
         <VerticalSpace space='large' />
 
         <Text>{this.props.uiMessage}</Text>
 
-        {
-          this.state.ui.errorMessage.length > 0 &&
-          <Fragment>
-            <VerticalSpace space='medium' />
-            <ErrorBox message={this.state.ui.errorMessage} />
-          </Fragment>
-        }
+        <ErrorBox 
+          visible={this.state.ui.errorMessage.length > 0}
+          message={this.state.ui.errorMessage} 
+        />
 
         <VerticalSpace space='large' />
 
@@ -256,8 +245,6 @@ export class PrototypeForm extends Component<any, any>  {
         />
 
         <VerticalSpace space='medium' />
-
-        
 
         <div style="width: 100%; display: flex;"> 
           <div style="order: 0; flex-grow: 1"> 
