@@ -15,8 +15,13 @@ export class OnboardingBanner extends Component {
             <Button onClick={this.openVideo}>▶</Button>
           </MiddleAlign>
         </Columns>
-        <div style='height: 8px' />  
-        <button class={styles.linkButton} onClick={this.dismiss}>Dismiss</button>
+        <div  />  
+        <button 
+        style='margin-top: 4px;'
+        class={styles.linkButton} 
+        onClick={this.dismiss}>
+          Dismiss
+        </button>
       </div>
     )
   }
