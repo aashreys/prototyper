@@ -14,7 +14,7 @@ export default function () {
 
   const TITLE = 'Prototyper (BETA)';
   const WIDTH = 240;
-  const HEIGHT = 469;
+  const HEIGHT = 445;
 
   let config: Config
 
