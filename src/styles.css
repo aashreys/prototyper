@@ -88,7 +88,7 @@
 }
 
 .linkButton {
-  color: #18a0fb;
+  color: #0E92EB;
   text-decoration: none;
   pointer-events: all;
 }
@@ -107,7 +107,7 @@
 }
 
 .onboardingContainer {
-  background-color: #F5FBFF;
+  background-color: #F7FCFF;
   padding-top: var(--space-large);
   padding-bottom: var(--space-medium);
   padding-left: var(--space-medium);
@@ -115,6 +115,7 @@
   margin-bottom: -8px;
   width: 100%;
   display: block;
+  border-bottom: 1px solid #e5e5e5;
 }
 
 .errorText {

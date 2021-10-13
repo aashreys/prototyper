@@ -1,19 +1,30 @@
-import { Inline, Stack, Text } from "@create-figma-plugin/ui";
+import { Inline, Stack, Text, VerticalSpace } from "@create-figma-plugin/ui";
 import { Component, h } from "preact";
 import styles from "../styles.css";
 
-export class OnboardingBanner extends Component {
+export class OnboardingBanner extends Component<any, any> {
 
-  render() {
+  constructor(props) {
+    super(props)
+    this.bindMethods()
+  }
+
+  bindMethods() {
+    this.onWatchVideoClick = this.onWatchVideoClick.bind(this)
+    this.dismiss = this.dismiss.bind(this)
+  }
+
+  render(props, state) {
+
     return (
       <div class={styles.onboardingContainer}>
-        <Stack space='small'>
-          <Text>Welcome to Prototyper! Watch a quick video to get started.</Text>
-          <Inline>
+        <Stack>
+          <Text bold>Welcome to Prototyper!</Text>
+          <Text>Watch a short video to learn the basics and best practices.</Text>
+          <Inline space='small'>
             <button 
-            style='margin-right: 8px'
             class={styles.linkButton} 
-            onClick={this.openVideo}>
+            onClick={this.onWatchVideoClick}>
               ▶ Watch Video
             </button>
             <button 
@@ -27,12 +38,17 @@ export class OnboardingBanner extends Component {
     )
   }
 
+  onWatchVideoClick() {
+    this.dismiss()
+    this.openVideo()
+  }
+
   openVideo() {
     window.open('https://www.youtube.com')
   }
 
   dismiss() {
-    console.log('Dismiss')
+    this.props.onDismiss()
   }
 
 }

@@ -2,7 +2,7 @@ import { render, Stack, Tabs, TabsOption } from '@create-figma-plugin/ui'
 import { useState } from 'preact/hooks';
 import { Component, h, JSX } from 'preact';
 import { PrototypeForm } from './prototype_form';
-import { emit } from '@create-figma-plugin/utilities';
+import { emit, on } from '@create-figma-plugin/utilities';
 import { Constants } from './constants';
 import { Mode } from './main';
 import { OnboardingBanner } from './components/onboarding_banner';
@@ -59,14 +59,35 @@ export class UI extends Component<any, any> {
   constructor(props) {
     super(props);
     this.state = {
-      activeTab: TAB_GENERATE
+      activeTab: TAB_GENERATE,
+      isOnboardingComplete: true
     }
     this.bindMethods()
+    this.registerEventListeners()
   }
 
   bindMethods() {
     this.onTabSet = this.onTabSet.bind(this)
     this.componentDidUpdate = this.componentDidUpdate.bind(this)
+    this.registerEventListeners = this.registerEventListeners.bind(this)
+    this.updateOnboardingComplete = this.updateOnboardingComplete.bind(this)
+    this.onOnboardingDismiss = this.onOnboardingDismiss.bind(this)
+  }
+
+  registerEventListeners() {
+    on(Constants.EVENT_ONBOARDING_STATUS_LOADED, (isComplete) => {
+      this.updateOnboardingComplete(isComplete)
+    })
+  }
+
+  updateOnboardingComplete(isComplete) {
+    this.setState(prevState => ({
+      ...prevState,
+      isOnboardingComplete: isComplete
+    }));
+    if (isComplete) {
+      emit(Constants.EVENT_ONBOARDING_COMPLETE)
+    }
   }
 
   onTabSet(value) {
@@ -78,6 +99,10 @@ export class UI extends Component<any, any> {
     }
   }
 
+  onOnboardingDismiss() {
+    this.updateOnboardingComplete(true)
+  }
+
   componentDidUpdate() {
     emit(Constants.EVENT_UI_RESIZE, UI.getUIHeight())
   }
@@ -85,14 +110,16 @@ export class UI extends Component<any, any> {
   render(props, state) {
     return (
       <Stack>
-        <OnboardingBanner />
+        {
+          !state.isOnboardingComplete &&
+          <OnboardingBanner onDismiss={this.onOnboardingDismiss} />
+        }
         <UITabs 
           options={this.tabs} 
           value={TAB_GENERATE} 
           onTabSet={this.onTabSet}
         />
       </Stack>
-      
     )
   }
 

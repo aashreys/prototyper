@@ -1,5 +1,6 @@
 import { emit, on, showUI } from '@create-figma-plugin/utilities'
 import { Config } from './config.js'
+import { Onboarding } from './onboarding.js'
 import { Constants } from './constants';
 import { doGeneratePrototype } from './core/generate_prototype.js';
 import { doLinkFrames } from './core/link_frames.js';
@@ -25,6 +26,11 @@ export default function () {
     { config: Config.isConfigSaved() ? Config.getSavedConfig() : Config.getDefaultConfig() }
   )
 
+  Onboarding.isCompleteAsync().then(
+    (isComplete) => {emit(Constants.EVENT_ONBOARDING_STATUS_LOADED, isComplete? isComplete : false)},
+    () => {console.error('Failed to loading onboarding status')}
+  )
+
   on(Constants.EVENT_GENERATE, (data) => {
     runPlugin(data, Mode.GENERATE);
   });
@@ -39,6 +45,10 @@ export default function () {
 
   on(Constants.EVENT_TAB_SWTICH, () => {
     emit(Constants.EVENT_CLEAR_UI_ERRORS);
+  })
+
+  on(Constants.EVENT_ONBOARDING_COMPLETE, () => {
+    Onboarding.completed();
   })
 
   function initializeConfig(configData: Config) {
