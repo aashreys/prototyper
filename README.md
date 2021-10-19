@@ -19,8 +19,8 @@ Features:
 * Better nearest neighbor detection algorithm for more accurate directional mapping
 * ~~Link existing frames based on relative position~~
 * Stats and minutes saved (because nothing is better than being able to quantify how much time you've saved)
-* Add user onboarding
-* Define multiple inputs for navigation at the same time i.e. DPad, LS, RS all together
+* ~~Add user onboarding~~ (Released in Figma Version 5)
+* ~~Define multiple inputs for navigation at the same time i.e. DPad, LS, RS all together~~ (Implemented through Link)
 * Create a Community Playground file to teach usage and advanced techniques
 
 Tech Debt:
