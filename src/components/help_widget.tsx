@@ -33,9 +33,9 @@ export class HelpWdiget extends Component<any, any> {
           <div class={styles.verticalMenu}
           ref={(container) => (this.container = container)}>
             <p>Video Tutorials</p>
-            <a href="https://www.youtube.com" target="_blank">Generate prototypes</a>
-            <a href="https://www.youtube.com" target="_blank">Link frames</a>
-            <a href="https://www.youtube.com" target="_blank">Advanced techniques</a>
+            <a href="https://www.youtube.com/watch?v=yqkr5FtuSKA&t=15s" target="_blank">Generate prototype</a>
+            <a href="https://www.youtube.com/watch?v=yqkr5FtuSKA&t=111s" target="_blank">Link frames</a>
+            <a href="https://www.youtube.com/watch?v=yqkr5FtuSKA&t=197s" target="_blank">Advanced techniques</a>
             <div class={styles.separator} />
             <a href="mailto:aashrey9sharma@gmail.com?subject=Prototyper Feedback" target="_blank">Report a problem</a>
           </div>
