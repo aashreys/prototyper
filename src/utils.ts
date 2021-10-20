@@ -69,7 +69,7 @@ export class Utils {
     }
   }
 
-  static findTopLevelFrame(node: SceneNode) {
+  static findTopLevelFrame(node: SceneNode): FrameNode {
     let currentNode = node;
     let topLevelFrame;
     if (!Utils.isPage(currentNode.parent)) {

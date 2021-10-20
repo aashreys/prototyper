@@ -115,8 +115,15 @@ function createProtoFrames(protoNodes: Array<PrototypeNode>) {
 
   protoFrames.push(new PrototypeFrame(node, topLevelFrame));
 
+  let numberAtEndRegex: RegExp = /\d+$/;  
+  if (!topLevelFrame.name.match(numberAtEndRegex)) topLevelFrame.name = topLevelFrame.name + " 1";
+  let suffix: any = topLevelFrame.name.match(numberAtEndRegex)[0]
+  let baseName = topLevelFrame.name.substring(0, topLevelFrame.name.indexOf(suffix))
+  suffix = Number(suffix)
+
   for (let i = 1; i < protoNodes.length; i++) {
     topLevelFrame = topLevelFrame.clone();
+    topLevelFrame.name = baseName + (suffix + i);
     node = Utils.findNodeFromNodePath(protoNodes[i].nodePath, topLevelFrame);
     protoFrames.push(new PrototypeFrame(node, topLevelFrame));
   }
