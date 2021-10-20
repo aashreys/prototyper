@@ -1,7 +1,7 @@
 import { Config } from "../config";
 import { Constants } from "../constants";
 import { Utils } from "../utils";
-import { Navigable, NearestNeighbor, Neighbors, Point } from "./nearest_neighbor";
+import { Anchors, Navigable, NearestNeighbor, Neighbors, Point } from "./nearest_neighbor";
 
 export function doLinkFrames(config: Config) {
   let selection = figma.currentPage.selection
@@ -69,6 +69,9 @@ class LinkableFrame implements Navigable {
       x: Utils.getAbsoluteX(frame) + frame.width / 2,
       y: Utils.getAbsoluteY(frame) + frame.height / 2
     }
+  }
+  getAnchors(): Anchors {
+    throw new Error("Method not implemented.");
   }
 
   getNavPoint(): Point {

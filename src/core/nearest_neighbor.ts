@@ -1,6 +1,10 @@
+import { Utils } from "../utils";
+
 export interface Navigable {
 
   getNavPoint(): Point
+
+  getAnchors(): Anchors
 
   setNeighbors(neighbors: Neighbors<any>)
 
@@ -13,12 +17,20 @@ export interface Neighbors<T> {
   top: T
   bottom: T
   
-
 }
 
 export interface Point {
   readonly x
   readonly y
+}
+
+export interface Anchors {
+
+  readonly left: Point
+  readonly right: Point
+  readonly top: Point
+  readonly bottom: Point
+
 }
 
 export interface NeighborIndex {
@@ -36,8 +48,12 @@ enum Direction {
 }
 
 export class NearestNeighbor {
-
+  
   static assignNeigbors(navigables: Array<Navigable>): void {
+    NearestNeighbor._assignNeigborsFromAnchors(navigables);
+  }
+
+  static _assignNeigborsFromCenters(navigables: Array<Navigable>): void {
     // For each navigable (let's call it origin), find neighbors and assign it to the respective index variable
     for (let origin of navigables) {
       let left: Navigable
@@ -86,6 +102,95 @@ export class NearestNeighbor {
       });
 
     }
+  }
+
+  static _assignNeigborsFromAnchors(navigables: Array<Navigable>): void {
+    for (let node1 of navigables) {
+      let left: Navigable, right: Navigable, top: Navigable, bottom: Navigable
+      for (let node2 of navigables) {
+        if (node1 !== node2) {
+          let anchors1 = node1.getAnchors();
+          let anchors2 = node2.getAnchors();
+          let leftDist = NearestNeighbor.computeDistance(anchors1.left, anchors2.right)
+          let rightDist = NearestNeighbor.computeDistance(anchors1.right, anchors2.left)
+          let topDist = NearestNeighbor.computeDistance(anchors1.top, anchors2.bottom)
+          let bottomDist = NearestNeighbor.computeDistance(anchors1.bottom, anchors2.top)
+          if  (
+                (left === undefined && NearestNeighbor.isLeftOf(anchors1.left, anchors2.right)) ||
+                (NearestNeighbor.isLeftOf(anchors1.left, anchors2.right) && 
+                leftDist < NearestNeighbor.getLeftDistance(anchors1, left.getAnchors()))
+              ) {
+            left = node2
+          }
+
+          if (
+                (right === undefined && NearestNeighbor.isRightOf(anchors1.right, anchors2.left)) ||
+                (NearestNeighbor.isRightOf(anchors1.right, anchors2.left) &&
+                rightDist < NearestNeighbor.getRightDistance(anchors1, right.getAnchors()))
+              ) {
+            right = node2
+          }
+
+          if  (
+                (top === undefined && NearestNeighbor.isAbove(anchors1.top, anchors2.bottom)) ||
+                (NearestNeighbor.isAbove(anchors1.top, anchors2.bottom) &&
+                topDist < NearestNeighbor.getTopDistance(anchors1, top.getAnchors()))
+              ) {
+            top = node2
+          }
+
+          if  (
+                (bottom === undefined && NearestNeighbor.isBottomOf(anchors1.bottom, anchors2.top)) ||
+                (NearestNeighbor.isBottomOf(anchors1.bottom, anchors2.top) && 
+                bottomDist < NearestNeighbor.getBottomDistance(anchors1, bottom.getAnchors()))
+              ) {
+            bottom = node2
+          }
+        }
+      }
+
+      let neighbors = {
+        left: left,
+        right: right,
+        top: top,
+        bottom: bottom
+      }
+      NearestNeighbor.dedupeNeighbors(node1, neighbors);
+      node1.setNeighbors(neighbors);
+    }
+  }
+
+  static dedupeNeighbors(refNode: Navigable, neighbors: Neighbors<Navigable>){
+    let leftDist, rightDist, topDist, bottomDist
+    if (neighbors.left) leftDist = NearestNeighbor.getLeftDistance(refNode.getAnchors(), neighbors.left.getAnchors())
+    if (neighbors.right) rightDist =NearestNeighbor.getRightDistance(refNode.getAnchors(), neighbors.right.getAnchors())
+    if (neighbors.top) topDist = NearestNeighbor.getTopDistance(refNode.getAnchors(), neighbors.top.getAnchors())
+    if (neighbors.bottom) bottomDist = NearestNeighbor.getBottomDistance(refNode.getAnchors(), neighbors.bottom.getAnchors())
+
+    if (neighbors.left && neighbors.left === neighbors.right) {
+      neighbors.left = leftDist <= rightDist ? neighbors.left : undefined
+    }
+
+    if (neighbors.left && neighbors.left === neighbors.top) {
+      neighbors.left = leftDist <= topDist ? neighbors.left : undefined
+    }
+
+    if (neighbors.left && neighbors.left === neighbors.bottom) {
+      neighbors.left = leftDist <= bottomDist ? neighbors.left : undefined
+    }
+
+    if (neighbors.right && neighbors.right === neighbors.top) {
+      neighbors.right = rightDist <= topDist ? neighbors.right : undefined
+    }
+
+    if (neighbors.right && neighbors.right === neighbors.bottom) {
+      neighbors.right = rightDist <= bottomDist ? neighbors.right : undefined
+    }
+
+    if (neighbors.top && neighbors.top === neighbors.bottom) {
+      neighbors.top = topDist <= bottomDist ? neighbors.top : undefined
+    }
+    
   }
 
   static computeNeighbors(points: Array<Point>): Array<NeighborIndex> {
@@ -169,6 +274,38 @@ export class NearestNeighbor {
     const a = point2.x - point1.x;
     const b = point2.y - point1.y;
     return Math.sqrt(a * a + b * b);
+  }
+
+  private static isBottomOf(point1: Point, point2: Point): boolean {
+    return Utils.isBelow(point1.x , point1.y, point2.x, point2.y)
+  }
+
+  private static isAbove(point1: Point, point2: Point): boolean {
+    return Utils.isAbove(point1.x , point1.y, point2.x, point2.y)
+  }
+
+  private static isLeftOf(point1: Point, point2: Point): boolean {
+    return Utils.isLeftOf(point1.x , point1.y, point2.x, point2.y)
+  }
+
+  private static isRightOf(point1: Point, point2: Point): boolean {
+    return Utils.isRightOf(point1.x , point1.y, point2.x, point2.y)
+  }
+
+  static getLeftDistance(anchors1: Anchors, anchors2: Anchors): number {
+    return NearestNeighbor.computeDistance(anchors1.left, anchors2.right)
+  }
+
+  static getRightDistance(anchors1: Anchors, anchors2: Anchors): number {
+    return NearestNeighbor.computeDistance(anchors1.right, anchors2.left)
+  }
+
+  static getTopDistance(anchors1: Anchors, anchors2: Anchors): number {
+    return NearestNeighbor.computeDistance(anchors1.top, anchors2.bottom)
+  }
+
+  static getBottomDistance(anchors1: Anchors, anchors2: Anchors): number {
+    return NearestNeighbor.computeDistance(anchors1.bottom, anchors2.top)
   }
 
 }
