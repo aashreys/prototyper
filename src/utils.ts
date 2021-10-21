@@ -183,11 +183,11 @@ export class Utils {
     return transition;
   }
 
-  static isAbove(x1, y1, x2, y2): boolean {
+  static isTopOf(x1, y1, x2, y2): boolean {
     return y2 < y1;
   }
 
-  static isBelow(x1, y1, x2, y2): boolean {
+  static isBottomOf(x1, y1, x2, y2): boolean {
     return y2 > y1;
   }
 

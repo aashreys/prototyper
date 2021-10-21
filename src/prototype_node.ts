@@ -1,4 +1,4 @@
-import { Anchors, Navigable, Neighbors, Point } from './core/nearest_neighbor';
+import { Navigable, Neighbors } from './core/nearest_neighbor';
 import { Utils } from './utils'
 
 export class PrototypeNode implements Navigable {
@@ -9,8 +9,7 @@ export class PrototypeNode implements Navigable {
   readonly y;
   readonly width;
   readonly height;
-  readonly center: Point
-  readonly anchors: Anchors
+  readonly center: Vector
 
   neighbors: Neighbors<PrototypeNode>
 
@@ -26,23 +25,29 @@ export class PrototypeNode implements Navigable {
         x: x + width / 2, 
         y: y + height / 2
       }
-      this.anchors = {
-        left: { x: x, y: y + height / 2},
-        right: { x: x + width, y: y + height / 2 },
-        top: { x: x + width / 2, y: y },
-        bottom: {x: x + width / 2, y: y + height }
-      }
     } else {
       throw new Error('Instance Node cannot be null');
     }
   }
 
-  getNavPoint(): Point {
-    return this.center;
+  getX(): number {
+    return this.x;
   }
 
-  getAnchors(): Anchors {
-    return this.anchors;
+  getY(): number {
+    return this.y;
+  }
+
+  getWidth(): number {
+    return this.width;
+  }
+
+  getHeight(): number {
+    return this.height;
+  }
+
+  getNavPoint(): Vector {
+    return this.center;
   }
 
   setNeighbors(neighbors: Neighbors<PrototypeNode>) {
