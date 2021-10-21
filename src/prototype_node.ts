@@ -9,7 +9,6 @@ export class PrototypeNode implements Navigable {
   readonly y;
   readonly width;
   readonly height;
-  readonly center: Vector
 
   neighbors: Neighbors<PrototypeNode>
 
@@ -21,10 +20,6 @@ export class PrototypeNode implements Navigable {
       this.y = y;
       this.width = width;
       this.height = height;
-      this.center = {
-        x: x + width / 2, 
-        y: y + height / 2
-      }
     } else {
       throw new Error('Instance Node cannot be null');
     }
@@ -44,10 +39,6 @@ export class PrototypeNode implements Navigable {
 
   getHeight(): number {
     return this.height;
-  }
-
-  getNavPoint(): Vector {
-    return this.center;
   }
 
   setNeighbors(neighbors: Neighbors<PrototypeNode>) {

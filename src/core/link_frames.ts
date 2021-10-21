@@ -59,16 +59,10 @@ class LinkableFrame implements Navigable {
 
   readonly frame: FrameNode
 
-  readonly center: Vector
-
   neighbors: Neighbors<LinkableFrame>
 
   constructor(frame) {
     this.frame = frame;
-    this.center = {
-      x: Utils.getAbsoluteX(frame) + frame.width / 2,
-      y: Utils.getAbsoluteY(frame) + frame.height / 2
-    }
   }
 
   getX(): number {
@@ -87,9 +81,6 @@ class LinkableFrame implements Navigable {
     return this.frame.height
   }
 
-  getNavPoint(): Vector {
-    return this.center
-  }
   setNeighbors(neighbors: Neighbors<any>) {
     this.neighbors = neighbors
   }

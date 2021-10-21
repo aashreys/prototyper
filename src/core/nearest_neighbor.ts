@@ -2,8 +2,6 @@ import { Utils } from "../utils";
 
 export interface Navigable {
 
-  getNavPoint(): Vector
-
   setNeighbors(neighbors: Neighbors<any>)
 
   getX(): number
@@ -45,9 +43,10 @@ enum Direction {
 export class NearestNeighbor {
   
   static assignNeigbors(navigables: Array<Navigable>): void {
-    NearestNeighbor._assignNeigborsFromAnchors(navigables);
+    NearestNeighbor._assignNeigborsFromCenters(navigables);
   }
 
+  /* First nearest neighbor algorithm for Prototyper. Works great for regular symmetric grids, but poor for staggered, asymmetric grids. Replaced by new anchor point based algorithm. */
   static _assignNeigborsFromCenters(navigables: Array<Navigable>): void {
     // For each navigable (let's call it origin), find neighbors and assign it to the respective index variable
     for (let origin of navigables) {
@@ -58,30 +57,37 @@ export class NearestNeighbor {
       // Check each navigable's relative position against the origin
       for (let nav of navigables) {
         if (origin !== nav) {
-          let direction = NearestNeighbor.computeDirection(origin.getNavPoint(), nav.getNavPoint());
-          let distance = NearestNeighbor.computeDistance(origin.getNavPoint(), nav.getNavPoint());
+          let originCenter = this.getCenter(origin)
+          let navCenter = this.getCenter(nav)
+
+          let direction = NearestNeighbor.computeDirection(originCenter, navCenter);
+          let distance = NearestNeighbor.computeDistance(originCenter, navCenter);
           // Update closest navigable for each direction
           switch (direction) {
             case Direction.LEFT:
-              if (left === undefined || distance < NearestNeighbor.computeDistance(origin.getNavPoint(), left.getNavPoint())) {
+              if (left === undefined || 
+                distance < NearestNeighbor.computeDistance(originCenter, this.getCenter(left))) {
                 left = nav;
               }
               break;
 
             case Direction.RIGHT:
-              if (right === undefined || distance < NearestNeighbor.computeDistance(origin.getNavPoint(), right.getNavPoint())) {
+              if (right === undefined || 
+                distance < NearestNeighbor.computeDistance(originCenter, this.getCenter(right))) {
                 right = nav;
               }
               break;
 
             case Direction.TOP:
-              if (top === undefined || distance < NearestNeighbor.computeDistance(origin.getNavPoint(), top.getNavPoint())) {
+              if (top === undefined || 
+                distance < NearestNeighbor.computeDistance(originCenter, this.getCenter(top))) {
                 top = nav;
               }
               break;
 
             case Direction.BOTTOM:
-              if (bottom === undefined || distance < NearestNeighbor.computeDistance(origin.getNavPoint(), bottom.getNavPoint())) {
+              if (bottom === undefined || 
+                distance < NearestNeighbor.computeDistance(originCenter, this.getCenter(bottom))) {
                 bottom = nav;
               }
               break;
@@ -267,6 +273,13 @@ export class NearestNeighbor {
         right: { x: nav.getX() + nav.getWidth() , y: nav.getY() + nav.getHeight() / 2 },
         top: { x: nav.getX() + nav.getWidth() / 2, y: nav.getY() },
         bottom: {x: nav.getX() + nav.getWidth() / 2, y: nav.getY() + nav.getHeight() }
+    }
+  }
+
+  static getCenter(nav: Navigable): Vector {
+    return {
+      x: nav.getX() + (nav.getWidth() / 2),
+      y: nav.getY() + (nav.getHeight() / 2)
     }
   }
 
