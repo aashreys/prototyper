@@ -34,7 +34,7 @@ Tech Debt:
 
 ## Contributing
 Contributions are most welcome. Below is a list of suggestions, but of course you are welcome to contribute anything you think will be helpful.
-* Switch Pro controller support
+* ~~Switch Pro controller support~~ (An IRL friend lent me their controller and now we have one more nice thing!)
 
 ## Contributors
 * [Alex Tokmakchiev](https://twitter.com/atokmakchiev) - PS4 Controller Keycodes
