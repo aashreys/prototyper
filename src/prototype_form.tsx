@@ -52,7 +52,6 @@ export class PrototypeForm extends Component<any, any>  {
     this.componentDidUpdate = this.componentDidUpdate.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.onAnimChange = this.onAnimChange.bind(this);
-    this.onAnimDurationChange = this.onAnimDurationChange.bind(this);
     this.onDeviceChange = this.onDeviceChange.bind(this);
     this.onNavChange = this.onNavChange.bind(this);
     this.onSwapVariantChange = this.onSwapVariantChange.bind(this);
@@ -182,18 +181,6 @@ export class PrototypeForm extends Component<any, any>  {
     }));
   }
 
-  onAnimDurationChange(duration: number) {
-    this.setState(prevState => ({
-      config: {
-        ...prevState.config,
-        animation: {
-          ...prevState.config.animation,
-          duration: duration
-        }
-      }
-    }));
-  }
-
   onSwapVariantChange(swapVariant: SwapVariant) {
     this.setState(prevState => ({
       config: {
@@ -231,7 +218,6 @@ export class PrototypeForm extends Component<any, any>  {
         <AnimationOptions
           animation={this.state.config.animation}
           onAnimChange={this.onAnimChange}
-          onAnimDurationChange={this.onAnimDurationChange}
         />
 
         <VerticalSpace space='large' />

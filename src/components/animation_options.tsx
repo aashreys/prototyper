@@ -1,4 +1,4 @@
-import { Columns, Dropdown, DropdownOption, TextboxNumeric, VerticalSpace, Text, Inline} from '@create-figma-plugin/ui'
+import { Columns, Dropdown, DropdownOption, TextboxNumeric, VerticalSpace, Text, Inline, Textbox} from '@create-figma-plugin/ui'
 import { Component, Fragment, h, JSX } from 'preact'
 import { useState } from 'preact/hooks'
 import { AnimationType } from '../animation'
@@ -71,20 +71,54 @@ const AnimationDropdown = function (props) {
 
 const AnimationDurationTextbox = function (props) {
 
-  const [value, setValue] = useState(props.value)
+  const [value, setValue] = useState(formatPropsValue(props.value))
 
   function handleInput(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value;
     setValue(newValue);
-    props.onAnimDurationChange(newValue.length > 0 ? newValue : 0);
+    props.onAnimDurationChange(newValue.length > 0 ? removeMsString(newValue) : 0);
   }
 
-  function validateOnBlur(value: null | number): null | number | boolean {
-    return value !== null
+  function removeMsString(string) {
+    return string.replace(/ms/gm, '')
+  }
+
+  function hasNonDigit(string): boolean {
+    return string.match(/\D+/)
+  }
+
+  function removeLeadingZeroes(string) {
+    return string.replace(/^0+/, '')
+  }
+
+  function formatPropsValue(value) {
+    return value && value.length > 0 ? removeMsString(value) + 'ms' : value
+  }
+
+  function validateOnBlur(value: null | string): null | string | boolean {
+    if (value.length > 0) {
+      value = removeMsString(value)
+      if (!hasNonDigit(value)) {
+        value = removeLeadingZeroes(value)
+        if (value.length > 0) {
+          value = value + 'ms'
+          return value;
+        }
+        else {
+          return false;
+        }
+      }
+      else {
+        return false;
+      }
+    } 
+    else {
+      return false;
+    }
   }
 
   return (
-    <TextboxNumeric
+    <Textbox
       icon={<TimerIcon />}
       validateOnBlur={validateOnBlur}
       disabled={props.disabled}
