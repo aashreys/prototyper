@@ -11,6 +11,7 @@ import { NavScheme } from '../navigation';
 
 const XBOX = 'Xbox One'
 const PS4 = 'PS4'
+const SWITCH = 'Switch Pro'
 
 const DPAD = 'D-Pad'
 const LEFT_STICK = 'Left Stick'
@@ -25,6 +26,7 @@ const DeviceSelect = function (props) {
   const options: Array<SegmentedControlOption> = [
     { value: XBOX },
     { value: PS4 },
+    { value: SWITCH },
   ]
 
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
@@ -128,6 +130,7 @@ export class NavigationOptions extends Component<any, any> {
       case TRIGGER_BUTTONS: return NavScheme.TRIGGER_BUTTONS
       case XBOX: return Device.XBOX
       case PS4: return Device.PS4
+      case SWITCH: return Device.SWITCH_PRO
     }
   }
 
