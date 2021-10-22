@@ -118,6 +118,7 @@ export class NavigationOptions extends Component<any, any> {
       case NavScheme.TRIGGER_BUTTONS: return TRIGGER_BUTTONS
       case Device.XBOX: return XBOX
       case Device.PS4: return PS4
+      case Device.SWITCH_PRO: return SWITCH
     }
   }
 
