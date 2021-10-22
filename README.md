@@ -16,7 +16,7 @@ Features:
 * ~~Playstation 4 Controller support~~
 * ~~Shoulder / Trigger button support~~
 * ~~Configure animation properties~~
-* Better nearest neighbor detection algorithm for more accurate directional mapping
+* ~~Better nearest neighbor detection algorithm for more accurate directional mapping~~ (Released in Figma Version 6)
 * ~~Link existing frames based on relative position~~
 * Stats and minutes saved (because nothing is better than being able to quantify how much time you've saved)
 * ~~Add user onboarding~~ (Released in Figma Version 5)
