@@ -118,7 +118,7 @@ function createProtoFrames(protoNodes: Array<PrototypeNode>) {
   let numberAtEndRegex: RegExp = /\d+$/; // https://stackoverflow.com/questions/6340180/regex-to-get-the-number-from-the-end-of-a-string
   if (!topLevelFrame.name.match(numberAtEndRegex)) topLevelFrame.name = topLevelFrame.name + " 1";
   let suffix: any = topLevelFrame.name.match(numberAtEndRegex)[0]
-  let baseName = topLevelFrame.name.substring(0, topLevelFrame.name.indexOf(suffix))
+  let baseName = topLevelFrame.name.substring(0, topLevelFrame.name.lastIndexOf(suffix))
   suffix = Number(suffix)
 
   for (let i = 1; i < protoNodes.length; i++) {
