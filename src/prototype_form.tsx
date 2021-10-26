@@ -13,6 +13,7 @@ import { SwapVariant } from './swap_variant';
 import { Mode } from './main';
 import { HelpWdiget } from './components/help_widget';
 import { UI } from './ui';
+import { CustomInput } from './components/custom_inputs';
 
 const ErrorBox = function (props) {
   return (

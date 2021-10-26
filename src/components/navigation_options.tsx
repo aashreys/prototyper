@@ -8,6 +8,7 @@ import { RightStickIcon } from '../icons/right_stick';
 import { ShoulderButtonsIcon } from '../icons/shoulder_buttons';
 import { TriggerButtonsIcon } from '../icons/trigger_buttons';
 import { NavScheme } from '../navigation';
+import { CustomInput } from './custom_inputs';
 
 const XBOX = 'Xbox One'
 const PS4 = 'PS4'
@@ -105,6 +106,8 @@ export class NavigationOptions extends Component<any, any> {
         <DeviceSelect onDeviceChange={this.onDeviceChange} value={this.getUiValueFromConfig(props.device)} />
         <VerticalSpace space='extraSmall' />
         <NavigationSelect onNavChange={this.onNavChange} value={this.getUiValueFromConfig(props.navigation)} />
+        <VerticalSpace space='extraSmall' />
+        <CustomInput />
       </Fragment>
     )
   }
