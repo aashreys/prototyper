@@ -43,7 +43,7 @@ enum Direction {
 export class NearestNeighbor {
   
   static assignNeigbors(navigables: Array<Navigable>): void {
-    NearestNeighbor._assignNeigborsFromCenters(navigables);
+    NearestNeighbor._assignNeigborsFromAnchors(navigables);
   }
 
   /* First nearest neighbor algorithm for Prototyper. Works great for regular symmetric grids, but poor for staggered, asymmetric grids. Replaced by new anchor point based algorithm. */
