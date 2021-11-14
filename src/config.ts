@@ -1,17 +1,15 @@
 import { Animation, AnimationType } from "./animation";
-import { Navigation, NavScheme } from "./navigation";
+import { Navigation, NavigationKeycodes, NavScheme } from "./navigation";
 import { Device } from "./device";
 import { SwapVariant } from "./swap_variant";
 
 export class Config {
 
   static CONFIG_VERSION_KEY = 'config_version';
-  static CONFIG_VERSION = 4;
+  static CONFIG_VERSION = 5;
 
   static CONFIG_KEY = 'config';
   static GAP = 100;
-
-  readonly device: Device
 
   readonly navigation: Navigation
 
@@ -20,12 +18,10 @@ export class Config {
   readonly animation: Animation
 
   constructor(
-    device,
-    navigation,
-    swapVariant,
-    animation
+    navigation: Navigation,
+    swapVariant: SwapVariant,
+    animation: Animation
   ) {
-    this.device = device;
     this.navigation = navigation;
     this.swapVariant = swapVariant;
     this.animation = animation;
@@ -33,7 +29,6 @@ export class Config {
 
   updateNavigation(navigation: Navigation) {
     return new Config(
-      this.device,
       navigation,
       this.swapVariant,
       this.animation
@@ -69,8 +64,11 @@ export class Config {
 
   static getDefaultConfig() {
     return new Config(
-      Device.XBOX,
-      Navigation.createNavigation(Device.XBOX, NavScheme.DPAD),
+      {
+        device: Device.XBOX,
+        scheme: NavScheme.DPAD,
+        customKeycodes: new NavigationKeycodes()
+      },
       { property: '', from: '', to: '' },
       {
         animType: AnimationType.EASE_IN,

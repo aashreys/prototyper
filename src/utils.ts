@@ -2,7 +2,7 @@ import { Animation } from "./animation";
 import { AnimationType } from "./animation";
 import { Config } from "./config";
 import { Device } from "./device";
-import { NavScheme } from "./navigation";
+import { NavigationKeycodes, NavScheme } from "./navigation";
 
 export class Utils {
 
@@ -141,17 +141,22 @@ export class Utils {
     return node.absoluteTransform[1][2]
   }
 
-  static addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config, ) 
+  static addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config) 
   {
+    let device = config.navigation.device
+    let animation = config. animation
+    let keycodes = NavigationKeycodes.fromConfig(config);
+
     let reactions: Array<Reaction> = Utils.clone(frame.reactions);
-    if (left) reactions.push(Utils.createReaction(left, config.device, config.animation, config.navigation.left));
-    if (right) reactions.push(Utils.createReaction(right, config.device, config.animation, config.navigation.right));
-    if (top) reactions.push(Utils.createReaction(top, config.device, config.animation, config.navigation.up));
-    if (bottom) reactions.push(Utils.createReaction(bottom, config.device, config.animation, config.navigation.down));
+    if (left && keycodes.left.length > 0) reactions.push(Utils.createReaction(left, device, animation, keycodes.left))
+    if (right && keycodes.right.length > 0) reactions.push(Utils.createReaction(right, device, animation, keycodes.right))
+    if (top && keycodes.up.length > 0) reactions.push(Utils.createReaction(top, device, animation, keycodes.up))
+    if (bottom && keycodes.down.length > 0) reactions.push(Utils.createReaction(bottom, device, animation, keycodes.down))
+
     frame.reactions = reactions;
   }
 
-  static createReaction(toFrame: FrameNode, device: Device, animation: Animation, keycode: number): Reaction {
+  static createReaction(toFrame: FrameNode, device: Device, animation: Animation, keycode: Array<number>): Reaction {
     let reaction: Reaction = {
       action: {
         type: "NODE",
@@ -163,7 +168,7 @@ export class Utils {
       trigger: {
         type: "ON_KEY_DOWN",
         device: device,
-        keyCodes: [keycode],
+        keyCodes: keycode,
       }
     };
     return reaction;

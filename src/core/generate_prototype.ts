@@ -17,7 +17,7 @@ export function doGeneratePrototype(config: Config) {
   let protoNodes: Array<PrototypeNode> = instances.map(node => PrototypeNode.fromInstance(node));
   sortProtoNodes(protoNodes);
   assignNodeNeighbors(protoNodes);
-  validateNavigationDirection(protoNodes, config);
+  // validateNavigationDirection(protoNodes, config);
 
   let protoFrames = createProtoFrames(protoNodes);
   assignFrameNeighors(protoFrames, protoNodes);

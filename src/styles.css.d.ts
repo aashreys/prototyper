@@ -6,6 +6,7 @@ declare const styles: {
   readonly "separator": string;
   readonly "onboardingContainer": string;
   readonly "errorText": string;
+  readonly "hideCaret": string;
 };
 export = styles;
 

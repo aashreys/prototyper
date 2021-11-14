@@ -2,6 +2,7 @@
   "dependencies": {
     "@create-figma-plugin/ui": "^1.4.0",
     "@create-figma-plugin/utilities": "^1.4.0",
+    "gamepad.js": "^1.0.4",
     "preact": "^10.5.14"
   },
   "devDependencies": {

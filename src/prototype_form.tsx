@@ -1,26 +1,24 @@
 import { Container, VerticalSpace, Button, Text } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
 import { h, Component } from 'preact'
-import { useState } from 'preact/hooks'
 import { Navigation, NavScheme } from "./navigation";
 import { Constants } from './constants';
 import { AnimationOptions } from './components/animation_options';
 import { AnimationType } from './animation';
-import { Device } from './device';
 import { NavigationOptions } from './components/navigation_options';
 import { VariantSwapOptions } from './components/variant_swap_options';
 import { SwapVariant } from './swap_variant';
 import { Mode } from './main';
 import { HelpWdiget } from './components/help_widget';
 import { UI } from './ui';
-import { CustomInput } from './components/custom_inputs';
+import styles from './styles.css';
 
 const ErrorBox = function (props) {
   return (
     props.visible &&
     <div>
       <VerticalSpace space='large' />
-      <Text style='color: red;'>{props.message}</Text>
+      <text class={styles.errorText}>{props.message}</text>
     </div>
   )
 }
@@ -32,6 +30,7 @@ export class PrototypeForm extends Component<any, any>  {
     ui: {
       showVariantPropertyError: false,
       showVariantToValueError: false,
+      showCustomInputError: false,
       buttonLoading: false,
       errorMessage: ''
     }
@@ -53,8 +52,7 @@ export class PrototypeForm extends Component<any, any>  {
     this.componentDidUpdate = this.componentDidUpdate.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.onAnimChange = this.onAnimChange.bind(this);
-    this.onDeviceChange = this.onDeviceChange.bind(this);
-    this.onNavChange = this.onNavChange.bind(this);
+    this.onNavigationChange = this.onNavigationChange.bind(this);
     this.onSwapVariantChange = this.onSwapVariantChange.bind(this);
     this.registerEventHandlers = this.registerEventHandlers.bind(this);
   }
@@ -108,7 +106,8 @@ export class PrototypeForm extends Component<any, any>  {
       ui: {
         ...prevState.ui,
         showVariantPropertyError: this.state.config.swapVariant.property == 0,
-        showVariantToValueError: this.state.config.swapVariant.to == 0
+        showVariantToValueError: this.state.config.swapVariant.to == 0,
+        showCustomInputError: this.isCustomInputValid()
       }
     }))
   }
@@ -119,7 +118,8 @@ export class PrototypeForm extends Component<any, any>  {
       ui: {
         ...prevState.ui,
         showVariantPropertyError: false,
-        showVariantToValueError: false
+        showVariantToValueError: false,
+        showCustomInputError: false
       }
     }))
   }
@@ -144,33 +144,45 @@ export class PrototypeForm extends Component<any, any>  {
     }))
   }
 
-  onDeviceChange(device: Device) {
+  onNavigationChange(navigation: Navigation) {
     this.setState(prevState => ({
       config: {
         ...prevState.config,
-        device: device
-      }
-    }));
-  }
-
-  onNavChange(navScheme: NavScheme) {
-    this.setState(prevState => ({
-      config: {
-        ...prevState.config,
-        navigation: Navigation.createNavigation(this.state.config.device, navScheme)
+        navigation: navigation
       }
     }));
   }
 
   validate() {
+    let config = this.state.config
+
+    let scheme = config.navigation.scheme
+    let keyCodes = config.navigation.customKeycodes;
+
+    let isCustonInputValid = (scheme !== NavScheme.CUSTOM || 
+      (scheme === NavScheme.CUSTOM && 
+        keyCodes.left.length > 0 || keyCodes.right.length > 0 || keyCodes.up.length > 0 || keyCodes.down.length > 0))
+
     if (this.props.mode === Mode.GENERATE) {
-      let variantProperty = this.state.config.swapVariant.property
-      let variantToValue = this.state.config.swapVariant.to
-      return variantProperty.length > 0 && variantToValue.length > 0
+      let variantProperty = config.swapVariant.property
+      let variantToValue = config.swapVariant.to
+      return variantProperty.length > 0 && variantToValue.length > 0 && isCustonInputValid
     }
     else if (this.props.mode === Mode.LINK) {
-      return true;
+      return isCustonInputValid;
     }
+  }
+
+  isCustomInputValid() {
+    let config = this.state.config
+    let scheme = config.navigation.scheme
+    let keyCodes = config.navigation.customKeycodes
+    return (scheme !== NavScheme.CUSTOM || 
+      (scheme === NavScheme.CUSTOM && 
+        keyCodes.left.length === 0 && 
+        keyCodes.right.length === 0 && 
+        keyCodes.up.length === 0 && 
+        keyCodes.down.length === 0))
   }
 
   onAnimChange(animation: AnimationType) {
@@ -208,10 +220,9 @@ export class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='extraLarge' />
 
         <NavigationOptions
-          onDeviceChange={this.onDeviceChange}
-          onNavChange={this.onNavChange}
-          device={this.state.config.device}
-          navigation={this.state.config.navigation.scheme}
+          onNavigationChange={this.onNavigationChange}
+          navigation={this.state.config.navigation}
+          showCustomInputError={this.state.ui.showCustomInputError}
         />
 
         <VerticalSpace space='large' />

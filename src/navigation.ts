@@ -1,42 +1,55 @@
+import { Config } from "./config";
 import { Device, Keycode } from "./device";
 
 export enum NavScheme {
 
   DPAD = 0,
-  LEFT_STICK,
-  RIGHT_STICK,
-  SHOULDER_BUTTONS,
-  TRIGGER_BUTTONS
+  LEFT_STICK, // 1
+  RIGHT_STICK, // 2
+  SHOULDER_BUTTONS, // 3
+  TRIGGER_BUTTONS, // 4
+  CUSTOM // 5
 
 }
 
-export class Navigation {
+export class NavigationKeycodes {
+  
 
-  readonly scheme: NavScheme
-  readonly left: Keycode
-  readonly right: Keycode
-  readonly up: Keycode
-  readonly down: Keycode
+  readonly left: Array<number> = [];
+  readonly right: Array<number> = [];
+  readonly up: Array<number> = [];
+  readonly down: Array<number> = [];
 
-  constructor(scheme: NavScheme, left: Keycode, right: Keycode, up: Keycode, down: Keycode) {
-    this.scheme = scheme
-    this.left = left
-    this.right = right
-    this.up = up
-    this.down = down
+  constructor(left?: Array<number>, right?: Array<number>, up?: Array<number>, down?: Array<number>) {
+    this.left = left ? left : []
+    this.right = right ? right : []
+    this.up = up ? up : []
+    this.down = down ? down : []
   }
 
-  static createNavigation(device: Device, scheme: NavScheme) {
-    return new Navigation(
-      scheme,
-      this.getLeft(device, scheme),
-      this.getRight(device, scheme),
-      this.getUp(device, scheme),
-      this.getDown(device, scheme)
+  static fromConfig(config: Config) {
+    if (config.navigation.scheme !== NavScheme.CUSTOM) {
+      return NavigationKeycodes.fromDeviceScheme(config.navigation.device, config.navigation.scheme)
+    }
+    else {
+      return config.navigation.customKeycodes
+    }
+  }
+
+  private static fromDeviceScheme(device: Device, scheme: NavScheme) {
+    let left = this.getLeftKeycode(device, scheme)
+    let right = this.getRightKeycode(device, scheme)
+    let up = this.getUpKeycode(device, scheme)
+    let down = this.getDownKeycode(device, scheme)
+    return new NavigationKeycodes(
+      left ? [left] : [],
+      right ? [right] : [],
+      up ? [up] : [],
+      down ? [down] : [],
     )
   }
 
-  static getLeft(device: Device, scheme: NavScheme) {
+  static getLeftKeycode(device: Device, scheme: NavScheme) {
     switch (device) {
       case Device.XBOX:
         switch (scheme) {
@@ -67,7 +80,7 @@ export class Navigation {
     }
   }
 
-  static getRight(device: Device, scheme: NavScheme) {
+  static getRightKeycode(device: Device, scheme: NavScheme) {
     switch (device) {
       case Device.XBOX:
         switch (scheme) {
@@ -98,7 +111,7 @@ export class Navigation {
     }
   }
 
-  static getUp(device: Device, scheme: NavScheme) {
+  static getUpKeycode(device: Device, scheme: NavScheme) {
     switch (device) {
       case Device.XBOX:
         switch (scheme) {
@@ -129,7 +142,7 @@ export class Navigation {
     }
   }
 
-  static getDown(device: Device, scheme: NavScheme) {
+  static getDownKeycode(device: Device, scheme: NavScheme) {
     switch (device) {
       case Device.XBOX:
         switch (scheme) {
@@ -158,5 +171,19 @@ export class Navigation {
           case NavScheme.TRIGGER_BUTTONS: return undefined;
         }
     }
+  }
+
+}
+
+export class Navigation {
+
+  readonly device: Device
+  readonly scheme: NavScheme
+  readonly customKeycodes: NavigationKeycodes
+
+  constructor(device: Device, scheme: NavScheme, customKeycodes: NavigationKeycodes) {
+    this.device = device
+    this.scheme = scheme
+    this.customKeycodes = customKeycodes
   }
 }

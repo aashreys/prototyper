@@ -31,12 +31,12 @@ export default function () {
     () => {console.error('Failed to loading onboarding status')}
   )
 
-  on(Constants.EVENT_GENERATE, (data) => {
-    runPlugin(data, Mode.GENERATE);
+  on(Constants.EVENT_GENERATE, (config) => {
+    runPlugin(config, Mode.GENERATE);
   });
 
-  on(Constants.EVENT_LINK, (data) => {
-    runPlugin(data, Mode.LINK);
+  on(Constants.EVENT_LINK, (config) => {
+    runPlugin(config, Mode.LINK);
   });
 
   on(Constants.EVENT_UI_RESIZE, (height) => {
