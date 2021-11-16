@@ -45,7 +45,7 @@ export class PrototypeForm extends Component<any, any>  {
 
   bindMethods() {
     this.onClick = this.onClick.bind(this);
-    this.validate = this.validate.bind(this);
+    this.validateAndShowErrors = this.validateAndShowErrors.bind(this);
     this.setButtonLoading = this.setButtonLoading.bind(this);
     this.onError = this.onError.bind(this);
     this.onDone = this.onDone.bind(this);
@@ -78,7 +78,7 @@ export class PrototypeForm extends Component<any, any>  {
     })
     on(Constants.EVENT_CLEAR_UI_ERRORS, () => {
       this.setErrorMessage('')
-      this.hideValidationUi()
+      this.hideErrorUi()
     })
   }
 
@@ -93,35 +93,14 @@ export class PrototypeForm extends Component<any, any>  {
 
   onClick = e => {
     this.setErrorMessage('')
-    this.updateValidationUi()
-    if (this.validate()) {
+    if (this.validateAndShowErrors()) {
       this.setButtonLoading(true);
       emit(this.props.buttonEvent, this.state.config);
     }
   }
 
-  updateValidationUi() {
-    this.setState(prevState => ({
-      config: prevState.config,
-      ui: {
-        ...prevState.ui,
-        showVariantPropertyError: this.state.config.swapVariant.property == 0,
-        showVariantToValueError: this.state.config.swapVariant.to == 0,
-        showCustomInputError: this.isCustomInputValid()
-      }
-    }))
-  }
-
-  hideValidationUi() {
-    this.setState(prevState => ({
-      config: prevState.config,
-      ui: {
-        ...prevState.ui,
-        showVariantPropertyError: false,
-        showVariantToValueError: false,
-        showCustomInputError: false
-      }
-    }))
+  hideErrorUi() {
+    this.updateErrorUi(false, false, false)
   }
 
   setButtonLoading(bool) {
@@ -153,24 +132,37 @@ export class PrototypeForm extends Component<any, any>  {
     }));
   }
 
-  validate() {
+  validateAndShowErrors() {
     let config = this.state.config
-
     let scheme = config.navigation.scheme
     let keyCodes = config.navigation.customKeycodes;
 
+    let isVariantPropertyValid = config.swapVariant.property.length > 0
+    let isVariantToValueValid = config.swapVariant.to.length > 0
     let isCustonInputValid = (scheme !== NavScheme.CUSTOM || 
       (scheme === NavScheme.CUSTOM && 
         keyCodes.left.length > 0 || keyCodes.right.length > 0 || keyCodes.up.length > 0 || keyCodes.down.length > 0))
 
     if (this.props.mode === Mode.GENERATE) {
-      let variantProperty = config.swapVariant.property
-      let variantToValue = config.swapVariant.to
-      return variantProperty.length > 0 && variantToValue.length > 0 && isCustonInputValid
-    }
+      this.updateErrorUi(!isVariantPropertyValid, !isVariantToValueValid, !isCustonInputValid)
+      return isVariantPropertyValid && isVariantToValueValid && isCustonInputValid
+    } 
     else if (this.props.mode === Mode.LINK) {
+      this.updateErrorUi(false, false, !isCustonInputValid) // Always hide variant property and value errors in LINK
       return isCustonInputValid;
     }
+  }
+
+  updateErrorUi(showVariantPropertyError: boolean, showVariantToValueError: boolean, showCustomInputError: boolean) {
+    this.setState(prevState => ({
+      config: prevState.config,
+      ui: {
+        ...prevState.ui,
+        showVariantPropertyError: showVariantPropertyError,
+        showVariantToValueError: showVariantToValueError,
+        showCustomInputError: showCustomInputError
+      }
+    }))
   }
 
   isCustomInputValid() {
@@ -178,12 +170,11 @@ export class PrototypeForm extends Component<any, any>  {
     let scheme = config.navigation.scheme
     let keyCodes = config.navigation.customKeycodes
     return (scheme !== NavScheme.CUSTOM || 
-      (scheme === NavScheme.CUSTOM && 
-        keyCodes.left.length === 0 && 
-        keyCodes.right.length === 0 && 
-        keyCodes.up.length === 0 && 
-        keyCodes.down.length === 0))
+      (scheme === NavScheme.CUSTOM && (keyCodes.left.length > 0 || keyCodes.right.length > 0 || keyCodes.up.length > 0 
+        || keyCodes.down.length > 0)))
   }
+
+
 
   onAnimChange(animation: AnimationType) {
     this.setState(prevState => ({

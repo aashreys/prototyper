@@ -11,8 +11,6 @@ export enum Mode {
 }
 
 export default function () {
-
-  const TITLE = 'Prototyper (BETA)';
   const WIDTH = 240;
   const HEIGHT = 445;
 
@@ -22,7 +20,7 @@ export default function () {
   Config.migrateConfig();
 
   showUI(
-    { title: TITLE, width: WIDTH, height: HEIGHT },
+    { width: WIDTH, height: HEIGHT },
     { config: Config.isConfigSaved() ? Config.getSavedConfig() : Config.getDefaultConfig() }
   )
 
