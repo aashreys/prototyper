@@ -75,7 +75,8 @@ class CustomInputTextbox extends Component<any, any> {
   onGamepadAxisEvent(event) {
     if (this.state.isFocused) {
       let axisKeycode = this.getAxisKeycode(event)
-      if (axisKeycode) {
+      if (axisKeycode && axisKeycode > 0) { // Use > 0 value because axis reset keycode is -1
+        console.log('Axis Keycode: ' + axisKeycode)
         this.props.onKeycodeChange([axisKeycode])
       }
     }
