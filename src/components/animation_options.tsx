@@ -92,7 +92,8 @@ const AnimationDurationTextbox = function (props) {
   }
 
   function formatPropsValue(value) {
-    return value && value.length > 0 ? removeMsString(value) + 'ms' : value
+    let valueString = value.toString();
+    return valueString && valueString.length > 0 ? removeMsString(valueString) + 'ms' : valueString
   }
 
   function validateOnBlur(value: null | string): null | string | boolean {
