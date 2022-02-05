@@ -9,7 +9,7 @@
   "ui": "build/ui.js",
   "relaunchButtons": [
     {
-      "name": "Prototyper",
+      "name": "Launch Prototyper",
       "command": "default"
     }
   ]

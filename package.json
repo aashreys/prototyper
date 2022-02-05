@@ -8,7 +8,7 @@
   "devDependencies": {
     "@create-figma-plugin/build": "^1.4.0",
     "@create-figma-plugin/tsconfig": "^1.4.0",
-    "@figma/plugin-typings": "1.33.0",
+    "@figma/plugin-typings": "1.42.1",
     "typescript": "^4"
   },
   "scripts": {
@@ -25,7 +25,7 @@
     "ui": "src/ui.tsx",
     "relaunchButtons": {
       "default": {
-        "name": "Prototyper",
+        "name": "Launch Prototyper",
         "main": "src/main.ts",
         "ui": "src/ui.tsx"
       }

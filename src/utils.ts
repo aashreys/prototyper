@@ -54,6 +54,10 @@ export class Utils {
     return false;
   }
 
+  static hasVariantErrors(instance) {
+    return typeof instance.variantProperties === 'string' && instance.variantProperties.indexOf('error') > -1
+  }
+
   static hasVariantProperty(instance, property) {
     let properties = instance.variantProperties;
     return properties !== null && property in properties;

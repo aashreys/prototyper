@@ -13,6 +13,7 @@ export function doGeneratePrototype(config: Config) {
   let instances: Array<InstanceNode> = filterInstancesFromSelection(figma.currentPage.selection)
   validateInstances(instances, config)
   sanitizeInstances(instances, config);
+
   
   let protoNodes: Array<PrototypeNode> = instances.map(node => PrototypeNode.fromInstance(node));
   sortProtoNodes(protoNodes);
@@ -56,6 +57,9 @@ function validateVariantProperties(instances: Array<InstanceNode>, swapVariant: 
   let from = swapVariant.from;
   let to = swapVariant.to;
   for (let instance of instances) {
+    if (Utils.hasVariantErrors(instance)) {
+      throw new Error(`Found errors in the component set for layer "${instance.name}". Please resolve the errors and try again.`)
+    }
     if (!Utils.hasVariantProperty(instance, property)) {
       throw new Error(`Cannot find variant property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
     }
