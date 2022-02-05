@@ -4,6 +4,10 @@ import { Onboarding } from './onboarding.js'
 import { Constants } from './constants';
 import { doGeneratePrototype } from './core/generate_prototype.js';
 import { doLinkFrames } from './core/link_frames.js';
+import { setRelaunchButton } from '@create-figma-plugin/utilities';
+
+const WIDTH = 240;
+const HEIGHT = 445;
 
 export enum Mode {
   GENERATE,
@@ -11,12 +15,12 @@ export enum Mode {
 }
 
 export default function () {
-  const WIDTH = 240;
-  const HEIGHT = 445;
-
   let config: Config
 
-  /* Main Program */
+  /* Set Relaunch Button */
+  setRelaunchButton(figma.root, 'default')
+
+  /* Run Main Program */
   Config.migrateConfig();
 
   showUI(

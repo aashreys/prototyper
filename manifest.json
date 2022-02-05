@@ -6,5 +6,11 @@
   "id": "1020894954864594118",
   "name": "Prototyper",
   "main": "build/main.js",
-  "ui": "build/ui.js"
+  "ui": "build/ui.js",
+  "relaunchButtons": [
+    {
+      "name": "Prototyper",
+      "command": "default"
+    }
+  ]
 }
