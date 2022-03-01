@@ -17,8 +17,8 @@ export enum Mode {
 export default function () {
   let config: Config
 
-  /* Set Relaunch Button */
-  setRelaunchButton(figma.root, 'default')
+  /* Set Relaunch Button if not already set */
+  if (!('default' in figma.root.getRelaunchData())) setRelaunchButton(figma.root, 'default')
 
   /* Run Main Program */
   Config.migrateConfig();
