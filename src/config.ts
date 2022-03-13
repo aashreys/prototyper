@@ -6,33 +6,29 @@ import { SwapVariant } from "./swap_variant";
 export class Config {
 
   static CONFIG_VERSION_KEY = 'config_version';
-  static CONFIG_VERSION = 5;
+  static CONFIG_VERSION = 6;
 
   static CONFIG_KEY = 'config';
   static GAP = 100;
 
-  readonly navigation: Navigation
+  readonly activeNavigation: Navigation
+  
+  readonly storedNavigation: StoredNavigation
 
   readonly swapVariant: SwapVariant
 
   readonly animation: Animation
 
   constructor(
-    navigation: Navigation,
+    activeNavigation: Navigation,
+    storedNavigation: StoredNavigation,
     swapVariant: SwapVariant,
     animation: Animation
   ) {
-    this.navigation = navigation;
+    this.activeNavigation = activeNavigation
+    this.storedNavigation = storedNavigation
     this.swapVariant = swapVariant;
     this.animation = animation;
-  }
-
-  updateNavigation(navigation: Navigation) {
-    return new Config(
-      navigation,
-      this.swapVariant,
-      this.animation
-    );
   }
 
   static isConfigSaved() {
@@ -41,7 +37,14 @@ export class Config {
   }
 
   static getSavedConfig() {
-    return JSON.parse(figma.root.getPluginData(Config.CONFIG_KEY));
+    try {
+      return JSON.parse(figma.root.getPluginData(Config.CONFIG_KEY));
+    }
+    catch (e) {
+      console.error('Unable to retrieve saved config because: ' + e)
+      console.log('Loading default config to recover...')
+      return this.getDefaultConfig()
+    }
   }
 
   static clear() {
@@ -61,13 +64,28 @@ export class Config {
   private static saveConfigVersion(version: number) {
     figma.root.setPluginData(Config.CONFIG_VERSION_KEY, JSON.stringify(version));
   }
+  
 
   static getDefaultConfig() {
+    let controllerNavigation: Navigation = {
+      device: Device.XBOX,
+      scheme: NavScheme.DPAD,
+      customKeycodes: new NavigationKeycodes()
+    }
+
+    let keyboardNavigation: Navigation = {
+      device: Device.KEYBOARD,
+      scheme: NavScheme.ARROW_KEYS,
+      customKeycodes: new NavigationKeycodes()
+    }
+
+    let activeNavigation = controllerNavigation
+
     return new Config(
+      activeNavigation,
       {
-        device: Device.XBOX,
-        scheme: NavScheme.DPAD,
-        customKeycodes: new NavigationKeycodes()
+        keyboard: keyboardNavigation,
+        controller: controllerNavigation
       },
       { property: '', from: '', to: '' },
       {
@@ -86,5 +104,12 @@ export class Config {
       this.saveConfigVersion(this.CONFIG_VERSION); // Update current config version
     }
   }
+
+}
+
+export interface StoredNavigation {
+
+  keyboard: Navigation
+  controller: Navigation
 
 }

@@ -28,9 +28,14 @@ export default function () {
     { config: Config.isConfigSaved() ? Config.getSavedConfig() : Config.getDefaultConfig() }
   )
 
-  Onboarding.isCompleteAsync().then(
-    (isComplete) => {emit(Constants.EVENT_ONBOARDING_STATUS_LOADED, isComplete? isComplete : false)},
-    () => {console.error('Failed to loading onboarding status')}
+  Onboarding.isCompleteAsync()
+  .then(
+    (isComplete) => {
+      emit(Constants.EVENT_ONBOARDING_STATUS_LOADED, isComplete? isComplete : false)
+    },
+    () => {
+      console.error('Failed to loading onboarding status')
+    }
   )
 
   on(Constants.EVENT_GENERATE, (config) => {

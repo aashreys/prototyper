@@ -2,7 +2,15 @@ import { Animation } from "./animation";
 import { AnimationType } from "./animation";
 import { Config } from "./config";
 import { Device } from "./device";
-import { NavigationKeycodes, NavScheme } from "./navigation";
+import { NavigationKeycodes } from "./navigation";
+
+export enum OS {
+
+  MAC_OS,
+  WINDOWS,
+  OTHER
+
+}
 
 export class Utils {
 
@@ -132,11 +140,6 @@ export class Utils {
     node.setProperties(variantProperties);
   }
 
-  static isUniDirectionalNav(config: Config) {
-    let scheme = config.navigation.scheme
-    return scheme === NavScheme.SHOULDER_BUTTONS || scheme === NavScheme.TRIGGER_BUTTONS
-  }
-
   static getAbsoluteX(node: SceneNode) {
     return node.absoluteTransform[0][2]
   }
@@ -147,7 +150,7 @@ export class Utils {
 
   static addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config) 
   {
-    let device = config.navigation.device
+    let device = config.activeNavigation.device
     let animation = config. animation
     let keycodes = NavigationKeycodes.fromConfig(config);
 
@@ -229,6 +232,29 @@ export class Utils {
       }
     }
     throw 'unknown'
+  }
+
+  static getCtrlString() {
+
+  }
+
+  static getAltString() {
+
+  }
+
+  static getMetaString() {
+
+  }
+
+  static getShiftString() {
+
+  }
+
+  static getOs(): OS {
+    let platform = navigator.platform
+    if (platform.indexOf('Mac') > 0) return OS.MAC_OS
+    else if (platform.indexOf('Win') > 0) return OS.WINDOWS
+    else return OS.OTHER
   }
 
 }

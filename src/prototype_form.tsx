@@ -12,6 +12,8 @@ import { Mode } from './main';
 import { HelpWdiget } from './components/help_widget';
 import { UI } from './ui';
 import styles from './styles.css';
+import { Config, StoredNavigation } from './config';
+import { Device } from './device';
 
 const ErrorBox = function (props) {
   return (
@@ -25,7 +27,7 @@ const ErrorBox = function (props) {
 
 export class PrototypeForm extends Component<any, any>  {
 
-  state = {
+  state: UIState = {
     config: undefined,
     ui: {
       showVariantPropertyError: false,
@@ -124,18 +126,26 @@ export class PrototypeForm extends Component<any, any>  {
   }
 
   onNavigationChange(navigation: Navigation) {
+    let storedNavigation: StoredNavigation = this.state.config.storedNavigation
+    if (navigation.device === Device.KEYBOARD) {
+      storedNavigation.keyboard = navigation
+    } else {
+      storedNavigation.controller = navigation
+    }
+
     this.setState(prevState => ({
       config: {
         ...prevState.config,
-        navigation: navigation
+        activeNavigation: navigation,
+        storedNavigation: storedNavigation
       }
     }));
   }
 
   validateAndShowErrors() {
     let config = this.state.config
-    let scheme = config.navigation.scheme
-    let keyCodes = config.navigation.customKeycodes;
+    let scheme = config.activeNavigation.scheme
+    let keyCodes = config.activeNavigation.customKeycodes;
 
     let isVariantPropertyValid = config.swapVariant.property.length > 0
     let isVariantToValueValid = config.swapVariant.to.length > 0
@@ -167,11 +177,10 @@ export class PrototypeForm extends Component<any, any>  {
 
   isCustomInputValid() {
     let config = this.state.config
-    let scheme = config.navigation.scheme
-    let keyCodes = config.navigation.customKeycodes
+    let scheme = config.activeNavigation.scheme
+    let keyCodes = config.activeNavigation.customKeycodes
     return (scheme !== NavScheme.CUSTOM || 
-      (scheme === NavScheme.CUSTOM && (keyCodes.left.length > 0 || keyCodes.right.length > 0 || keyCodes.up.length > 0 
-        || keyCodes.down.length > 0)))
+      (scheme === NavScheme.CUSTOM && (keyCodes.left.length > 0 || keyCodes.right.length > 0 || keyCodes.up.length > 0 || keyCodes.down.length > 0)))
   }
 
 
@@ -212,7 +221,9 @@ export class PrototypeForm extends Component<any, any>  {
 
         <NavigationOptions
           onNavigationChange={this.onNavigationChange}
-          navigation={this.state.config.navigation}
+          activeNavigation={this.state.config.activeNavigation}
+          keyboardNavigation={this.state.config.storedNavigation.keyboard}
+          controllerNavigation={this.state.config.storedNavigation.controller}
           showCustomInputError={this.state.ui.showCustomInputError}
         />
 
@@ -252,4 +263,9 @@ export class PrototypeForm extends Component<any, any>  {
       </Container>
     );
   }
+}
+
+interface UIState {
+  config: Config,
+  ui: any
 }

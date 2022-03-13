@@ -3,6 +3,7 @@ import { Component, h } from "preact";
 import styles from "../styles.css";
 import { GamepadListener } from 'gamepad.js'
 import { Device, Keycode } from "../device";
+import { OS, Utils } from "../utils";
 
 const PRESS_KEY = 'Press Key'
 
@@ -27,6 +28,8 @@ class CustomInputTextbox extends Component<any, any> {
     this.setupGamepadListeners = this.setupGamepadListeners.bind(this)
     this.onGamepadButtonEvent = this.onGamepadButtonEvent.bind(this)
     this.onGamepadAxisEvent = this.onGamepadAxisEvent.bind(this)
+    this.onInputCleared = this.onInputCleared.bind(this)
+    this.onKeyboardEvent = this.onKeyboardEvent.bind(this)
   }
 
   setupGamepadListeners() {
@@ -60,11 +63,34 @@ class CustomInputTextbox extends Component<any, any> {
     this.setState({isFocused: false});
   }
 
-  onKeyDownCapture(e) {
-    if (e.keyCode === 8 || e.keyCode === 46) { // Delete or Backspace pressed
-      this.props.onKeycodeChange([]) // Clear keycode
-    }
+  onKeyDownCapture(event) {
+    // Clear keycode when Backspace is pressed
+    if (event.keyCode === Keycode.KBD_BACKSPC) this.onInputCleared()
+    // If keycode is not just a modifer press, consume it as a custom input
+    else if (!this.isModifierKeyCode(event.keyCode)) this.onKeyboardEvent(event)
+    
+    event.preventDefault() // Stop textbox from displaying regular keyboard input
   }
+
+  isModifierKeyCode(keycode: number) {
+    return keycode === Keycode.KBD_SHIFT || keycode === Keycode.KBD_CTRL || keycode === Keycode.KBD_ALT || keycode === Keycode.KBD_META
+  }
+
+  onInputCleared() {
+    this.props.onKeycodeChange([])
+  }
+
+  onKeyboardEvent(event: KeyboardEvent) {
+    console.log(Utils.getOs())
+    let keycodes: number[] = []
+    keycodes.push(event.keyCode)
+    if (event.metaKey) keycodes.push(Keycode.KBD_META)
+    if (event.ctrlKey) keycodes.push(Keycode.KBD_CTRL)
+    if (event.altKey) keycodes.push(Keycode.KBD_ALT)
+    if (event.shiftKey) keycodes.push(Keycode.KBD_SHIFT)
+    this.props.onKeycodeChange(keycodes)
+  }
+  
 
   onGamepadButtonEvent(event) {
     if (this.state.isFocused) {
@@ -76,7 +102,6 @@ class CustomInputTextbox extends Component<any, any> {
     if (this.state.isFocused) {
       let axisKeycode = this.getAxisKeycode(event)
       if (axisKeycode && axisKeycode > 0) { // Use > 0 value because axis reset keycode is -1
-        console.log('Axis Keycode: ' + axisKeycode)
         this.props.onKeycodeChange([axisKeycode])
       }
     }
@@ -127,8 +152,61 @@ class CustomInputTextbox extends Component<any, any> {
     }
   }
   
-  getKeyString(device: Device, keycodes: Array<number>): string {
-    return keycodes.length > 0 ? this.getGamepadKeyString(device, keycodes[0]) : ''
+  getKeyString(device: Device, keycodes: number[]): string {
+    if (keycodes.length > 0) {
+      if (device === Device.KEYBOARD) {
+        return this.getKeyboardKeyString(keycodes)
+      } else {
+        return this.getGamepadKeyString(device, keycodes[0])
+      }
+    } else {
+      return ''
+    }
+  }
+
+  getKeyboardKeyString(keycodes: number[]) {
+    let os = Utils.getOs()
+    let string = ''
+
+    switch (os) {
+      case OS.MAC_OS: {
+        for (let i = keycodes.length - 1; i >= 0; i--) {
+          switch(keycodes[i]) {
+            case Keycode.KBD_META: string = string + '⌘'; break;
+            case Keycode.KBD_CTRL: string = string + '⌃'; break;
+            case Keycode.KBD_ALT: string = string + '⌥'; break;
+            case Keycode.KBD_SHIFT: string = string + '⇧'; break;
+            default: string = string + String.fromCharCode(keycodes[i]); break;
+          }
+        }
+      }
+
+      case OS.WINDOWS: {
+        for (let i = keycodes.length - 1; i >= 0; i--) {
+          switch(keycodes[i]) {
+            case Keycode.KBD_META: string = string + '⌘+'; break;
+            case Keycode.KBD_CTRL: string = string + 'Ctrl+'; break;
+            case Keycode.KBD_ALT: string = string + 'Alt+'; break;
+            case Keycode.KBD_SHIFT: string = string + 'Shift+'; break;
+            default: string = string + String.fromCharCode(keycodes[i]); break;
+          }
+        }
+      }
+
+      case OS.OTHER: {
+        for (let i = keycodes.length - 1; i >= 0; i--) {
+          switch(keycodes[i]) {
+            case Keycode.KBD_META: string = string + '⌘+'; break;
+            case Keycode.KBD_CTRL: string = string + 'Ctrl+'; break;
+            case Keycode.KBD_ALT: string = string + 'Alt+'; break;
+            case Keycode.KBD_SHIFT: string = string + 'Shift+'; break;
+            default: string = string + String.fromCharCode(keycodes[i]); break;
+          }
+        }
+      }
+    }
+
+    return string
   }
 
   getGamepadKeyString(device: Device, keycode: number): string {

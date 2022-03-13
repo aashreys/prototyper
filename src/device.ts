@@ -2,8 +2,8 @@ export enum Device {
   XBOX = 'XBOX_ONE',
   PS4 = 'PS4',
   SWITCH_PRO = 'SWITCH_PRO',
+  KEYBOARD = 'KEYBOARD',
   // UNKNOWN_CONTROLLER = 'UNKNOWN_CONTROLLER',
-  // KEYBOARD = 'KEYBOARD',
   // MOUSE = 'MOUSE'
 }
 
@@ -84,4 +84,21 @@ export enum Keycode {
   SWITCH_RS_RIGHT = 1005,
   SWITCH_RS_UP = 1006,
   SWITCH_RS_DOWN = 1007,
+
+  KBD_ARROW_UP = 38,
+  KBD_ARROW_DOWN = 40,
+  KBD_ARROW_LEFT = 37,
+  KBD_ARROW_RIGHT = 39,
+  KBD_W = 87,
+  KBD_A = 65,
+  KBD_S = 83,
+  KBD_D = 68,
+  KBD_Q = 81,
+  KBD_E = 69,
+  KBD_SHIFT = 16,
+  KBD_TAB = 9,
+  KBD_BACKSPC = 8,
+  KBD_CTRL = 17,
+  KBD_ALT = 18,
+  KBD_META = 91, // Command or Win key
 }

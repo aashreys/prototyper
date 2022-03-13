@@ -145,16 +145,6 @@ function assignFrameNeighors(protoFrames: Array<PrototypeFrame>, protoNodes: Arr
   }
 }
 
-function validateNavigationDirection(protoNodes: PrototypeNode[], config: Config) {
-  if (Utils.isUniDirectionalNav(config)) {
-    for (let protoNode of protoNodes) {
-      if (protoNode.neighbors.top || protoNode.neighbors.bottom) {
-        throw new Error('Please only select layers that are arranged horizontally because your current navigation choice does not support vertical navigation')
-      }
-    }
-  }
-}
-
 function layoutFrames(frames: Array<PrototypeFrame>) {
   // Since the first frame is the user's reference and already on the canvas, use it as the starting point
   let width = frames[0].topLevelFrame.width;
@@ -212,24 +202,6 @@ function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config) 
       config
     )
   }
-}
-
-function createReaction(toNode: FrameNode, device: Device, animation: Animation, keycode: number): Reaction {
-  let reaction: Reaction = {
-    action: {
-      type: "NODE",
-      destinationId: toNode.id,
-      navigation: "NAVIGATE",
-      transition: createTransition(animation),
-      preserveScrollPosition: false,
-    },
-    trigger: {
-      type: "ON_KEY_DOWN",
-      device: device,
-      keyCodes: [keycode],
-    }
-  };
-  return reaction;
 }
 
 function createTransition(animation: Animation): Transition {
