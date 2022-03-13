@@ -246,7 +246,7 @@ class CustomInputTextbox extends Component<any, any> {
 
         case Device.PS4: 
           switch (keycode) {
-            case Keycode.PS4_X: return "X"
+            case Keycode.PS4_X: return "Cross"
             case Keycode.PS4_CIRCLE: return "Circle"
             case Keycode.PS4_SQUARE: return "Square"
             case Keycode.PS4_TRIANGLE: return "Triangle"
