@@ -41,7 +41,7 @@ export class Config {
       return JSON.parse(figma.root.getPluginData(Config.CONFIG_KEY));
     }
     catch (e) {
-      console.error('Unable to retrieve saved config because: ' + e)
+      console.error('Unable to retrieve saved config with error: ' + e)
       console.log('Loading default config to recover...')
       return this.getDefaultConfig()
     }

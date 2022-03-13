@@ -81,7 +81,6 @@ class CustomInputTextbox extends Component<any, any> {
   }
 
   onKeyboardEvent(event: KeyboardEvent) {
-    console.log(Utils.getOs())
     let keycodes: number[] = []
     keycodes.push(event.keyCode)
     if (event.metaKey) keycodes.push(Keycode.KBD_META)
@@ -179,6 +178,7 @@ class CustomInputTextbox extends Component<any, any> {
             default: string = string + String.fromCharCode(keycodes[i]); break;
           }
         }
+        break
       }
 
       case OS.WINDOWS: {
@@ -191,6 +191,7 @@ class CustomInputTextbox extends Component<any, any> {
             default: string = string + String.fromCharCode(keycodes[i]); break;
           }
         }
+        break
       }
 
       case OS.OTHER: {
@@ -203,6 +204,7 @@ class CustomInputTextbox extends Component<any, any> {
             default: string = string + String.fromCharCode(keycodes[i]); break;
           }
         }
+        break
       }
     }
 

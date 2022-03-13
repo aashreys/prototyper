@@ -252,8 +252,8 @@ export class Utils {
 
   static getOs(): OS {
     let platform = navigator.platform
-    if (platform.indexOf('Mac') > 0) return OS.MAC_OS
-    else if (platform.indexOf('Win') > 0) return OS.WINDOWS
+    if (platform.indexOf('Mac') >= 0) return OS.MAC_OS
+    else if (platform.indexOf('Win') >= 0) return OS.WINDOWS
     else return OS.OTHER
   }
 
