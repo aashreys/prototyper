@@ -30,6 +30,10 @@ Tech Debt:
 * Enable strict type checking in Typescript
 * Write unit tests to prevent regression over time
 
+## Bug List
+* Keyboard custom input fields do not recognize arrow inputs and some special character keys
+* Animation type dropdown does not fill the width of the plugin window
+
 ## Known Issues
 * PS5 controllers are not supported by Figma and hence do not work properly
 * ~~Navigation through staggered grids in unreliable - I plan to investigate and potentially address this in the future~~ (Implemented an improved nearest neighbor detection algorithm that vastly improves asymmetric grid navigation)
