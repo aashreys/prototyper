@@ -152,41 +152,116 @@ export class Utils {
     let device = config.activeNavigation.device
     let animation: Animation = config.animation
     let keycodes = NavigationKeycodes.fromConfig(config);
+    
     let isAutoDirection = animation.isAutoDirection
+    let autoDirectionAnimations = Utils.createAutoDirectionAnimation(animation)
 
     let reactions: Array<Reaction> = Utils.clone(frame.reactions);
     if (left && keycodes.left.length > 0) {
-      if (isAutoDirection) animation = Utils.changeAnimationDirection(animation, AnimationDirection.RIGHT)
-      reactions.push(Utils.createReaction(left, device, animation, keycodes.left))
+      reactions.push(Utils.createReaction(
+        left,
+        device,
+        isAutoDirection ? autoDirectionAnimations.left : animation,
+        keycodes.left
+      ))
     }
     
     if (right && keycodes.right.length > 0) {
-      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.LEFT)
-      reactions.push(Utils.createReaction(right, device, animation, keycodes.right))
+      reactions.push(Utils.createReaction(
+        right,
+        device,
+        isAutoDirection ? autoDirectionAnimations.right : animation,
+        keycodes.right
+      ))
     }
 
     if (top && keycodes.up.length > 0) {
-      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.BOTTOM)
-      reactions.push(Utils.createReaction(top, device, animation, keycodes.up))
+      reactions.push(Utils.createReaction(
+        top,
+        device,
+        isAutoDirection ? autoDirectionAnimations.top : animation,
+        keycodes.up
+      ))
     }
 
     if (bottom && keycodes.down.length > 0) {
-      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.TOP)
-      reactions.push(Utils.createReaction(bottom, device, animation, keycodes.down))
+      reactions.push(Utils.createReaction(
+        bottom,
+        device,
+        isAutoDirection ? autoDirectionAnimations.bottom : animation,
+        keycodes.down
+      ))
     }
 
     frame.reactions = reactions;
   }
 
-  private static changeAnimationDirection(animation: Animation, direction: AnimationDirection): Animation {
-    return {
-      type: animation.type,
-      isAutoDirection: animation.isAutoDirection,
-      direction: direction,
+  private static createAutoDirectionAnimation(animation: Animation) {
+    let leftType, rightType, topType, bottomType: AnimationType
+
+    if (animation.type === AnimationType.MOVE_IN) {
+      rightType = bottomType = AnimationType.MOVE_IN
+      leftType = topType = AnimationType.MOVE_OUT
+    } 
+    else if (animation.type === AnimationType.MOVE_OUT) {
+      rightType = bottomType = AnimationType.MOVE_OUT
+      leftType = topType = AnimationType.MOVE_IN
+    }
+    else if (animation.type === AnimationType.SLIDE_IN) {
+      rightType = bottomType = AnimationType.SLIDE_IN
+      leftType = topType = AnimationType.SLIDE_OUT
+    }
+    else if (animation.type === AnimationType.SLIDE_OUT) {
+      rightType = bottomType = AnimationType.SLIDE_OUT
+      leftType = topType = AnimationType.SLIDE_IN
+    }
+    else {
+      leftType = rightType = topType = bottomType = animation.type
+    }
+    
+    let leftAnim: Animation = {
+      type: leftType,
+      isAutoDirection: true,
+      direction: AnimationDirection.RIGHT,
       isMatchLayers: animation.isMatchLayers,
       easing: animation.easing,
       duration: animation.duration
     }
+
+    let rightAnim: Animation = {
+      type: rightType,
+      isAutoDirection: true,
+      direction: AnimationDirection.LEFT,
+      isMatchLayers: animation.isMatchLayers,
+      easing: animation.easing,
+      duration: animation.duration
+    }
+
+    let topAnim: Animation = {
+      type: topType,
+      isAutoDirection: true,
+      direction: AnimationDirection.BOTTOM,
+      isMatchLayers: animation.isMatchLayers,
+      easing: animation.easing,
+      duration: animation.duration
+    }
+
+    let bottomAnim: Animation = {
+      type: bottomType,
+      isAutoDirection: true,
+      direction: AnimationDirection.TOP,
+      isMatchLayers: animation.isMatchLayers,
+      easing: animation.easing,
+      duration: animation.duration
+    }
+
+    return {
+      left: leftAnim,
+      right: rightAnim,
+      top: topAnim,
+      bottom: bottomAnim
+    }
+
   }
 
   static createReaction(toFrame: FrameNode, device: Device, animation: Animation, keycode: Array<number>): Reaction {
