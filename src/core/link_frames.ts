@@ -106,6 +106,7 @@ function createInteractions(linkableFrames: Array<LinkableFrame>, config: Config
 
 function postProcessFrames(linkableFrames: Array<LinkableFrame>) {
   if(!Utils.hasStartingPoint(linkableFrames[0].frame)) {
-    Utils.addFlowStartingPoint(linkableFrames[0].frame, Constants.STARTING_POINT_NAME);
+    let numFlows = figma.currentPage.flowStartingPoints.length
+    Utils.addFlowStartingPoint(linkableFrames[0].frame, 'Flow ' + (numFlows + 1));
   }
 }

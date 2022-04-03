@@ -15,7 +15,7 @@ export enum Mode {
 }
 
 export default function () {
-  let config: Config
+  
 
   /* Set Relaunch Button if not already set */
   if (!('default' in figma.root.getRelaunchData())) setRelaunchButton(figma.root, 'default')
@@ -58,14 +58,9 @@ export default function () {
     Onboarding.completed();
   })
 
-  function initializeConfig(configData: Config) {
-    config = configData
-    Config.save(config)
-  }
-
   function runPlugin(config: Config, mode: Mode) {
     try {
-      initializeConfig(config)
+      Config.save(config)
       if (mode === Mode.GENERATE) doGeneratePrototype(config)
       if (mode === Mode.LINK) doLinkFrames(config)
     } catch (error) {

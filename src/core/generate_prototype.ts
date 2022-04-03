@@ -4,18 +4,15 @@ import { PrototypeNode } from "../prototype_node";
 import { SwapVariant } from "../swap_variant";
 import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
-import { Constants } from "../constants";
 
 export function doGeneratePrototype(config: Config) {
   let instances: Array<InstanceNode> = filterInstancesFromSelection(figma.currentPage.selection)
   validateInstances(instances, config)
   sanitizeInstances(instances, config);
-
   
   let protoNodes: Array<PrototypeNode> = instances.map(node => PrototypeNode.fromInstance(node));
   sortProtoNodes(protoNodes);
   assignNodeNeighbors(protoNodes);
-  // validateNavigationDirection(protoNodes, config);
 
   let protoFrames = createProtoFrames(protoNodes);
   assignFrameNeighors(protoFrames, protoNodes);
@@ -203,6 +200,7 @@ function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config) 
 
 function postProcessFrames(protoFrames: Array<PrototypeFrame>) {
   if(!Utils.hasStartingPoint(protoFrames[0].topLevelFrame)) {
-    Utils.addFlowStartingPoint(protoFrames[0].topLevelFrame, Constants.STARTING_POINT_NAME);
+    let numFlows = figma.currentPage.flowStartingPoints.length
+    Utils.addFlowStartingPoint(protoFrames[0].topLevelFrame, 'Flow ' + (numFlows + 1));
   }
 }
