@@ -156,23 +156,23 @@ export class Utils {
 
     let reactions: Array<Reaction> = Utils.clone(frame.reactions);
     if (left && keycodes.left.length > 0) {
-      if (isAutoDirection) animation = Utils.changeAnimationDirection(animation, AnimationDirection.LEFT)
+      if (isAutoDirection) animation = Utils.changeAnimationDirection(animation, AnimationDirection.RIGHT)
       reactions.push(Utils.createReaction(left, device, animation, keycodes.left))
     }
     
     if (right && keycodes.right.length > 0) {
-      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.RIGHT)
+      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.LEFT)
       reactions.push(Utils.createReaction(right, device, animation, keycodes.right))
     }
 
     if (top && keycodes.up.length > 0) {
-      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.TOP)
+      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.BOTTOM)
       console.log(animation)
       reactions.push(Utils.createReaction(top, device, animation, keycodes.up))
     }
 
     if (bottom && keycodes.down.length > 0) {
-      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.BOTTOM)
+      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.TOP)
       reactions.push(Utils.createReaction(bottom, device, animation, keycodes.down))
     }
 
