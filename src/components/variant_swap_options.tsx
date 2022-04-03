@@ -134,7 +134,7 @@ export class VariantSwapOptions extends Component<any, any>  {
             />
             <div style='padding-left: 4px; padding-right: 4px'>
               <MiddleAlign>
-                <ArrowRightIcon fill={props.disabled ? "#cacaca" : "#000000"} />
+                <ArrowRightIcon fill={props.disabled ? "#eaeaea" : "#b0b0b0"} />
               </MiddleAlign>
             </div>
             <VariantToValueTextbox

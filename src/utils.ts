@@ -167,7 +167,6 @@ export class Utils {
 
     if (top && keycodes.up.length > 0) {
       if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.BOTTOM)
-      console.log(animation)
       reactions.push(Utils.createReaction(top, device, animation, keycodes.up))
     }
 

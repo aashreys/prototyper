@@ -410,7 +410,7 @@ export class AnimationOptions extends Component<any, any> {
 
         {
           this.isDirectional() && 
-          <div style='margin-top: 12px; margin-bottom: 4px; margin-left: 8px; margin-right: 8px'>
+          <div style='margin-top: 12px; margin-bottom: 8px; margin-left: 8px; margin-right: 8px'>
             <MatchLayersSelect
             callback={this.onIsMatchLayersChange}
             value={props.animation.isMatchLayers} />
