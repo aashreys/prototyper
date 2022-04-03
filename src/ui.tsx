@@ -10,14 +10,14 @@ import { OnboardingBanner } from './components/onboarding_banner';
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
 
-const GENERATE_MESSAGE = "Select 2 or more component instances in the same top-level frame to generate a prototype from."
+const GENERATE_MESSAGE = "Select 2 or more component instances in the same top-level frame to generate a prototype."
 
 const LINK_MESSAGE = "Select 2 or more top-level frames to link into a prototype."
 
 const TAB_GENERATE = 'Generate'
 const TAB_LINK = 'Link'
 
-const HEIGHT_OFFSET = 16;
+const HEIGHT_OFFSET = 16
 
 const UITabs = function (props) {
   const [value, setValue] = useState(props.value)

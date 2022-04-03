@@ -1,7 +1,11 @@
 import { Columns, IconArrowRight16, MiddleAlign, Stack, Text, Textbox, VerticalSpace } from '@create-figma-plugin/ui'
 import { Component, Fragment, h, JSX } from 'preact'
 import { useState } from 'preact/hooks'
+import { AaIcon } from '../icons/aa'
 import { ArrowRightIcon } from '../icons/arrow_right'
+import { DiamondIcon } from '../icons/diamond'
+import { DiamondOutlineIcon } from '../icons/diamond_outline'
+import styles from '../styles.css'
 
 const VariantPropertyTextbox = function (props) {
   const [value, setValue] = useState(props.value)
@@ -11,7 +15,13 @@ const VariantPropertyTextbox = function (props) {
     props.onPropertyChange(newValue);
   }
   return (
-    <Textbox disabled={props.disabled} onInput={handleInput} placeholder="Variant Property" value={value} />
+    <Textbox 
+    icon={<AaIcon/>}
+    disabled={props.disabled} 
+    onInput={handleInput} 
+    placeholder="Variant Property" 
+    value={value} 
+    noBorder />
   )
 }
 
@@ -23,7 +33,13 @@ const VariantFromValueTextbox = function (props) {
     props.onFromChange(newValue)
   }
   return (
-    <Textbox disabled={props.disabled} onInput={handleInput} placeholder="From Variant" value={value} />
+    <Textbox 
+    icon={<DiamondOutlineIcon/>}
+    disabled={props.disabled} 
+    onInput={handleInput} 
+    placeholder="From Variant" 
+    value={value} 
+    noBorder />
   )
 }
 
@@ -35,15 +51,21 @@ const VariantToValueTextbox = function (props) {
     props.onToChange(newValue)
   }
   return (
-    <Textbox disabled={props.disabled} onInput={handleInput} placeholder="To Variant" value={value} />
+    <Textbox 
+    icon={<DiamondIcon/>}
+    disabled={props.disabled} 
+    onInput={handleInput} 
+    placeholder="To Variant" 
+    value={value} 
+    noBorder />
   )
 }
 
 export class VariantSwapOptions extends Component<any, any>  {
 
   constructor(props) {
-    super(props);
-    this.bindMethods();
+    super(props)
+    this.bindMethods()
   }
 
   bindMethods() {
@@ -56,54 +78,75 @@ export class VariantSwapOptions extends Component<any, any>  {
     this.props.onSwapVariantChange({
       ...this.props.swapVariant,
       property: property
-    });
+    })
   }
 
   onFromChange(from) {
     this.props.onSwapVariantChange({
       ...this.props.swapVariant,
       from: from
-    });
+    })
   }
 
   onToChange(to) {
     this.props.onSwapVariantChange({
       ...this.props.swapVariant,
       to: to
-    });
+    })
   }
 
   render(props, state) {
     return (
-      <Fragment>
-        <Text muted={props.disabled} bold>Swap Variant</Text>
-        <VerticalSpace space='small' />
-        <Stack space='extraSmall'>
-          {props.showPropertyError && <Text style="color:red">Variant Property required</Text>}
+      <div style={props.style ? props.style : ''}>
+        <Text style={'margin-left: 8px'} muted={props.disabled} bold>Swap Variant</Text>
+
+        <div style='height: 12px' />
+        
+        <div>
+
+          {
+            props.showPropertyError && 
+            <div style='margin-top: 8px; margin-bottom: 4px; margin-left: 8px'>
+              <Text style="color:red">Variant Property required</Text>
+            </div>
+          }
+
           <VariantPropertyTextbox
             disabled={this.props.disabled}
             onPropertyChange={this.onPropertyChange}
             value={props.swapVariant.property}
           />
-          {props.showToVariantError && <Text style="color:red">To Variant required</Text>}
-          <Columns space='extraSmall'>
+
+          <div style='height: 4px' />
+
+          {
+            props.showToVariantError && 
+            <div style='margin-top: 8px; margin-bottom: 4px; margin-left: 8px'>
+              <Text style="color:red">To Property required</Text>
+            </div>
+          }
+
+          <Columns>
             <VariantFromValueTextbox
               disabled={props.disabled}
               onFromChange={this.onFromChange}
               value={props.swapVariant.from}
             />
-            <MiddleAlign>
-              <ArrowRightIcon fill={props.disabled ? "#cacaca" : "#000000"} />
-            </MiddleAlign>
+            <div style='padding-left: 4px; padding-right: 4px'>
+              <MiddleAlign>
+                <ArrowRightIcon fill={props.disabled ? "#cacaca" : "#000000"} />
+              </MiddleAlign>
+            </div>
             <VariantToValueTextbox
               disabled={props.disabled}
               onToChange={this.onToChange}
               value={props.swapVariant.to}
             />
           </Columns>
-        </Stack>
-      </Fragment>
-    );
+
+        </div>
+      </div>
+    )
   }
 
 }

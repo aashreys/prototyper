@@ -1,6 +1,6 @@
 export abstract class Constants {
 
-  static readonly STARTING_POINT_NAME = 'Generated Prototype';
+  static readonly STARTING_POINT_NAME = 'Prototype';
 
   static readonly EVENT_DONE = 'DONE';
   static readonly EVENT_ERROR = 'ERROR';

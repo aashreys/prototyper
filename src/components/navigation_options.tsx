@@ -120,6 +120,7 @@ const SchemeSelect = function (props) {
       onChange={handleChange} 
       options={props.options} 
       value={props.value}
+      noBorder
     />
   )
 
@@ -176,24 +177,29 @@ export class NavigationOptions extends Component<any, any> {
   render(props, state) {
     let navigation = props.activeNavigation
     return (
-      <Fragment>
-        <Text bold>Navigate With</Text>
+      <div style={props.style ? props.style : ''}>
+
+        <Text style={'margin-left: 8px'} bold>Navigate With</Text>
+
         <VerticalSpace space='small' />
+
         <DeviceSelect 
           onDeviceChange={this.onDeviceChange}
           options={DEVICES}
           value={this.getUiValueFromConfig(navigation.device)}
         />
-        <VerticalSpace space='extraSmall' />
+
+        <div style='height: 6px' />
+
         <SchemeSelect 
           onNavigationChange={this.onSchemeChange}
           options={navigation.device === Device.KEYBOARD ? KEYBOARD_OPTIONS : CONTROLLER_OPTIONS}
           value={this.getUiValueFromConfig(navigation.scheme)} 
         />
+
         {
           navigation.scheme === NavScheme.CUSTOM &&
           <Fragment>
-            <VerticalSpace space='medium' />
             <CustomInput
             device={navigation.device}
             keycodes={navigation.customKeycodes}
@@ -202,7 +208,7 @@ export class NavigationOptions extends Component<any, any> {
             />
           </Fragment>
         }
-      </Fragment>
+      </div>
     )
   }
 

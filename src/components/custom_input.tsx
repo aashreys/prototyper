@@ -51,6 +51,7 @@ class CustomInputTextbox extends Component<any, any> {
         onFocusCapture={this.onFocused}
         onBlurCapture={this.onUnfocused}
         onKeyDownCapture={this.onKeyDownCapture}
+        noBorder
       />
     )
   }
@@ -295,26 +296,25 @@ export class CustomInput extends Component<any, any> {
 
   render(props, state) {
     return (
-      <div class={styles.hideCaret} style="display: block; margin: auto">
+      <div style="display: block; margin: auto; caret-color: transparent;">
         {
           props.showError &&
-          <div style="display: block; text-align: center">
-            <text class={styles.errorText}>Please specify at least one input</text>
-            <VerticalSpace space="extraSmall" />
+          <div style="display: block; margin-top: 12px;">
+            <Text style={'color: red'} align='center'>Please specify at least one input</Text>
           </div>
         }
-        <div>
-          <div style="width: 48%; margin: auto">
-            <CustomInputTextbox 
-            icon={<IconArrowUp16 />}
-            placeholder='Up Input'
-            device={props.device}
-            onKeycodeChange={this.onUpKeycodeChange}
-            keycodes={props.keycodes.up} />
-          </div>
+
+        <div style="width: 50%; margin: auto; margin-top: 4px;">
+          <CustomInputTextbox 
+          icon={<IconArrowUp16 />}
+          placeholder='Up Input'
+          device={props.device}
+          onKeycodeChange={this.onUpKeycodeChange}
+          keycodes={props.keycodes.up} />
         </div>
-        <div style="display: flex; margin-top: var(--space-extra-small)">
-          <div style="width: 48%">
+
+        <div style="display: flex; margin-top: 4px">
+          <div style="width: 50%;">
             <CustomInputTextbox 
             icon={<IconArrowLeft16 />}
             placeholder='Left Input'
@@ -322,8 +322,8 @@ export class CustomInput extends Component<any, any> {
             onKeycodeChange={this.onLeftKeycodeChange}
             keycodes={props.keycodes.left} />
           </div>
-          <div style="width: 4%"></div>
-          <div style="width: 48%">
+
+          <div style="width: 50%;">
             <CustomInputTextbox 
             icon={<IconArrowRight16 />}
             placeholder='Right Input'
@@ -331,9 +331,10 @@ export class CustomInput extends Component<any, any> {
             onKeycodeChange={this.onRightKeycodeChange}
             keycodes={props.keycodes.right} />
           </div>
+
         </div>
-        <div style="margin-top: var(--space-extra-small)">
-          <div style="width: 48%; margin: auto">
+        
+        <div style="width: 50%; margin: auto; margin-top: 4px;">
             <CustomInputTextbox 
             icon={<IconArrowDown16 />}
             placeholder='Down Input'
@@ -341,7 +342,6 @@ export class CustomInput extends Component<any, any> {
             onKeycodeChange={this.onDownKeycodeChange}
             keycodes={props.keycodes.down} />
           </div>
-        </div>
       </div>
     )
   }

@@ -1,5 +1,4 @@
-import { Animation } from "./animation";
-import { AnimationType } from "./animation";
+import { Animation, AnimationDirection, AnimationType } from "./animation";
 import { Config } from "./config";
 import { Device } from "./device";
 import { NavigationKeycodes } from "./navigation";
@@ -151,16 +150,44 @@ export class Utils {
   static addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config) 
   {
     let device = config.activeNavigation.device
-    let animation = config. animation
+    let animation: Animation = config.animation
     let keycodes = NavigationKeycodes.fromConfig(config);
+    let isAutoDirection = animation.isAutoDirection
 
     let reactions: Array<Reaction> = Utils.clone(frame.reactions);
-    if (left && keycodes.left.length > 0) reactions.push(Utils.createReaction(left, device, animation, keycodes.left))
-    if (right && keycodes.right.length > 0) reactions.push(Utils.createReaction(right, device, animation, keycodes.right))
-    if (top && keycodes.up.length > 0) reactions.push(Utils.createReaction(top, device, animation, keycodes.up))
-    if (bottom && keycodes.down.length > 0) reactions.push(Utils.createReaction(bottom, device, animation, keycodes.down))
+    if (left && keycodes.left.length > 0) {
+      if (isAutoDirection) animation = Utils.changeAnimationDirection(animation, AnimationDirection.LEFT)
+      reactions.push(Utils.createReaction(left, device, animation, keycodes.left))
+    }
+    
+    if (right && keycodes.right.length > 0) {
+      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.RIGHT)
+      reactions.push(Utils.createReaction(right, device, animation, keycodes.right))
+    }
+
+    if (top && keycodes.up.length > 0) {
+      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.TOP)
+      console.log(animation)
+      reactions.push(Utils.createReaction(top, device, animation, keycodes.up))
+    }
+
+    if (bottom && keycodes.down.length > 0) {
+      if (isAutoDirection) animation =  Utils.changeAnimationDirection(animation, AnimationDirection.BOTTOM)
+      reactions.push(Utils.createReaction(bottom, device, animation, keycodes.down))
+    }
 
     frame.reactions = reactions;
+  }
+
+  private static changeAnimationDirection(animation: Animation, direction: AnimationDirection): Animation {
+    return {
+      type: animation.type,
+      isAutoDirection: animation.isAutoDirection,
+      direction: direction,
+      isMatchLayers: animation.isMatchLayers,
+      easing: animation.easing,
+      duration: animation.duration
+    }
   }
 
   static createReaction(toFrame: FrameNode, device: Device, animation: Animation, keycode: Array<number>): Reaction {
@@ -182,17 +209,26 @@ export class Utils {
   }
 
   static createTransition(animation: Animation): Transition {
-    let transition;
-    if (animation.animType === AnimationType.INSTANT) {
-      transition = null;
-    } else {
-      transition = {
-        type: "SMART_ANIMATE",
-        easing: { type: animation.animType },
-        duration: animation.duration / 1000, // Figma expects duration in seconds but we store in milliseconds
+    switch(animation.type) {
+      case AnimationType.INSTANT: return null;
+      case AnimationType.DISSOLVE: 
+      case AnimationType.SMART_ANIMATE: return {
+        type: animation.type,
+        easing: { type: animation.easing },
+        duration: animation.duration / 1000
+      }
+      case AnimationType.MOVE_IN:
+      case AnimationType.MOVE_OUT:
+      case AnimationType.PUSH:
+      case AnimationType.SLIDE_IN:
+      case AnimationType.SLIDE_OUT: return {
+        type: animation.type,
+        direction: animation.direction,
+        matchLayers: animation.isMatchLayers,
+        easing: { type: animation.easing },
+        duration: animation.duration / 1000 
       }
     }
-    return transition;
   }
 
   static isTopOf(x1, y1, x2, y2): boolean {
@@ -232,22 +268,6 @@ export class Utils {
       }
     }
     throw 'unknown'
-  }
-
-  static getCtrlString() {
-
-  }
-
-  static getAltString() {
-
-  }
-
-  static getMetaString() {
-
-  }
-
-  static getShiftString() {
-
   }
 
   static getOs(): OS {

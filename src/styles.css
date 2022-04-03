@@ -121,7 +121,3 @@
 .errorText {
   color: red;
 }
-
-.hideCaret * {
-  caret-color: transparent;
-}

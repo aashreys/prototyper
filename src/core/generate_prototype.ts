@@ -1,12 +1,9 @@
-import { AnimationType } from "../animation";
 import { Config } from "../config";
-import { Device } from "../device";
 import { PrototypeFrame } from "../prototype_frame";
 import { PrototypeNode } from "../prototype_node";
 import { SwapVariant } from "../swap_variant";
 import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
-import { Animation } from "../animation";
 import { Constants } from "../constants";
 
 export function doGeneratePrototype(config: Config) {
@@ -202,20 +199,6 @@ function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config) 
       config
     )
   }
-}
-
-function createTransition(animation: Animation): Transition {
-  let transition;
-  if (animation.animType === AnimationType.INSTANT) {
-    transition = null;
-  } else {
-    transition = {
-      type: "SMART_ANIMATE",
-      easing: { type: animation.animType },
-      duration: animation.duration / 1000, // Figma expects duration in seconds
-    }
-  }
-  return transition;
 }
 
 function postProcessFrames(protoFrames: Array<PrototypeFrame>) {

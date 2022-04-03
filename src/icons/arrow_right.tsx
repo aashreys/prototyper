@@ -2,6 +2,6 @@ import { h } from 'preact'
 
 export const ArrowRightIcon = function (props) {
   return (
-    <svg class="_currentColor_1r4od_1" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="m12.7071 8.00001-.3535-.35356-3.00005-3-.7071.70711 2.14645 2.14645H2.5v1h8.2929L8.64645 10.6465l.7071.7071 3.00005-3.00004.3535-.35355z" fill-rule="evenodd" fill={props ? props.fill : "#000000"}></path></svg>
+    <svg class="svg" width="11" height="8" viewBox="0 0 11 8" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 3.5l-.353-.354-3-3-.708.708L8.793 3H.5v1h8.293L6.646 6.146l.708.708 3-3 .353-.354z" fill-rule="evenodd" fill-opacity="1" fill="#000" stroke="none"></path></svg>
   )
 }

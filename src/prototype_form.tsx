@@ -4,7 +4,6 @@ import { h, Component } from 'preact'
 import { Navigation, NavScheme } from "./navigation";
 import { Constants } from './constants';
 import { AnimationOptions } from './components/animation_options';
-import { AnimationType } from './animation';
 import { NavigationOptions } from './components/navigation_options';
 import { VariantSwapOptions } from './components/variant_swap_options';
 import { SwapVariant } from './swap_variant';
@@ -14,16 +13,6 @@ import { UI } from './ui';
 import styles from './styles.css';
 import { Config, StoredNavigation } from './config';
 import { Device } from './device';
-
-const ErrorBox = function (props) {
-  return (
-    props.visible &&
-    <div>
-      <VerticalSpace space='large' />
-      <text class={styles.errorText}>{props.message}</text>
-    </div>
-  )
-}
 
 export class PrototypeForm extends Component<any, any>  {
 
@@ -53,7 +42,7 @@ export class PrototypeForm extends Component<any, any>  {
     this.onDone = this.onDone.bind(this);
     this.componentDidUpdate = this.componentDidUpdate.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
-    this.onAnimChange = this.onAnimChange.bind(this);
+    this.onAnimationChange = this.onAnimationChange.bind(this);
     this.onNavigationChange = this.onNavigationChange.bind(this);
     this.onSwapVariantChange = this.onSwapVariantChange.bind(this);
     this.registerEventHandlers = this.registerEventHandlers.bind(this);
@@ -185,7 +174,8 @@ export class PrototypeForm extends Component<any, any>  {
 
 
 
-  onAnimChange(animation: AnimationType) {
+  onAnimationChange(animation: Animation) {
+    console.log(animation)
     this.setState(prevState => ({
       config: {
         ...prevState.config,
@@ -206,20 +196,24 @@ export class PrototypeForm extends Component<any, any>  {
   render() {
 
     return (
-      <Container space="medium">
+      <div style="display: block">
 
         <VerticalSpace space='extraLarge' />
 
-        <Text>{this.props.uiMessage}</Text>
-
-        <ErrorBox 
-          visible={this.state.ui.errorMessage.length > 0}
-          message={this.state.ui.errorMessage} 
-        />
+        <Text style={'margin-left: 16px; margin-right: 16px;'}>{this.props.uiMessage}</Text>
+        
+        {
+          this.state.ui.errorMessage.length > 0 && 
+          <div style='margin-left: 16px; margin-right: 16px;'> 
+            <VerticalSpace space='large' />
+            <Text style={'color: red'}>{this.state.ui.errorMessage}</Text>
+          </div>
+        }
 
         <VerticalSpace space='extraLarge' />
 
         <NavigationOptions
+          style='display: block; margin-left: 8px; margin-right: 8px;'
           onNavigationChange={this.onNavigationChange}
           activeNavigation={this.state.config.activeNavigation}
           keyboardNavigation={this.state.config.storedNavigation.keyboard}
@@ -230,13 +224,15 @@ export class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='large' />
 
         <AnimationOptions
+          style='margin-left: 8px; margin-right: 8px;'
           animation={this.state.config.animation}
-          onAnimChange={this.onAnimChange}
+          onAnimationChange={this.onAnimationChange}
         />
 
         <VerticalSpace space='large' />
-
+        
         <VariantSwapOptions
+          style='display: block; margin-left: 8px; margin-right: 8px;'
           disabled={this.props.mode === Mode.LINK}
           swapVariant={this.state.config.swapVariant}
           onSwapVariantChange={this.onSwapVariantChange}
@@ -246,8 +242,8 @@ export class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='medium' />
 
-        <div style="width: 100%; display: flex;"> 
-          <div style="order: 0; flex-grow: 1"> 
+        <div style="width: 100%; display: flex; padding-left: 16px; padding-right: 16px;"> 
+          <div style="flex-grow: 1"> 
             <Button 
             fullWidth
             disabled={this.state.ui.buttonLoading} 
@@ -255,12 +251,12 @@ export class PrototypeForm extends Component<any, any>  {
             onClick={this.onClick}>{this.props.buttonTitle}
             </Button>
           </div>
-          <div style="margin-left: 8px; order: 1; flex-grow: 0">
+          <div style="margin-left: 8px; flex-grow: 0">
             <HelpWdiget />
           </div>
         </div>
 
-      </Container>
+      </div>
     );
   }
 }

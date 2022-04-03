@@ -7,7 +7,7 @@ import { doLinkFrames } from './core/link_frames.js';
 import { setRelaunchButton } from '@create-figma-plugin/utilities';
 
 const WIDTH = 240;
-const HEIGHT = 445;
+const HEIGHT = 460;
 
 export enum Mode {
   GENERATE,
@@ -21,7 +21,7 @@ export default function () {
   if (!('default' in figma.root.getRelaunchData())) setRelaunchButton(figma.root, 'default')
 
   /* Run Main Program */
-  Config.migrateConfig();
+  Config.migrateConfig()
 
   showUI(
     { width: WIDTH, height: HEIGHT },

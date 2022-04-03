@@ -1,4 +1,4 @@
-import { Animation, AnimationType } from "./animation";
+import { Animation, AnimationDirection, AnimationEasing, AnimationType } from "./animation";
 import { Navigation, NavigationKeycodes, NavScheme } from "./navigation";
 import { Device } from "./device";
 import { SwapVariant } from "./swap_variant";
@@ -6,7 +6,7 @@ import { SwapVariant } from "./swap_variant";
 export class Config {
 
   static CONFIG_VERSION_KEY = 'config_version';
-  static CONFIG_VERSION = 6;
+  static CONFIG_VERSION = 7;
 
   static CONFIG_KEY = 'config';
   static GAP = 100;
@@ -81,6 +81,15 @@ export class Config {
 
     let activeNavigation = controllerNavigation
 
+    let animation: Animation = {
+      type: AnimationType.SMART_ANIMATE,
+      isAutoDirection: true,
+      direction: AnimationDirection.LEFT,
+      isMatchLayers: false,
+      easing: AnimationEasing.EASE_IN,
+      duration: 200
+    }
+
     return new Config(
       activeNavigation,
       {
@@ -88,10 +97,7 @@ export class Config {
         controller: controllerNavigation
       },
       { property: '', from: '', to: '' },
-      {
-        animType: AnimationType.EASE_IN,
-        duration: 200
-      }
+      animation
     )
   }
 
