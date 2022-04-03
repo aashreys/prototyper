@@ -374,14 +374,14 @@ export class AnimationOptions extends Component<any, any> {
         <Text style={'margin-left: 8px'} bold>Animation</Text>
         <VerticalSpace space='small' />
         <div style='display: flex'>
-          <div style='min-width: 35%'>
+          <div style='min-width: 35%; flex-grow: 1'>
             <TypeSelect
             callback={this.onTypeChange}
             value={this.getUiValue(props.animation.type)} />
           </div>
           {
             this.isDirectional() && 
-            <div style=''>
+            <div>
               <MiddleAlign>
                 <DirectionSelect
                 callback={this.onDirectionChange}
