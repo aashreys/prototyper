@@ -1,9 +1,9 @@
-import { IconArrowDown16, IconArrowLeft16, IconArrowRight16, IconArrowUp16, Textbox, Text, VerticalSpace } from "@create-figma-plugin/ui";
+import { IconArrowDown16, IconArrowLeft16, IconArrowRight16, IconArrowUp16, Textbox, Text } from "@create-figma-plugin/ui";
 import { Component, h } from "preact";
-import styles from "../styles.css";
 import { GamepadListener } from 'gamepad.js'
 import { Device, Keycode } from "../device";
 import { OS, Utils } from "../utils";
+import { KeyboardKeycodes } from "../keyboard_keycodes";
 
 const PRESS_KEY = 'Press Key'
 
@@ -28,7 +28,7 @@ class CustomInputTextbox extends Component<any, any> {
     this.setupGamepadListeners = this.setupGamepadListeners.bind(this)
     this.onGamepadButtonEvent = this.onGamepadButtonEvent.bind(this)
     this.onGamepadAxisEvent = this.onGamepadAxisEvent.bind(this)
-    this.onInputCleared = this.onInputCleared.bind(this)
+    this.clearInput = this.clearInput.bind(this)
     this.onKeyboardEvent = this.onKeyboardEvent.bind(this)
   }
 
@@ -66,7 +66,7 @@ class CustomInputTextbox extends Component<any, any> {
 
   onKeyDownCapture(event) {
     // Clear keycode when Backspace is pressed
-    if (event.keyCode === Keycode.KBD_BACKSPC) this.onInputCleared()
+    if (event.keyCode === Keycode.KBD_BACKSPC) this.clearInput()
     // If keycode is not just a modifer press, consume it as a custom input
     else if (!this.isModifierKeyCode(event.keyCode)) this.onKeyboardEvent(event)
     
@@ -77,7 +77,7 @@ class CustomInputTextbox extends Component<any, any> {
     return keycode === Keycode.KBD_SHIFT || keycode === Keycode.KBD_CTRL || keycode === Keycode.KBD_ALT || keycode === Keycode.KBD_META
   }
 
-  onInputCleared() {
+  clearInput() {
     this.props.onKeycodeChange([])
   }
 
@@ -167,6 +167,7 @@ class CustomInputTextbox extends Component<any, any> {
   getKeyboardKeyString(keycodes: number[]) {
     let os = Utils.getOs()
     let string = ''
+    
 
     switch (os) {
       case OS.MAC_OS: {
@@ -176,7 +177,7 @@ class CustomInputTextbox extends Component<any, any> {
             case Keycode.KBD_CTRL: string = string + '⌃'; break;
             case Keycode.KBD_ALT: string = string + '⌥'; break;
             case Keycode.KBD_SHIFT: string = string + '⇧'; break;
-            default: string = string + String.fromCharCode(keycodes[i]); break;
+            default: string = string + KeyboardKeycodes.getKeyString(keycodes[i]); break;
           }
         }
         break
@@ -189,7 +190,7 @@ class CustomInputTextbox extends Component<any, any> {
             case Keycode.KBD_CTRL: string = string + 'Ctrl+'; break;
             case Keycode.KBD_ALT: string = string + 'Alt+'; break;
             case Keycode.KBD_SHIFT: string = string + 'Shift+'; break;
-            default: string = string + String.fromCharCode(keycodes[i]); break;
+            default: string = string + KeyboardKeycodes.getKeyString(keycodes[i]); break;
           }
         }
         break
@@ -202,7 +203,7 @@ class CustomInputTextbox extends Component<any, any> {
             case Keycode.KBD_CTRL: string = string + 'Ctrl+'; break;
             case Keycode.KBD_ALT: string = string + 'Alt+'; break;
             case Keycode.KBD_SHIFT: string = string + 'Shift+'; break;
-            default: string = string + String.fromCharCode(keycodes[i]); break;
+            default: string = string + KeyboardKeycodes.getKeyString(keycodes[i]); break;
           }
         }
         break
