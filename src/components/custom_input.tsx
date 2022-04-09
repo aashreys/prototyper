@@ -1,7 +1,7 @@
 import { IconArrowDown16, IconArrowLeft16, IconArrowRight16, IconArrowUp16, Textbox, Text } from "@create-figma-plugin/ui";
 import { Component, h } from "preact";
 import { GamepadListener } from 'gamepad.js'
-import { Device, Keycode } from "../device";
+import { Device, Keycode, KeycodeUtils } from "../device";
 import { OS, Utils } from "../utils";
 import { KeyboardKeycodes } from "../keyboard_keycodes";
 
@@ -157,7 +157,7 @@ class CustomInputTextbox extends Component<any, any> {
       if (device === Device.KEYBOARD) {
         return this.getKeyboardKeyString(keycodes)
       } else {
-        return this.getGamepadKeyString(device, keycodes[0])
+        return KeycodeUtils.getControllerString(device, keycodes[0])
       }
     } else {
       return ''
@@ -213,72 +213,6 @@ class CustomInputTextbox extends Component<any, any> {
     return string
   }
 
-  getGamepadKeyString(device: Device, keycode: number): string {
-    switch (device) {
-      case Device.XBOX:
-        switch (keycode) {
-          case Keycode.XBX_A: return "A"
-          case Keycode.XBX_B: return "B"
-          case Keycode.XBX_X: return "X"
-          case Keycode.XBX_Y: return "Y"
-          case Keycode.XBX_LB: return "LB"
-          case Keycode.XBX_RB: return "RB"
-          case Keycode.XBX_LT: return "LT"
-          case Keycode.XBX_RT: return "RT"
-          case Keycode.XBX_VIEW: return "View"
-          case Keycode.XBX_MENU: return "Menu"
-          case Keycode.XBX_LS_PRESS: return "LStick Press"
-          case Keycode.XBX_RS_PRESS: return "RStick Press"
-          case Keycode.XBX_DPAD_UP: return "DPad Up"
-          case Keycode.XBX_DPAD_DOWN: return "DPad Down"
-          case Keycode.XBX_DPAD_LEFT: return "DPad Left"
-          case Keycode.XBX_DPAD_RIGHT: return "DPad Right"
-          case Keycode.XBX_HOME: return "Home"
-          case Keycode.XBX_SHARE: return "Share"
-          case Keycode.XBX_LS_LEFT: return "LStick Left"
-          case Keycode.XBX_LS_RIGHT: return "LStick Right"
-          case Keycode.XBX_LS_UP: return "LStick Up"
-          case Keycode.XBX_LS_DOWN: return "LStick Down"
-          case Keycode.XBX_RS_LEFT: return "RStick Left"
-          case Keycode.XBX_RS_RIGHT: return "RStick Right"
-          case Keycode.XBX_RS_UP: return "RStick Up"
-          case Keycode.XBX_RS_DOWN: return "RStick Down"
-          default: return 'Button ' + keycode
-        }
-
-        case Device.PS4: 
-          switch (keycode) {
-            case Keycode.PS4_X: return "Cross"
-            case Keycode.PS4_CIRCLE: return "Circle"
-            case Keycode.PS4_SQUARE: return "Square"
-            case Keycode.PS4_TRIANGLE: return "Triangle"
-            case Keycode.PS4_L1: return "L1"
-            case Keycode.PS4_R1: return "R1"
-            case Keycode.PS4_L2: return "L2"
-            case Keycode.PS4_R2: return "R2"
-            case Keycode.PS4_SHARE: return "Share"
-            case Keycode.PS4_OPTIONS: return "Options"
-            case Keycode.PS4_L3: return "LStick Press"
-            case Keycode.PS4_R3: return "RStick Press"
-            case Keycode.PS4_DPAD_UP: return "DPad Up"
-            case Keycode.PS4_DPAD_DOWN: return "DPad Down"
-            case Keycode.PS4_DPAD_LEFT: return "DPad Left"
-            case Keycode.PS4_DPAD_RIGHT: return "DPad Right"
-            case Keycode.PS4_HOME: return "Home"
-            case Keycode.PS4_TOUCHPAD: return "Touchpad"
-            case Keycode.PS4_LS_LEFT: return "LStick Left"
-            case Keycode.PS4_LS_RIGHT: return "LStick Right"
-            case Keycode.PS4_LS_UP: return "LStick Up"
-            case Keycode.PS4_LS_DOWN: return "LStick Down"
-            case Keycode.PS4_RS_LEFT: return "RStick Left"
-            case Keycode.PS4_RS_RIGHT: return "RStick Right"
-            case Keycode.PS4_RS_UP: return "RStick Up"
-            case Keycode.PS4_RS_DOWN: return "RStick Down"
-          }
-
-        default: return 'Button ' + keycode
-      } 
-  }
 }
 
 export class CustomInput extends Component<any, any> {
