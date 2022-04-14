@@ -6,11 +6,24 @@ import { Navigable, NearestNeighbor, Neighbors } from "./nearest_neighbor";
 export function doLinkFrames(config: Config) {
   let selection = figma.currentPage.selection
   validateSelection(selection)
+
   let linkableFrames = selection.map(frame => new LinkableFrame(frame))
+
   sortFrames(linkableFrames)
+
+  let isLinked = isLinkedToPrototype(linkableFrames)
+
   assignNeighbors(linkableFrames)
   createInteractions(linkableFrames, config)
-  postProcessFrames(linkableFrames)
+
+  if (!isLinked) addStartingPoint(linkableFrames)
+}
+
+function isLinkedToPrototype(linkableFrames: LinkableFrame[]) {
+  for (let linkableFrame of linkableFrames) {
+    if (linkableFrame.frame.reactions.length > 0) return true
+  } 
+  return false;
 }
 
 function validateSelection(selection: readonly SceneNode[]) {
@@ -104,7 +117,7 @@ function createInteractions(linkableFrames: Array<LinkableFrame>, config: Config
   }
 }
 
-function postProcessFrames(linkableFrames: Array<LinkableFrame>) {
+function addStartingPoint(linkableFrames: Array<LinkableFrame>) {
   if(!Utils.hasStartingPoint(linkableFrames[0].frame)) {
     let numFlows = figma.currentPage.flowStartingPoints.length
     Utils.addFlowStartingPoint(linkableFrames[0].frame, 'Flow ' + (numFlows + 1));

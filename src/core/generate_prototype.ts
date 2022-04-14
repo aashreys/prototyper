@@ -9,6 +9,8 @@ export function doGeneratePrototype(config: Config) {
   let instances: Array<InstanceNode> = filterInstancesFromSelection(figma.currentPage.selection)
   validateInstances(instances, config)
   sanitizeInstances(instances, config);
+
+  let isLinked: boolean = Utils.findTopLevelFrame(instances[0]).reactions.length > 0
   
   let protoNodes: Array<PrototypeNode> = instances.map(node => PrototypeNode.fromInstance(node));
   sortProtoNodes(protoNodes);
@@ -19,7 +21,8 @@ export function doGeneratePrototype(config: Config) {
   layoutFrames(protoFrames);
   swapVariants(protoFrames, config);
   createInteractions(protoFrames, config);
-  postProcessFrames(protoFrames);
+
+  if (!isLinked) addFlowStartingPoint(protoFrames);
 }
 
 function filterInstancesFromSelection(selection: ReadonlyArray<SceneNode>): Array<InstanceNode> {
@@ -198,7 +201,7 @@ function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config) 
   }
 }
 
-function postProcessFrames(protoFrames: Array<PrototypeFrame>) {
+function addFlowStartingPoint(protoFrames: Array<PrototypeFrame>) {
   if(!Utils.hasStartingPoint(protoFrames[0].topLevelFrame)) {
     let numFlows = figma.currentPage.flowStartingPoints.length
     Utils.addFlowStartingPoint(protoFrames[0].topLevelFrame, 'Flow ' + (numFlows + 1));
