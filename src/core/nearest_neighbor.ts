@@ -235,19 +235,19 @@ export class NearestNeighbor {
   }
 
   private static isLeftOf(anchor1: AnchorPoints, anchor2: AnchorPoints): boolean {
-    return Utils.isLeftOf(anchor1.left.x , anchor1.left.y, anchor2.right.x, anchor2.right.y)
+    return anchor2.right.x <= anchor1.left.x;
   }
 
   private static isRightOf(anchor1: AnchorPoints, anchor2: AnchorPoints): boolean {
-    return Utils.isRightOf(anchor1.right.x, anchor1.right.y, anchor2.left.x, anchor2.left.y)
+    return anchor2.left.x >= anchor1.right.x
   }
 
   private static isBottomOf(anchor1: AnchorPoints, anchor2: AnchorPoints): boolean {
-    return Utils.isBottomOf(anchor1.bottom.x , anchor1.bottom.y, anchor2.top.x, anchor2.top.y)
+    return anchor2.top.y >= anchor1.bottom.y
   }
 
   private static isTopOf(anchor1: AnchorPoints, anchor2: AnchorPoints): boolean {
-    return Utils.isTopOf(anchor1.top.x , anchor1.top.y, anchor2.bottom.x, anchor2.bottom.y)
+    return anchor2.bottom.x <= anchor1.top.y
   }
 
   static getLeftDistance(anchors1: AnchorPoints, anchors2: AnchorPoints): number {

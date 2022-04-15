@@ -305,22 +305,6 @@ export class Utils {
     }
   }
 
-  static isTopOf(x1, y1, x2, y2): boolean {
-    return y2 < y1;
-  }
-
-  static isBottomOf(x1, y1, x2, y2): boolean {
-    return y2 > y1;
-  }
-
-  static isLeftOf(x1, y1, x2, y2): boolean {
-    return x2 < x1;
-  }
-
-  static isRightOf(x1, y1, x2, y2): boolean {
-    return x2 > x1;
-  }
-
   static clone(val): any {
     const type = typeof val
     if (val === null) {
