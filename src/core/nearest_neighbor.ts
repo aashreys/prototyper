@@ -247,7 +247,7 @@ export class NearestNeighbor {
   }
 
   private static isTopOf(anchor1: AnchorPoints, anchor2: AnchorPoints): boolean {
-    return anchor2.bottom.x <= anchor1.top.y
+    return anchor2.bottom.y <= anchor1.top.y
   }
 
   static getLeftDistance(anchors1: AnchorPoints, anchors2: AnchorPoints): number {
