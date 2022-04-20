@@ -371,7 +371,7 @@ export class AnimationOptions extends Component<any, any> {
   render(props, state) {
     return (
       <div style={props.style ? props.style : ''}>
-        <Text style={'margin-left: 8px'} bold>Animation</Text>
+        <Text style={'margin-left: 8px'} bold>Transition</Text>
         <VerticalSpace space='small' />
         <div style='display: flex'>
           <div style='min-width: 35%; flex-grow: 1'>
