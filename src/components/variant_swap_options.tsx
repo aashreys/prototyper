@@ -19,7 +19,6 @@ export class VariantSwapOptions extends Component<any, any>  {
   }
 
   onPropertyChange(property) {
-    console.log('Property: ' + property)
     this.props.onSwapVariantChange({
       ...this.props.swapVariant,
       property: property
@@ -27,7 +26,6 @@ export class VariantSwapOptions extends Component<any, any>  {
   }
 
   onFromChange(from) {
-    console.log('From: ' + from)
     this.props.onSwapVariantChange({
       ...this.props.swapVariant,
       from: from
@@ -35,7 +33,7 @@ export class VariantSwapOptions extends Component<any, any>  {
   }
 
   onToChange(to) {
-    console.log('To: ' + to)
+  
     this.props.onSwapVariantChange({
       ...this.props.swapVariant,
       to: to

@@ -175,7 +175,7 @@ export class PrototypeForm extends Component<any, any>  {
 
 
   onAnimationChange(animation: Animation) {
-    console.log(animation)
+
     this.setState(prevState => ({
       config: {
         ...prevState.config,
