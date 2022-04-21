@@ -35,7 +35,7 @@ Tech Debt:
 * Animation type dropdown does not fill the width of the plugin window
 
 ## Known Issues
-* PS5 controllers are not supported by Figma and hence do not work properly
+* ~~PS5 controllers are not supported by Figma and hence do not work properly~~ (Figma was updated to fix this)
 * ~~Navigation through staggered grids in unreliable - I plan to investigate and potentially address this in the future~~ (Implemented an improved nearest neighbor detection algorithm that vastly improves asymmetric grid navigation)
 
 ## Contributing
