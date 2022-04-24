@@ -1,6 +1,5 @@
 import { Dropdown, DropdownOption, VerticalSpace, Text, SegmentedControlOption, SegmentedControl } from '@create-figma-plugin/ui'
-import { Component, Fragment, h, JSX } from 'preact'
-import { useState } from 'preact/hooks'
+import { Component, Fragment, h } from 'preact'
 import { Device } from '../device';
 import { DPadIcon } from '../icons/dpad';
 import { FaceButtonsIcon } from '../icons/face_buttons';
@@ -68,64 +67,6 @@ const DEVICES: Array<SegmentedControlOption> = [
   { value: KEYBOARD },
 ]
 
-const DeviceSelect = function (props) {
-
-  const [value, setValue] = useState(props.value)
-
-  function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setValue(newValue)
-    props.onDeviceChange(newValue);
-  }
-
-  return (
-    <SegmentedControl 
-      onChange={handleChange} 
-      options={props.options} 
-      value={props.value} 
-    />
-  )
-
-}
-
-const SchemeSelect = function (props) {
-
-  const [value, setValue] = useState<null | string>(props.value)
-
-  function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setValue(newValue)
-    props.onNavigationChange(newValue);
-  }
-
-  function getIcon(value) {
-    switch (value) {
-      case DPAD: return <DPadIcon />
-      case LEFT_STICK: return <LeftStickIcon />
-      case RIGHT_STICK: return <RightStickIcon />
-      case SHOULDER_BUTTONS: return <ShoulderButtonsIcon />
-      case TRIGGER_BUTTONS: return <TriggerButtonsIcon />
-      case CUSTOM: return <FaceButtonsIcon />
-      case ARROW_KEYS: return <KeyboardArrowKeys />
-      case WASD: return <KeyboardWasd />
-      case QE: return <KeyboardQe />
-      case TAB: return <KeyboardShiftTab />
-      default: return <DPadIcon />
-    }
-  }
-
-  return (
-    <Dropdown 
-      icon={getIcon(props.value)} 
-      onChange={handleChange} 
-      options={props.options} 
-      value={props.value}
-      noBorder
-    />
-  )
-
-}
-
 export class NavigationOptions extends Component<any, any> {
 
   constructor(props) {
@@ -183,19 +124,19 @@ export class NavigationOptions extends Component<any, any> {
 
         <VerticalSpace space='small' />
 
-        <DeviceSelect 
-          onDeviceChange={this.onDeviceChange}
-          options={DEVICES}
-          value={this.getUiValueFromConfig(navigation.device)}
-        />
+        <SegmentedControl 
+        onChange={e => this.onDeviceChange(e.currentTarget.value)} 
+        options={DEVICES} 
+        value={this.getUiValueFromConfig(navigation.device)} />
 
         <div style='height: 6px' />
 
-        <SchemeSelect 
-          onNavigationChange={this.onSchemeChange}
-          options={navigation.device === Device.KEYBOARD ? KEYBOARD_OPTIONS : CONTROLLER_OPTIONS}
-          value={this.getUiValueFromConfig(navigation.scheme)} 
-        />
+        <Dropdown 
+        icon={this.getIcon(props.value)} 
+        onChange={e => this.onSchemeChange(e.currentTarget.value)} 
+        options={navigation.device === Device.KEYBOARD ? KEYBOARD_OPTIONS : CONTROLLER_OPTIONS} 
+        value={this.getUiValueFromConfig(navigation.scheme)}
+        noBorder />
 
         {
           navigation.scheme === NavScheme.CUSTOM &&
@@ -261,6 +202,22 @@ export class NavigationOptions extends Component<any, any> {
       case PS4: return Device.PS4
       case SWITCH: return Device.SWITCH_PRO
       case KEYBOARD: return Device.KEYBOARD
+    }
+  }
+
+  getIcon(value) {
+    switch (value) {
+      case DPAD: return <DPadIcon />
+      case LEFT_STICK: return <LeftStickIcon />
+      case RIGHT_STICK: return <RightStickIcon />
+      case SHOULDER_BUTTONS: return <ShoulderButtonsIcon />
+      case TRIGGER_BUTTONS: return <TriggerButtonsIcon />
+      case CUSTOM: return <FaceButtonsIcon />
+      case ARROW_KEYS: return <KeyboardArrowKeys />
+      case WASD: return <KeyboardWasd />
+      case QE: return <KeyboardQe />
+      case TAB: return <KeyboardShiftTab />
+      default: return <DPadIcon />
     }
   }
 
