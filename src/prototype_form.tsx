@@ -1,4 +1,4 @@
-import { Container, VerticalSpace, Button, Text } from '@create-figma-plugin/ui'
+import { VerticalSpace, Button, Text } from '@create-figma-plugin/ui'
 import { emit, on } from '@create-figma-plugin/utilities'
 import { h, Component } from 'preact'
 import { Navigation, NavScheme } from "./navigation";
@@ -10,7 +10,6 @@ import { SwapVariant } from './swap_variant';
 import { Mode } from './main';
 import { HelpWdiget } from './components/help_widget';
 import { UI } from './ui';
-import styles from './styles.css';
 import { Config, StoredNavigation } from './config';
 import { Device } from './device';
 
@@ -196,7 +195,7 @@ export class PrototypeForm extends Component<any, any>  {
   render() {
 
     return (
-      <div style="display: block">
+      <div>
 
         <VerticalSpace space='extraLarge' />
 
@@ -204,7 +203,7 @@ export class PrototypeForm extends Component<any, any>  {
         
         {
           this.state.ui.errorMessage.length > 0 && 
-          <div style='margin-left: 16px; margin-right: 16px;'> 
+          <div style='padding-left: 16px; padding-right: 16px;'> 
             <VerticalSpace space='large' />
             <Text style={'color: red'}>{this.state.ui.errorMessage}</Text>
           </div>
@@ -213,7 +212,7 @@ export class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='extraLarge' />
 
         <NavigationOptions
-          style='display: block; margin-left: 8px; margin-right: 8px;'
+          style='padding-left: 8px; padding-right: 8px;'
           onNavigationChange={this.onNavigationChange}
           activeNavigation={this.state.config.activeNavigation}
           keyboardNavigation={this.state.config.storedNavigation.keyboard}
@@ -224,7 +223,7 @@ export class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='large' />
 
         <AnimationOptions
-          style='margin-left: 8px; margin-right: 8px;'
+          style='padding-left: 8px; padding-right: 8px;'
           animation={this.state.config.animation}
           onAnimationChange={this.onAnimationChange}
         />
@@ -232,7 +231,7 @@ export class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='large' />
         
         <VariantSwapOptions
-          style='display: block; margin-left: 8px; margin-right: 8px;'
+          style='padding-left: 8px; padding-right: 8px;'
           disabled={this.props.mode === Mode.LINK}
           swapVariant={this.state.config.swapVariant}
           onSwapVariantChange={this.onSwapVariantChange}
@@ -242,7 +241,7 @@ export class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='medium' />
 
-        <div style="width: 100%; display: flex; padding-left: 16px; padding-right: 16px;"> 
+        <div style="display: flex; padding-left: 16px; padding-right: 16px;"> 
           <div style="flex-grow: 1"> 
             <Button 
             fullWidth
@@ -251,7 +250,7 @@ export class PrototypeForm extends Component<any, any>  {
             onClick={this.onClick}>{this.props.buttonTitle}
             </Button>
           </div>
-          <div style="margin-left: 8px; flex-grow: 0">
+          <div style="padding-left: 8px; flex-grow: 0">
             <HelpWdiget />
           </div>
         </div>
