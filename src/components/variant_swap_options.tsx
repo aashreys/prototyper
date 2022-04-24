@@ -1,4 +1,4 @@
-import { Columns, MiddleAlign, Text, Textbox } from '@create-figma-plugin/ui'
+import { Text, Textbox } from '@create-figma-plugin/ui'
 import { Component, h } from 'preact'
 import { AaIcon } from '../icons/aa'
 import { ArrowRightIcon } from '../icons/arrow_right'
@@ -43,7 +43,7 @@ export class VariantSwapOptions extends Component<any, any>  {
   render(props, state) {
     return (
       <div style={props.style ? props.style : ''}>
-        <Text style={'margin-left: 8px'} muted={props.disabled} bold>Move Navigation Focus</Text>
+        <Text style={'margin-left: 8px'} muted={props.disabled} bold>Navigation Focus</Text>
 
         <div style='height: 12px' />
         
@@ -52,7 +52,7 @@ export class VariantSwapOptions extends Component<any, any>  {
           {
             props.showPropertyError && 
             <div style='margin-top: 8px; margin-bottom: 4px; margin-left: 8px'>
-              <Text style="color:red">Variant Property required</Text>
+              <Text style="color:red">Variant property required</Text>
             </div>
           }
 
@@ -60,7 +60,7 @@ export class VariantSwapOptions extends Component<any, any>  {
           icon={<AaIcon/>}
           disabled={props.disabled} 
           onInput={e => this.onPropertyChange(e.currentTarget.value)}
-          placeholder="Variant Property" 
+          placeholder="Variant property"
           value={props.swapVariant.property} 
           noBorder />
 
@@ -69,35 +69,35 @@ export class VariantSwapOptions extends Component<any, any>  {
           {
             props.showToVariantError && 
             <div style='margin-top: 8px; margin-bottom: 4px; margin-left: 8px'>
-              <Text style="color:red">To Property required</Text>
+              <Text style="color:red">To value required</Text>
             </div>
           }
 
-          <Columns>
+          <div style='display: flex; align-items:center'>
 
             <Textbox 
+            style={'flex-grow: 1;'}
             icon={<DiamondOutlineIcon/>}
             disabled={props.disabled} 
             onInput={e => this.onFromChange(e.currentTarget.value)} 
-            placeholder="From Variant" 
+            placeholder="From value" 
             value={props.swapVariant.from} 
             noBorder />
 
-            <div style='padding-left: 4px; padding-right: 4px'>
-              <MiddleAlign>
-                <ArrowRightIcon fill={props.disabled ? "#eaeaea" : "#b0b0b0"} />
-              </MiddleAlign>
+            <div style='padding-left: 8px; padding-right: 8px; align-items: center;'>
+              <ArrowRightIcon fill={props.disabled ? "#eaeaea" : "#b0b0b0"} />  
             </div>
 
             <Textbox 
+            style={'flex-grow: 1;'}
             icon={<DiamondIcon/>}
             disabled={props.disabled} 
             onInput={e => this.onToChange(e.currentTarget.value)}
-            placeholder="To Variant" 
+            placeholder="To value" 
             value={props.swapVariant.to} 
             noBorder />
 
-          </Columns>
+          </div>
 
         </div>
       </div>
