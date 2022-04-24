@@ -4,6 +4,7 @@ import { GamepadListener } from 'gamepad.js'
 import { Device, Keycode, KeycodeUtils } from "../device";
 import { OS, Utils } from "../utils";
 import { KeyboardKeycodes } from "../keyboard_keycodes";
+import styles from "../styles.css";
 
 const PRESS_KEY = 'Press Key'
 
@@ -235,7 +236,7 @@ export class CustomInput extends Component<any, any> {
         {
           props.showError &&
           <div style="display: block; margin-top: 12px;">
-            <Text style={'color: red'} align='center'>Please specify at least one input</Text>
+            <Text class={styles.errorText} align='center'>Please specify at least one input</Text>
           </div>
         }
 
