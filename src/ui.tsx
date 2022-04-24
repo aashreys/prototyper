@@ -19,16 +19,6 @@ const TAB_LINK = 'Link'
 
 const HEIGHT_OFFSET = 16
 
-const UITabs = function (props) {
-  const [value, setValue] = useState(props.value)
-  function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setValue(newValue)
-    props.onTabSet(newValue);
-  }
-  return <Tabs onChange={handleChange} options={props.options} value={value} />
-}
-
 export class UI extends Component<any, any> {
 
   tabs: Array<TabsOption> = [
@@ -67,7 +57,7 @@ export class UI extends Component<any, any> {
   }
 
   bindMethods() {
-    this.onTabSet = this.onTabSet.bind(this)
+    this.onTabChange = this.onTabChange.bind(this)
     this.componentDidUpdate = this.componentDidUpdate.bind(this)
     this.registerEventListeners = this.registerEventListeners.bind(this)
     this.updateOnboardingComplete = this.updateOnboardingComplete.bind(this)
@@ -90,10 +80,10 @@ export class UI extends Component<any, any> {
     }
   }
 
-  onTabSet(value) {
-    if (value !== this.state.activeTab) {
+  onTabChange(tab) {
+    if (tab !== this.state.activeTab) {
       this.setState(prevState => ({
-        activeTab: value,
+        activeTab: tab,
       }))
       emit(Constants.EVENT_TAB_SWTICH)
     }
@@ -109,17 +99,19 @@ export class UI extends Component<any, any> {
 
   render(props, state) {
     return (
-      <Stack>
+      <div>
+
         {
           !state.isOnboardingComplete &&
           <OnboardingBanner onDismiss={this.onOnboardingDismiss} />
         }
-        <UITabs 
-          options={this.tabs} 
-          value={TAB_GENERATE} 
-          onTabSet={this.onTabSet}
-        />
-      </Stack>
+
+        <Tabs 
+        onChange={e => this.onTabChange(e.currentTarget.value)} 
+        options={this.tabs} 
+        value={this.state.activeTab} />
+
+      </div>
     )
   }
 
