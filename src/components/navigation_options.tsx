@@ -1,12 +1,14 @@
 import { Dropdown, DropdownOption, VerticalSpace, Text, SegmentedControlOption, SegmentedControl } from '@create-figma-plugin/ui'
 import { Component, Fragment, h } from 'preact'
 import { Device } from '../device';
+import { ControllerIcon } from '../icons/controller';
 import { DPadIcon } from '../icons/dpad';
 import { FaceButtonsIcon } from '../icons/face_buttons';
 import { KeyboardArrowKeys } from '../icons/kbd_arrow_keys';
 import { KeyboardQe } from '../icons/kbd_qe';
 import { KeyboardShiftTab } from '../icons/kbd_shift_tab';
 import { KeyboardWasd } from '../icons/kbd_wasd';
+import { KeyboardIcon } from '../icons/keyboard';
 import { LeftStickIcon } from '../icons/left_stick';
 import { RightStickIcon } from '../icons/right_stick';
 import { ShoulderButtonsIcon } from '../icons/shoulder_buttons';
@@ -15,8 +17,8 @@ import { Navigation, NavigationKeycodes, NavScheme } from '../navigation';
 import { CustomInput } from './custom_input';
 
 const XBOX = 'Xbox'
-const PS4 = 'PS4'
-const SWITCH = 'Switch'
+const PS4 = 'PlayStation'
+const SWITCH = 'Switch Pro'
 const KEYBOARD = 'Keyboard'
 
 // Controller
@@ -36,7 +38,6 @@ const TAB = 'Tab & ⇧Tab'
 const CUSTOM = 'Custom'
 
 const CONTROLLER_OPTIONS: Array<DropdownOption> = [
-  { header: 'Horizontal & Vertical' },
   { value: DPAD },
   { value: LEFT_STICK },
   { value: RIGHT_STICK },
@@ -49,7 +50,6 @@ const CONTROLLER_OPTIONS: Array<DropdownOption> = [
 ]
 
 const KEYBOARD_OPTIONS: Array<DropdownOption> = [
-  { header: 'Horizontal & Vertical' },
   { value: ARROW_KEYS },
   { value: WASD },
   { separator: true },
@@ -60,10 +60,11 @@ const KEYBOARD_OPTIONS: Array<DropdownOption> = [
   { value: CUSTOM },
 ]
 
-const DEVICES: Array<SegmentedControlOption> = [
+const DEVICES: Array<DropdownOption> = [
   { value: XBOX },
   { value: PS4 },
   { value: SWITCH },
+  { separator: true },
   { value: KEYBOARD },
 ]
 
@@ -124,19 +125,24 @@ export class NavigationOptions extends Component<any, any> {
 
         <VerticalSpace space='small' />
 
-        <SegmentedControl 
-        onChange={e => this.onDeviceChange(e.currentTarget.value)} 
-        options={DEVICES} 
-        value={this.getUiValueFromConfig(navigation.device)} />
+        <div style='display: flex'>
 
-        <div style='height: 6px' />
+          <Dropdown
+          icon={this.getIcon(this.getUiValueFromConfig(navigation.device))}
+          onChange={e => this.onDeviceChange(e.currentTarget.value)} 
+          options={DEVICES} 
+          value={this.getUiValueFromConfig(navigation.device)}
+          noBorder />
 
-        <Dropdown 
-        icon={this.getIcon(props.value)} 
-        onChange={e => this.onSchemeChange(e.currentTarget.value)} 
-        options={navigation.device === Device.KEYBOARD ? KEYBOARD_OPTIONS : CONTROLLER_OPTIONS} 
-        value={this.getUiValueFromConfig(navigation.scheme)}
-        noBorder />
+          <Dropdown
+          style={'flex-grow: 1'}
+          icon={this.getIcon(this.getUiValueFromConfig(navigation.scheme))}
+          onChange={e => this.onSchemeChange(e.currentTarget.value)} 
+          options={navigation.device === Device.KEYBOARD ? KEYBOARD_OPTIONS : CONTROLLER_OPTIONS} 
+          value={this.getUiValueFromConfig(navigation.scheme)}
+          noBorder />
+
+        </div>
 
         {
           navigation.scheme === NavScheme.CUSTOM &&
@@ -217,6 +223,10 @@ export class NavigationOptions extends Component<any, any> {
       case WASD: return <KeyboardWasd />
       case QE: return <KeyboardQe />
       case TAB: return <KeyboardShiftTab />
+      case XBOX: 
+      case SWITCH:
+      case PS4: return <ControllerIcon />
+      case KEYBOARD: return <KeyboardIcon />
       default: return <DPadIcon />
     }
   }

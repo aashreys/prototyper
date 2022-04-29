@@ -53,7 +53,7 @@ export class VariantSwapOptions extends Component<any, any>  {
           {
             props.showPropertyError && 
             <div style='margin-top: 8px; margin-bottom: 4px; margin-left: 8px'>
-              <Text class={styles.errorText}>Variant property required</Text>
+              <Text style={'color: red'}>Variant property required</Text>
             </div>
           }
 
@@ -70,7 +70,7 @@ export class VariantSwapOptions extends Component<any, any>  {
           {
             props.showToVariantError && 
             <div style='margin-top: 8px; margin-bottom: 4px; margin-left: 8px'>
-              <Text class={styles.errorText}>To value required</Text>
+              <Text style={'color: red'}>To value required</Text>
             </div>
           }
 
