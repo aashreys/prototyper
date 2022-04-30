@@ -4,7 +4,6 @@ import { AaIcon } from '../icons/aa'
 import { ArrowRightIcon } from '../icons/arrow_right'
 import { DiamondIcon } from '../icons/diamond'
 import { DiamondOutlineIcon } from '../icons/diamond_outline'
-import styles from '../styles.css'
 
 export class VariantSwapOptions extends Component<any, any>  {
 
@@ -85,7 +84,7 @@ export class VariantSwapOptions extends Component<any, any>  {
             value={props.swapVariant.from} 
             noBorder />
 
-            <div style='padding-left: 8px; padding-right: 8px; align-items: center;'>
+            <div style='padding-left: 8px; padding-right: 8px;'>
               <ArrowRightIcon fill={props.disabled ? "#eaeaea" : "#b0b0b0"} />  
             </div>
 

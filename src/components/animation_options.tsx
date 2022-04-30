@@ -279,7 +279,7 @@ export class AnimationOptions extends Component<any, any> {
         
         <VerticalSpace space='small' />
         
-        <div style='display: flex'>
+        <div style='display: flex; align-items:center'>
 
           <Dropdown // Transition Select
           style={'min-width: 35%; flex-grow: 1'}
@@ -291,13 +291,12 @@ export class AnimationOptions extends Component<any, any> {
 
           {
             this.isDirectional() && 
-            <div> <MiddleAlign>
-              <SegmentedControl // Direction Select
-              onChange={e => this.onDirectionChange(e.currentTarget.value)} 
-              options={DIRECTION_OPTIONS} 
-              value={props.animation.isAutoDirection ? AUTO : 
-                this.getUiValue(props.animation.direction)} />
-            </MiddleAlign> </div>
+            <SegmentedControl // Direction Select
+            onChange={e => this.onDirectionChange(e.currentTarget.value)} 
+            options={DIRECTION_OPTIONS} 
+            value={props.animation.isAutoDirection ? AUTO : 
+              this.getUiValue(props.animation.direction)} />
+
           }
         </div>
 
