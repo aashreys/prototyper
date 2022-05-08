@@ -230,15 +230,16 @@ export class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='large' />
         
-        <VariantSwapOptions
-        style='padding-left: 8px; padding-right: 8px;'
-        disabled={this.props.mode === Mode.LINK}
-        swapVariant={this.state.config.swapVariant}
-        onSwapVariantChange={this.onSwapVariantChange}
-        showPropertyError={this.state.ui.showVariantPropertyError}
-        showToVariantError={this.state.ui.showVariantToValueError} />
-
-        <VerticalSpace space='medium' />
+        {
+          this.props.mode !== Mode.LINK &&
+          <VariantSwapOptions
+          style='padding-left: 8px; padding-right: 8px; padding-bottom: 12px;'
+          disabled={this.props.mode === Mode.LINK}
+          swapVariant={this.state.config.swapVariant}
+          onSwapVariantChange={this.onSwapVariantChange}
+          showPropertyError={this.state.ui.showVariantPropertyError}
+          showToVariantError={this.state.ui.showVariantToValueError} />
+        }
 
         <div style="display: flex; padding-left: 16px; padding-right: 16px;"> 
           <div style="flex-grow: 1"> 
