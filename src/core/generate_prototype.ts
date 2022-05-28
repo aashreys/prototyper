@@ -86,22 +86,7 @@ function sanitizeInstances(instances: Array<InstanceNode>, config: Config) {
 
 function sortProtoNodes(protoNodes: Array<PrototypeNode>) {
   protoNodes.sort(function (node1, node2) {
-    let result = 0;
-    if (node1.y < node2.y) {
-      result = -1;
-    }
-    else if (node1.y === node2.y) {
-      if (node1.x < node2.x) {
-        result = -1;
-      } else if (node1.x === node2.x) {
-        result = 0;
-      } else {
-        result = 1;
-      }
-    } else {
-      result = 1;
-    }
-    return result;
+    return Utils.sortCoordinates(node1.x, node1.y, node2.x, node2.y)
   });
 }
 

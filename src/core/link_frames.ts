@@ -47,28 +47,11 @@ function validateTopLevelFrames(selection: readonly SceneNode[]) {
 
 function sortFrames(linkableFrames: Array<LinkableFrame>) {
   linkableFrames.sort(function (frame1, frame2) {
-    let result = 0;
-    let f1 = frame1.frame
-    let f2 = frame2.frame
-    if (f1.y < f2.y) {
-      result = -1
-    }
-    else if (f1.y === f2.y) {
-      if (f1.x < f2.x) {
-        result = -1
-      } else if (f1.x === f2.x) {
-        result = 0
-      } else {
-        result = 1
-      }
-    } else {
-      result = 1
-    }
-    return result
+    return Utils.sortCoordinates(frame1.frame.x, frame1.frame.y, frame2.frame.x, frame2.frame.y)
   });
 }
 
-class LinkableFrame implements Navigable {
+export class LinkableFrame implements Navigable {
 
   readonly frame: FrameNode
 

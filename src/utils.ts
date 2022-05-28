@@ -335,4 +335,12 @@ export class Utils {
     else return OS.OTHER
   }
 
+  /*
+  * Sorts cooridnates from left top to bottom right. For use in array.sort() style functions.
+  */ 
+  static sortCoordinates(x1, y1, x2, y2) {
+    if (x1 - x2 !== 0) return x1 - x2
+    else return y1 - y2
+  }
+ 
 }
