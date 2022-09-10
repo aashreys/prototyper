@@ -14,13 +14,13 @@
 }
 
 .verticalMenu p {
-  font-size: 11px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.4); /* Black text color */
   display: block; /* Make the links appear below each other */
   padding-left: 16px;
   padding-right: 16px;
   margin: 0px;
-  line-height: 24px;
+  line-height: 28px;
   text-decoration: none; /* Remove underline from links */
 }
 
@@ -30,7 +30,7 @@
   display: block; /* Make the links appear below each other */
   padding-left: 16px;
   padding-right: 16px;
-  line-height: 24px;
+  line-height: 28px;
   text-decoration: none; /* Remove underline from links */
 }
 
