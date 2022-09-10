@@ -1,9 +1,10 @@
-import { IconArrowDown16, IconArrowLeft16, IconArrowRight16, IconArrowUp16, Textbox, Text } from "@create-figma-plugin/ui";
+import { IconArrowDown16, IconArrowLeft16, IconArrowRight16, IconArrowUp16, Textbox } from "@create-figma-plugin/ui";
 import { Component, h } from "preact";
 import { GamepadListener } from 'gamepad.js'
 import { Device, Keycode, KeycodeUtils } from "../device";
 import { OS, Utils } from "../utils";
 import { KeyboardKeycodes } from "../keyboard_keycodes";
+import styles from "../styles.css";
 
 const PRESS_KEY = 'Press Key'
 
@@ -232,7 +233,9 @@ export class CustomInput extends Component<any, any> {
       <div style="display: block; margin: auto; caret-color: transparent;">
         {
           props.showError &&
-          <Text style={'color: red; margin-top: 12px;'} align='center'>Please specify at least one input</Text>
+          <div style={'margin-top: 12px; text-align: center'}>
+            <text class={styles.errorText}>Please specify at least one input</text>
+          </div>
         }
 
         <div style="width: 50%; margin: auto; margin-top: 4px;">

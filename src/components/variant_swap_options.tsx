@@ -4,6 +4,7 @@ import { AaIcon } from '../icons/aa'
 import { ArrowRightIcon } from '../icons/arrow_right'
 import { DiamondIcon } from '../icons/diamond'
 import { DiamondOutlineIcon } from '../icons/diamond_outline'
+import styles from '../styles.css'
 
 export class VariantSwapOptions extends Component<any, any>  {
 
@@ -52,7 +53,7 @@ export class VariantSwapOptions extends Component<any, any>  {
           {
             props.showPropertyError && 
             <div style='margin-top: 8px; margin-bottom: 4px; margin-left: 8px'>
-              <Text style={'color: red'}>Variant property required</Text>
+              <text class={styles.errorText}>Variant property required</text>
             </div>
           }
 
@@ -67,7 +68,7 @@ export class VariantSwapOptions extends Component<any, any>  {
           {
             props.showToVariantError && 
             <div style='margin-top: 8px; margin-bottom: 4px; margin-left: 8px'>
-              <Text style={'color: red'}>To value required</Text>
+              <text class={styles.errorText}>To value required</text>
             </div>
           }
 

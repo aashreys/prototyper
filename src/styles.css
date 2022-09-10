@@ -14,7 +14,7 @@
 }
 
 .verticalMenu p {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.4); /* Black text color */
   display: block; /* Make the links appear below each other */
   padding-left: 16px;
@@ -46,7 +46,7 @@
   top: calc(100% - 1px);
   right: 11px;
   border: 6px solid transparent;
-  border-top: 6px solid var(--figma-color-bg-secondary);
+  border-top: 6px solid #1e1e1e;
 }
 
 .tooltip {
@@ -103,7 +103,7 @@
   height: 1px;
   margin-top: 8px;
   margin-bottom: 8px;
-  border-top: 1px solid var(--figma-color-border);
+  border-top: 1px solid #4e4e4e;
 }
 
 .onboardingContainer {
@@ -112,8 +112,11 @@
   padding-bottom: var(--space-medium);
   padding-left: var(--space-medium);
   padding-right: var(--space-medium);
-  margin-bottom: -8px;
   width: 100%;
   display: block;
   border-bottom: 1px solid var(--figma-color-border);
+}
+
+.errorText {
+  color: var(--figma-color-text-danger)
 }

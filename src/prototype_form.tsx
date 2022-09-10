@@ -12,6 +12,7 @@ import { HelpWdiget } from './components/help_widget';
 import { UI } from './ui';
 import { Config, StoredNavigation } from './config';
 import { Device } from './device';
+import styles from './styles.css';
 
 export class PrototypeForm extends Component<any, any>  {
 
@@ -205,7 +206,7 @@ export class PrototypeForm extends Component<any, any>  {
           this.state.ui.errorMessage.length > 0 && 
           <div style='padding-left: 16px; padding-right: 16px;'> 
             <VerticalSpace space='large' />
-            <Text style={'color: red'}>{this.state.ui.errorMessage}</Text>
+            <text class={styles.errorText}>{this.state.ui.errorMessage}</text>
           </div>
         }
 

@@ -10,4 +10,8 @@ export class Onboarding {
     figma.clientStorage.setAsync(Onboarding.ONBOARDING_KEY, true)
   }
 
+  static clear() {
+    figma.clientStorage.deleteAsync(Onboarding.ONBOARDING_KEY)
+  }
+
 }

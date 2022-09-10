@@ -19,19 +19,21 @@ export class OnboardingBanner extends Component<any, any> {
     return (
       <div class={styles.onboardingContainer}>
         <Text><Bold>Welcome to Prototyper!</Bold></Text>
-          <Text>Watch a short video to learn the basics and best practices.</Text>
-          <Inline space='small'>
-            <button 
-            class={styles.linkButton} 
-            onClick={this.onWatchVideoClick}>
-              ▶ Watch Video
-            </button>
-            <button 
-            class={styles.linkButton} 
-            onClick={this.dismiss}>
-              Dismiss
-            </button>
-          </Inline>
+        <VerticalSpace space="small"/>
+        <Text>Watch a short video to learn the basics and best practices.</Text>
+        <VerticalSpace space="small"/>
+        <Inline space='small'>
+          <button 
+          class={styles.linkButton} 
+          onClick={this.onWatchVideoClick}>
+            ▶ Watch Video
+          </button>
+          <button 
+          class={styles.linkButton} 
+          onClick={this.dismiss}>
+            Dismiss
+          </button>
+        </Inline>
       </div>
     )
   }

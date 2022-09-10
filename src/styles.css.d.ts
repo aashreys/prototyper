@@ -5,6 +5,7 @@ declare const styles: {
   readonly "linkButton": string;
   readonly "separator": string;
   readonly "onboardingContainer": string;
+  readonly "errorText": string;
 };
 export = styles;
 
