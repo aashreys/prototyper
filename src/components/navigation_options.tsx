@@ -1,4 +1,4 @@
-import { Dropdown, DropdownOption, VerticalSpace, Text, SegmentedControlOption, SegmentedControl } from '@create-figma-plugin/ui'
+import { Dropdown, DropdownOption, VerticalSpace, Text, SegmentedControlOption, SegmentedControl, Bold } from '@create-figma-plugin/ui'
 import { Component, Fragment, h } from 'preact'
 import { Device } from '../device';
 import { ControllerIcon } from '../icons/controller';
@@ -121,7 +121,7 @@ export class NavigationOptions extends Component<any, any> {
     return (
       <div style={props.style ? props.style : ''}>
 
-        <Text style={'margin-left: 8px'} bold>Navigate With</Text>
+        <Text style={'margin-left: 8px'}><Bold>Navigate With</Bold></Text>
 
         <VerticalSpace space='small' />
 
@@ -131,16 +131,14 @@ export class NavigationOptions extends Component<any, any> {
           icon={this.getIcon(this.getUiValueFromConfig(navigation.device))}
           onChange={e => this.onDeviceChange(e.currentTarget.value)} 
           options={DEVICES} 
-          value={this.getUiValueFromConfig(navigation.device)}
-          noBorder />
+          value={this.getUiValueFromConfig(navigation.device)} />
 
           <Dropdown
           style={'flex-grow: 1'}
           icon={this.getIcon(this.getUiValueFromConfig(navigation.scheme))}
           onChange={e => this.onSchemeChange(e.currentTarget.value)} 
           options={navigation.device === Device.KEYBOARD ? KEYBOARD_OPTIONS : CONTROLLER_OPTIONS} 
-          value={this.getUiValueFromConfig(navigation.scheme)}
-          noBorder />
+          value={this.getUiValueFromConfig(navigation.scheme)} />
 
         </div>
 

@@ -1,4 +1,4 @@
-import { Inline, Stack, Text, VerticalSpace } from "@create-figma-plugin/ui";
+import { Bold, Inline, Stack, Text, VerticalSpace } from "@create-figma-plugin/ui";
 import { Component, h } from "preact";
 import styles from "../styles.css";
 
@@ -18,8 +18,7 @@ export class OnboardingBanner extends Component<any, any> {
 
     return (
       <div class={styles.onboardingContainer}>
-        <Stack>
-          <Text bold>Welcome to Prototyper!</Text>
+        <Text><Bold>Welcome to Prototyper!</Bold></Text>
           <Text>Watch a short video to learn the basics and best practices.</Text>
           <Inline space='small'>
             <button 
@@ -33,7 +32,6 @@ export class OnboardingBanner extends Component<any, any> {
               Dismiss
             </button>
           </Inline>
-        </Stack> 
       </div>
     )
   }

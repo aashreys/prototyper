@@ -1,4 +1,4 @@
-import { Text, Textbox } from '@create-figma-plugin/ui'
+import { Bold, Text, Textbox } from '@create-figma-plugin/ui'
 import { Component, h } from 'preact'
 import { AaIcon } from '../icons/aa'
 import { ArrowRightIcon } from '../icons/arrow_right'
@@ -43,7 +43,7 @@ export class VariantSwapOptions extends Component<any, any>  {
   render(props, state) {
     return (
       <div style={props.style ? props.style : ''}>
-        <Text style={'margin-left: 8px'} bold>Navigation Focus</Text>
+        <Text style={'margin-left: 8px'}><Bold>Navigation Focus</Bold></Text>
 
         <div style='height: 12px' />
         
@@ -60,8 +60,7 @@ export class VariantSwapOptions extends Component<any, any>  {
           icon={<AaIcon/>}
           onInput={e => this.onPropertyChange(e.currentTarget.value)}
           placeholder="Variant property"
-          value={props.swapVariant.property} 
-          noBorder />
+          value={props.swapVariant.property} />
 
           <div style='height: 4px' />
 
@@ -80,8 +79,7 @@ export class VariantSwapOptions extends Component<any, any>  {
 
             onInput={e => this.onFromChange(e.currentTarget.value)} 
             placeholder="From value" 
-            value={props.swapVariant.from} 
-            noBorder />
+            value={props.swapVariant.from} />
 
             <div style='padding-left: 8px; padding-right: 8px;'>
               <ArrowRightIcon fill={"#b0b0b0"} />  
@@ -92,8 +90,7 @@ export class VariantSwapOptions extends Component<any, any>  {
             icon={<DiamondIcon/>}
             onInput={e => this.onToChange(e.currentTarget.value)}
             placeholder="To value" 
-            value={props.swapVariant.to} 
-            noBorder />
+            value={props.swapVariant.to} />
 
           </div>
 

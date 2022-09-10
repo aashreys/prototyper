@@ -1,4 +1,4 @@
-import { Dropdown, DropdownOption, VerticalSpace, Text, Textbox, SegmentedControl, SegmentedControlOption, Checkbox, MiddleAlign} from '@create-figma-plugin/ui'
+import { Dropdown, DropdownOption, VerticalSpace, Text, Textbox, SegmentedControl, SegmentedControlOption, Checkbox, MiddleAlign, Bold} from '@create-figma-plugin/ui'
 import { Component, h, JSX } from 'preact'
 import { useState } from 'preact/hooks'
 import { AnimationDirection, AnimationEasing, AnimationType } from '../animation'
@@ -132,8 +132,7 @@ const DurationInput = function (props) {
     validateOnBlur={validateOnBlur}
     onInput={handleInput}
     placeholder='Duration'
-    value={value}
-    noBorder />
+    value={value} />
   )
 
 }
@@ -275,7 +274,7 @@ export class AnimationOptions extends Component<any, any> {
   render(props, state) {
     return (
       <div style={props.style ? props.style : ''}>
-        <Text style={'margin-left: 8px'} bold>Animation</Text>
+        <Text style={'margin-left: 8px'}><Bold>Animation</Bold></Text>
         
         <VerticalSpace space='small' />
         
@@ -286,8 +285,7 @@ export class AnimationOptions extends Component<any, any> {
           icon={this.getIcon(this.getUiValue(props.animation.type))}
           onChange={e => this.onTypeChange(e.currentTarget.value)}
           options={TRANSITION_OPTIONS}
-          value={this.getUiValue(props.animation.type)}
-          noBorder />
+          value={this.getUiValue(props.animation.type)} />
 
           {
             this.isDirectional() && 
@@ -309,8 +307,7 @@ export class AnimationOptions extends Component<any, any> {
             icon={this.getIcon(this.getUiValue(props.animation.easing))}
             onChange={e => this.onEasingChange(e.currentTarget.value)}
             options={EASING_OPTIONS}
-            value={this.getUiValue(props.animation.easing)}
-            noBorder />
+            value={this.getUiValue(props.animation.easing)} />
 
             <div style='width: 50%;'>
               <DurationInput // Duration Input

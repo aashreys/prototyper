@@ -45,14 +45,12 @@ class CustomInputTextbox extends Component<any, any> {
   render(props, state) {
     return (
       <Textbox
-        icon={props.icon}
-        value={this.getKeyString(props.device, props.keycodes)}
-        placeholder={state.isFocused ? PRESS_KEY : props.placeholder}
-        onFocusCapture={this.onFocused}
-        onBlurCapture={this.onUnfocused}
-        onKeyDownCapture={this.onKeyDownCapture}
-        noBorder
-      />
+      icon={props.icon}
+      value={this.getKeyString(props.device, props.keycodes)}
+      placeholder={state.isFocused ? PRESS_KEY : props.placeholder}
+      onFocusCapture={this.onFocused}
+      onBlurCapture={this.onUnfocused}
+      onKeyDownCapture={this.onKeyDownCapture} />
     )
   }
 
