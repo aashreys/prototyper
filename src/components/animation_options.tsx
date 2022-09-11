@@ -18,6 +18,7 @@ import { TransitionDissolveIcon } from '../icons/dissolve'
 import { TransitionMoveIcon } from '../icons/move'
 import { TransitionSmartAnimateIcon } from '../icons/smart_animate'
 import { TimerIcon } from '../icons/timer'
+import styles from '../styles.css'
 
 // Animation Type
 const INSTANT = 'Instant'
@@ -59,10 +60,10 @@ const TRANSITION_OPTIONS: Array<DropdownOption> = [
 
 const DIRECTION_OPTIONS: Array<SegmentedControlOption> = [
   { value: AUTO },
-  { value: LEFT, children: <ArrowLeftIcon /> },
-  { value: RIGHT, children: <ArrowRightIcon /> },
-  { value: BOTTOM, children: <ArrowDownIcon /> },
-  { value: TOP, children: <ArrowUpIcon /> },
+  { value: LEFT, children: <ArrowLeftIcon class={styles.themedIcon} /> },
+  { value: RIGHT, children: <ArrowRightIcon class={styles.themedIcon} /> },
+  { value: BOTTOM, children: <ArrowDownIcon class={styles.themedIcon} /> },
+  { value: TOP, children: <ArrowUpIcon class={styles.themedIcon} /> },
 ]
 
 const EASING_OPTIONS: Array<DropdownOption> = [

@@ -83,7 +83,7 @@ export class VariantSwapOptions extends Component<any, any>  {
             value={props.swapVariant.from} />
 
             <div style='padding-left: 8px; padding-right: 8px;'>
-              <ArrowRightIcon fill={"#b0b0b0"} />  
+              <ArrowRightIcon class={styles.greyIcon} />  
             </div>
 
             <Textbox 

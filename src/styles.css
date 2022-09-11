@@ -120,3 +120,11 @@
 .errorText {
   color: var(--figma-color-text-danger)
 }
+
+.themedIcon {
+  fill: var(--figma-color-icon)
+}
+
+.greyIcon {
+  fill: #b0b0b0
+}

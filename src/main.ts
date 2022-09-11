@@ -21,7 +21,6 @@ export default function () {
   if (!('default' in figma.root.getRelaunchData())) setRelaunchButton(figma.root, 'default')
 
   /* Run Main Program */
-  Onboarding.clear()
   Config.migrateConfig()
 
   showUI(
