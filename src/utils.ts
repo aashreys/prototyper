@@ -91,8 +91,8 @@ export class Utils {
   static findTopLevelFrame(node: SceneNode): FrameNode {
     let currentNode = node;
     let topLevelFrame;
-    if (!Utils.isPage(currentNode.parent)) {
-      while (!Utils.isPage(currentNode.parent)) {
+    if (!Utils.isSectionOrPage(currentNode.parent)) {
+      while (!Utils.isSectionOrPage(currentNode.parent)) {
         topLevelFrame = currentNode.parent;
         currentNode = topLevelFrame;
       }
@@ -105,8 +105,8 @@ export class Utils {
   static buildNodePath(node) {
     let nodePath = new Array();
     let currentNode = node;
-    if (!Utils.isPage(currentNode.parent)) {
-      while (!Utils.isPage(currentNode.parent)) {
+    if (!Utils.isSectionOrPage(currentNode.parent)) {
+      while (!Utils.isSectionOrPage(currentNode.parent)) {
         nodePath.unshift(currentNode.parent.children.indexOf(currentNode));
         currentNode = currentNode.parent;
       }

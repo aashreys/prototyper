@@ -10,15 +10,18 @@ export function doGeneratePrototype(config: Config) {
   validateInstances(instances, config)
   sanitizeInstances(instances, config);
 
-  let isLinked: boolean = Utils.findTopLevelFrame(instances[0]).reactions.length > 0
+  let topLevelFrame: FrameNode = Utils.findTopLevelFrame(instances[0])
+  let parent = topLevelFrame.parent as PageNode | SectionNode // either a Page or Section
+
+  let isLinked: boolean = topLevelFrame.reactions.length > 0
   
   let protoNodes: Array<PrototypeNode> = instances.map(node => PrototypeNode.fromInstance(node));
   sortProtoNodes(protoNodes);
   assignNodeNeighbors(protoNodes);
 
-  let protoFrames = createProtoFrames(protoNodes);
+  let protoFrames = createProtoFrames(protoNodes, parent);
   assignFrameNeighors(protoFrames, protoNodes);
-  layoutFrames(protoFrames);
+  positionFrames(protoFrames);
   swapVariants(protoFrames, config);
   createInteractions(protoFrames, config);
 
@@ -94,7 +97,7 @@ function assignNodeNeighbors(protoNodes: Array<PrototypeNode>) {
   NearestNeighbor.assignNeigbors(protoNodes);
 }
 
-function createProtoFrames(protoNodes: Array<PrototypeNode>) {
+function createProtoFrames(protoNodes: Array<PrototypeNode>, parent: PageNode | SectionNode) {
   let protoFrames = new Array();
   let node = protoNodes[0].instance;
   let topLevelFrame = Utils.findTopLevelFrame(node);
@@ -109,6 +112,7 @@ function createProtoFrames(protoNodes: Array<PrototypeNode>) {
 
   for (let i = 1; i < protoNodes.length; i++) {
     topLevelFrame = topLevelFrame.clone();
+    parent.appendChild(topLevelFrame)
     topLevelFrame.name = baseName + (suffix + i);
     node = Utils.findNodeFromNodePath(protoNodes[i].nodePath, topLevelFrame);
     protoFrames.push(new PrototypeFrame(node, topLevelFrame));
@@ -127,7 +131,7 @@ function assignFrameNeighors(protoFrames: Array<PrototypeFrame>, protoNodes: Arr
   }
 }
 
-function layoutFrames(frames: Array<PrototypeFrame>) {
+function positionFrames(frames: Array<PrototypeFrame>) {
   // Since the first frame is the user's reference and already on the canvas, use it as the starting point
   let width = frames[0].topLevelFrame.width;
   let height = frames[0].topLevelFrame.height;
