@@ -1,5 +1,4 @@
 import { Config } from "../config";
-import { Constants } from "../constants";
 import { Utils } from "../utils";
 import { Navigable, NearestNeighbor, Neighbors } from "./nearest_neighbor";
 

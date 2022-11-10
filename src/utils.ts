@@ -26,7 +26,7 @@ export class Utils {
   }
 
   static isTopLevelFrame(node) {
-    return this.isFrame(node) && this.isPage(node.parent);
+    return this.isFrame(node) && this.isSectionOrPage(node.parent);
   }
 
   static isGroup(node): boolean {
@@ -35,6 +35,14 @@ export class Utils {
 
   static isPage(node): boolean {
     return node && node.type === 'PAGE';
+  }
+
+  static isSection(node): boolean {
+    return node && node.type === 'SECTION'
+  }
+
+  static isSectionOrPage(node): boolean {
+    return this.isSection(node) || this.isPage(node)
   }
 
   static hasChildren(node): boolean {
