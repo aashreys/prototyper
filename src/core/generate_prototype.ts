@@ -65,12 +65,18 @@ function validateInstanceProperties(instances: Array<InstanceNode>, swapVariant:
     }
 
     /* Check if a unique component property exists on this instance */
-    let numProperties = Utils.getMatchingComponentPropertyNames(instance, property)
-    if (numProperties.length === 0) {
+    let properties = Utils.getMatchingComponentPropertyNames(instance, property)
+    if (properties.length === 0) {
       throw new Error(`Cannot find component property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
     }
-    else if (numProperties.length > 1) {
-      throw new Error(`Found ${numProperties.length} component properties with the name "${property}" on layer "${instance.name}". Please rename them to be unique.`);
+    else if (properties.length > 1) {
+      throw new Error(`Found ${properties.length} component properties with the name "${property}" on layer "${instance.name}". Please rename them to be unique.`);
+    }
+
+    /* Check if the component property type is supported */
+    let propertyType = instance.componentProperties[properties[0]].type
+    if (propertyType !== 'BOOLEAN' && propertyType !== 'TEXT' && propertyType !== 'VARIANT') {
+      throw new Error(`Cannot set focus on an ${propertyType} property like "${property}". Please select a different property.`);
     }
     
     /* Check if the unique component property can accept the values supplied by the user */
