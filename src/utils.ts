@@ -69,22 +69,29 @@ export class Utils {
     return false;
   }
 
-  static hasVariantErrors(instance) {
-    return typeof instance.variantProperties === 'string' && instance.variantProperties.indexOf('error') > -1
+  static hasComponentPropertyErrors(instance) {
+    try {
+      instance.componentProperties
+      return false
+    } 
+    catch (e) {
+      console.error(e)
+      return true
+    }
   }
 
-  static hasVariantProperty(instance, property) {
-    let properties = instance.variantProperties;
-    return properties !== null && property in properties;
-  }
-
-  static hasVariantValue(instance, property, value) {
-    if (Utils.isComponent(instance.mainComponent) && Utils.isComponentSet(instance.mainComponent.parent)) {
-      let componentSet = instance.mainComponent.parent;
-      return componentSet.variantGroupProperties[property].values.indexOf(value) >= 0;
+  static canAcceptComponentPropertyValue(instance: InstanceNode, propertyName: string, value: string) {
+    let property = this.getMatchingComponentPropertyNames(instance, propertyName)[0]
+    let parent: ComponentNode | ComponentSetNode = Utils.isComponentSet(instance.mainComponent.parent) ? instance.mainComponent.parent as ComponentSetNode : instance.mainComponent
+    if (parent.componentPropertyDefinitions[property].type === 'VARIANT') {
+      return parent.componentPropertyDefinitions[property].variantOptions.includes(value.toString())
+    }
+    else if (parent.componentPropertyDefinitions[property].type === 'BOOLEAN') {
+      value = value.toLowerCase()
+      return value === 'true' || value === 'false'
     }
     else {
-      return false;
+      return true
     }
   }
 
@@ -141,10 +148,30 @@ export class Utils {
     (figma.currentPage as any).flowStartingPoints = flows;
   }
 
-  static setVariantProperty(node, propertyName: string, propertyValue: string) {
-    let variantProperties = node.variantProperties;
-    variantProperties[propertyName] = propertyValue;
-    node.setProperties(variantProperties);
+  static getMatchingComponentPropertyNames(node: InstanceNode, propertyName: string): string[] {
+    let matchingNames = []
+    let propertyNames = Object.keys(node.componentProperties)
+    for (let i in propertyNames) {
+      let name = propertyNames[i]
+      if (name.lastIndexOf('#') > -1) name = name.substring(0, name.lastIndexOf('#'))
+      if (name === propertyName) matchingNames.push(propertyNames[i])
+    }
+    return matchingNames
+  }
+
+  static setComponentProperty(
+    node: InstanceNode, 
+    propertyName: string, 
+    value: string) 
+  {
+    let property = this.getMatchingComponentPropertyNames(node, propertyName)[0]
+    if (node.componentProperties[property].type === 'BOOLEAN') {
+      value = value.toLowerCase()
+      if (value === 'true') node.setProperties({ [property]: true })
+      if (value === 'false') node.setProperties({ [property]: false })
+    } else {
+      node.setProperties({ [property]: value })
+    }
   }
 
   static getAbsoluteX(node: SceneNode) {

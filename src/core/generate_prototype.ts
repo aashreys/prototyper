@@ -7,8 +7,14 @@ import { NearestNeighbor } from "./nearest_neighbor";
 
 export function doGeneratePrototype(config: Config) {
   let instances: Array<InstanceNode> = filterInstancesFromSelection(figma.currentPage.selection)
-  validateInstances(instances, config)
-  sanitizeInstances(instances, config);
+
+  // Validate instances
+  validateInstancesLength(instances)
+  validateInstanceProperties(instances, config.swapVariant)
+
+  // Sanitize instances
+  removeFlowStaringPoints(instances)
+  resetInstanceFocus(instances, config)
 
   let topLevelFrame: FrameNode = Utils.findTopLevelFrame(instances[0])
   let parent = topLevelFrame.parent as PageNode | SectionNode // either a Page or Section
@@ -22,7 +28,7 @@ export function doGeneratePrototype(config: Config) {
   let protoFrames = createProtoFrames(protoNodes, parent);
   assignFrameNeighors(protoFrames, protoNodes);
   positionFrames(protoFrames);
-  swapVariants(protoFrames, config);
+  setInstanceFocus(protoFrames, config);
   createInteractions(protoFrames, config);
 
   if (!isLinked) addFlowStartingPoint(protoFrames);
@@ -41,48 +47,55 @@ function filterInstancesFromSelection(selection: ReadonlyArray<SceneNode>): Arra
   return instances;
 }
 
-function validateInstances(instances: Array<InstanceNode>, config: Config) {
-  validateInstancesLength(instances)
-  validateVariantProperties(instances, config.swapVariant)
-}
-
 function validateInstancesLength(instances: Array<InstanceNode>) {
   if (instances.length < 2) {
     throw new Error('Please select 2 or more component instances and try again.')
   }
 }
 
-function validateVariantProperties(instances: Array<InstanceNode>, swapVariant: SwapVariant) {
+function validateInstanceProperties(instances: Array<InstanceNode>, swapVariant: SwapVariant) {
   let property = swapVariant.property;
   let from = swapVariant.from;
   let to = swapVariant.to;
   for (let instance of instances) {
-    if (Utils.hasVariantErrors(instance)) {
+
+    /* Check for general component property errors */
+    if (Utils.hasComponentPropertyErrors(instance)) {
       throw new Error(`Found errors in the component set for layer "${instance.name}". Please resolve the errors and try again.`)
     }
-    if (!Utils.hasVariantProperty(instance, property)) {
-      throw new Error(`Cannot find variant property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
+
+    /* Check if a unique component property exists on this instance */
+    let numProperties = Utils.getMatchingComponentPropertyNames(instance, property)
+    if (numProperties.length === 0) {
+      throw new Error(`Cannot find component property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
     }
-    if (from.length > 0 && !Utils.hasVariantValue(instance, property, from)) {
-      throw new Error(`Cannot find variant value "${from}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
+    else if (numProperties.length > 1) {
+      throw new Error(`Found ${numProperties.length} component properties with the name "${property}" on layer "${instance.name}". Please rename them to be unique.`);
     }
-    if (!Utils.hasVariantValue(instance, property, to)) {
-      throw new Error(`Cannot find variant value "${to}" on layer "${instance.name}". Please type it exactly as it appears in the Variants Panel.`);
+    
+    /* Check if the unique component property can accept the values supplied by the user */
+    if (from.length > 0 && !Utils.canAcceptComponentPropertyValue(instance, property, from)) {
+      throw new Error(`Cannot find value "${from}" for component property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
     }
+    if (!Utils.canAcceptComponentPropertyValue(instance, property, to)) {
+      throw new Error(`Cannot find value "${to}" for component property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
+    }
+
   }
 }
 
-function sanitizeInstances(instances: Array<InstanceNode>, config: Config) {
-  // Remove flow staring point on parent node else it will be duplicated in the prototype
+function removeFlowStaringPoints(instances: Array<InstanceNode>) {
   let topLevelFrame = Utils.findTopLevelFrame(instances[0]);
   Utils.removeFlowStartingPoint(topLevelFrame);
+}
 
+function resetInstanceFocus(instances: Array<InstanceNode>, config: Config) {
   // If variant from value is defined, reset all variants to their from value
   let fromVariant = config.swapVariant.from
   let property = config.swapVariant.property
   if (fromVariant.length > 0) {
     for (let instance of instances) {
-      Utils.setVariantProperty(instance, property, fromVariant);
+      Utils.setComponentProperty(instance, property, fromVariant);
     }
   }
 }
@@ -167,13 +180,11 @@ function positionFrames(frames: Array<PrototypeFrame>) {
   }
 }
 
-function swapVariants(protoFrames: Array<PrototypeFrame>, config: Config) {
+function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config) {
   let property = config.swapVariant.property
   let toVariant = config.swapVariant.to
   for (let protoFrame of protoFrames) {
-    if (Utils.hasVariantProperty(protoFrame.instance, property)) {
-      Utils.setVariantProperty(protoFrame.instance, property, toVariant)
-    }
+    Utils.setComponentProperty(protoFrame.instance, property, toVariant)
   }
 }
 
