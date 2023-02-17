@@ -5,6 +5,7 @@ import { emit, on } from '@create-figma-plugin/utilities';
 import { Constants } from './constants';
 import { Mode } from './main';
 import { OnboardingBanner } from './components/onboarding_banner';
+import { StatsPage } from './stats_ui';
 
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
@@ -15,6 +16,7 @@ const LINK_MESSAGE = "Select 2 or more top-level frames to link into a prototype
 
 const TAB_GENERATE = 'Generate'
 const TAB_LINK = 'Link'
+const TAB_STATS = 'Stats'
 
 const HEIGHT_OFFSET = 16
 
@@ -43,6 +45,11 @@ export class UI extends Component<any, any> {
         />,
       value: TAB_LINK
     },
+    {
+      children:
+        <StatsPage />,
+      value: TAB_STATS
+    }
   ]
 
   constructor(props) {
