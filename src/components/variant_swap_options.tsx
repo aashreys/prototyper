@@ -53,14 +53,14 @@ export class VariantSwapOptions extends Component<any, any>  {
           {
             props.showPropertyError && 
             <div style='margin-top: 8px; margin-bottom: 4px; margin-left: 8px'>
-              <text class={styles.errorText}>Variant property required</text>
+              <text class={styles.errorText}>Component property required</text>
             </div>
           }
 
           <Textbox 
           icon={<AaIcon/>}
           onInput={e => this.onPropertyChange(e.currentTarget.value)}
-          placeholder="Variant property"
+          placeholder="Component property"
           value={props.swapVariant.property} />
 
           <div style='height: 4px' />
