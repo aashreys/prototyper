@@ -44,7 +44,7 @@ export class OnboardingBanner extends Component<any, any> {
   }
 
   openVideo() {
-    window.open('https://youtu.be/AVZ_HMK5n8o')
+    window.open('https://youtu.be/6KvnigBr6i4?t=1251')
   }
 
   dismiss() {
