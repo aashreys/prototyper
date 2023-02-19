@@ -23,8 +23,6 @@ export default function () {
   /* Run Main Program */
   Config.migrateConfig()
 
-  Stats.clearStats()
-
   showUI(
     { width: WIDTH, height: HEIGHT },
     { config: Config.isConfigSaved() ? Config.getSavedConfig() : Config.getDefaultConfig() }
