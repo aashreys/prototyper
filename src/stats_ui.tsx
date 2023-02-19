@@ -1,46 +1,64 @@
 import { VerticalSpace, Text } from "@create-figma-plugin/ui";
 import { Component, ComponentChild, h } from "preact";
+import { StatsModel } from "./stats";
 import styles from "./styles.css";
 
-export class StatsPage extends Component<any, any>  {
+export class StatsPage extends Component<{ stats: StatsModel }, any>  {
 
-  render(props?: any, state?: Readonly<any>, context?: any): ComponentChild {
+  formatNumber(value: number): string {
+    return value.toLocaleString()
+  }
+
+  formatTime(timeInSeconds: number): string {
+    return Math.round((timeInSeconds / 60)).toLocaleString()
+  }
+
+  render(props?: { stats: StatsModel }, state?: Readonly<any>, context?: any): ComponentChild {
+    console.log('render stats')
     return(
       <div style={'margin-left: 16px; margin-right: 16px; text-align: center;'}>
 
-        <VerticalSpace space='extraLarge' />
+        <VerticalSpace space='large' />
 
-        <Text>
-          Quantify just how efficient you are with Prototyper. Your peers will be jealous...
+        <Text align="center">
+          Quantify just how efficient you are with Prototyper with these stats. ❤️
         </Text>
 
         <VerticalSpace space='large' />
 
-        <text class={styles.statsBigText} >699,999</text>
+        <text class={styles.statsBigText}>
+          {this.formatTime(props.stats.secondsSaved)}
+        </text>
         <br/>
         <text>Minutes Saved</text>
 
         <VerticalSpace space='large' />
 
-        <text class={styles.statsMedText}>699,999</text>
+        <text class={styles.statsMedText}>
+          {this.formatNumber(props.stats.framesDuped)}
+        </text>
         <br />
         <text>Frames Duplicated</text>
 
         <VerticalSpace space='medium' />
 
-        <text class={styles.statsMedText}>699,999</text>
+        <text class={styles.statsMedText}>
+          {this.formatNumber(props.stats.statesChanged)}
+        </text>
         <br />
         <text>Focus States Changed</text>
 
         <VerticalSpace space='medium' />
 
-        <text class={styles.statsMedText}>699,999</text>
+        <text class={styles.statsMedText}>
+          {this.formatNumber(props.stats.interactionsCreated)}
+        </text>
         <br />
         <text>Interactions Created</text>
 
         <VerticalSpace space='large' />
 
-        <text>All stats are tracked and stored locally.</text>
+        <text>Stats are tracked and stored locally.</text>
 
       </div>
     )

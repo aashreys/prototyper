@@ -182,8 +182,9 @@ export class Utils {
     return node.absoluteTransform[1][2]
   }
 
-  static addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config) 
+  static addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config): number
   {
+    let numInteractionsAdded = 0
     let device = config.activeNavigation.device
     let animation: Animation = config.animation
     let keycodes = NavigationKeycodes.fromConfig(config);
@@ -199,6 +200,7 @@ export class Utils {
         isAutoDirection ? autoDirectionAnimations.left : animation,
         keycodes.left
       ))
+      numInteractionsAdded++
     }
     
     if (right && keycodes.right.length > 0) {
@@ -208,6 +210,7 @@ export class Utils {
         isAutoDirection ? autoDirectionAnimations.right : animation,
         keycodes.right
       ))
+      numInteractionsAdded++
     }
 
     if (top && keycodes.up.length > 0) {
@@ -217,6 +220,7 @@ export class Utils {
         isAutoDirection ? autoDirectionAnimations.top : animation,
         keycodes.up
       ))
+      numInteractionsAdded++
     }
 
     if (bottom && keycodes.down.length > 0) {
@@ -226,9 +230,11 @@ export class Utils {
         isAutoDirection ? autoDirectionAnimations.bottom : animation,
         keycodes.down
       ))
+      numInteractionsAdded++
     }
 
     frame.reactions = reactions;
+    return numInteractionsAdded
   }
 
   private static createAutoDirectionAnimation(animation: Animation) {

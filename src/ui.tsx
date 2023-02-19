@@ -22,44 +22,21 @@ const HEIGHT_OFFSET = 16
 
 export class UI extends Component<any, any> {
 
-  tabs: Array<TabsOption> = [
-    {
-      children:
-        <PrototypeForm
-          value={this.props.config}
-          mode={Mode.GENERATE}
-          buttonTitle={BUTTON_GENERATE}
-          uiMessage={GENERATE_MESSAGE}
-          buttonEvent={Constants.EVENT_GENERATE}
-        />,
-      value: TAB_GENERATE
-    },
-    {
-      children:
-        <PrototypeForm
-          value={this.props.config}
-          mode={Mode.LINK}
-          buttonTitle={BUTTON_LINK}
-          uiMessage={LINK_MESSAGE}
-          buttonEvent={Constants.EVENT_LINK}
-        />,
-      value: TAB_LINK
-    },
-    {
-      children:
-        <StatsPage />,
-      value: TAB_STATS
-    }
-  ]
-
   constructor(props) {
     super(props);
     this.state = {
       activeTab: TAB_GENERATE,
-      isOnboardingComplete: true
+      isOnboardingComplete: true,
+      stats: {
+        secondsSaved: 0,
+        framesDuped: 0,
+        statesChanged: 0,
+        interactionsCreated: 0
+      }
     }
     this.bindMethods()
     this.registerEventListeners()
+    this.requestStats()
   }
 
   bindMethods() {
@@ -68,12 +45,23 @@ export class UI extends Component<any, any> {
     this.registerEventListeners = this.registerEventListeners.bind(this)
     this.updateOnboardingComplete = this.updateOnboardingComplete.bind(this)
     this.onOnboardingDismiss = this.onOnboardingDismiss.bind(this)
+    this.requestStats = this.requestStats.bind(this)
   }
 
   registerEventListeners() {
     on(Constants.EVENT_ONBOARDING_STATUS_LOADED, (isComplete) => {
       this.updateOnboardingComplete(isComplete)
     })
+    on(Constants.EVENT_RECEIVE_STATS, (stats) => {
+      console.log(stats)
+      this.setState(prevState => ({
+        stats: stats,
+      }))
+    })
+  }
+
+  requestStats() {
+    emit(Constants.EVENT_REQUEST_STATS)
   }
 
   updateOnboardingComplete(isComplete) {
@@ -114,8 +102,38 @@ export class UI extends Component<any, any> {
 
         <Tabs 
         onChange={e => this.onTabChange(e.currentTarget.value)} 
-        options={this.tabs} 
-        value={this.state.activeTab} />
+        value={this.state.activeTab}
+        options={
+          [
+            {
+              children:
+                <PrototypeForm
+                  value={this.props.config}
+                  mode={Mode.GENERATE}
+                  buttonTitle={BUTTON_GENERATE}
+                  uiMessage={GENERATE_MESSAGE}
+                  buttonEvent={Constants.EVENT_GENERATE}
+                />,
+              value: TAB_GENERATE
+            },
+            {
+              children:
+                <PrototypeForm
+                  value={this.props.config}
+                  mode={Mode.LINK}
+                  buttonTitle={BUTTON_LINK}
+                  uiMessage={LINK_MESSAGE}
+                  buttonEvent={Constants.EVENT_LINK}
+                />,
+              value: TAB_LINK
+            },
+            {
+              children:
+                <StatsPage stats={this.state.stats} />,
+              value: TAB_STATS
+            }
+          ]
+        } />
 
       </div>
     )

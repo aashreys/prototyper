@@ -5,6 +5,7 @@ import { Constants } from './constants';
 import { doGeneratePrototype } from './core/generate_prototype.js';
 import { doLinkFrames } from './core/link_frames.js';
 import { setRelaunchButton } from '@create-figma-plugin/utilities';
+import { Stats } from './stats.js';
 
 const WIDTH = 240;
 const HEIGHT = 460;
@@ -15,13 +16,14 @@ export enum Mode {
 }
 
 export default function () {
-  
 
   /* Set Relaunch Button if not already set */
   if (!('default' in figma.root.getRelaunchData())) setRelaunchButton(figma.root, 'default')
 
   /* Run Main Program */
   Config.migrateConfig()
+
+  Stats.clearStats()
 
   showUI(
     { width: WIDTH, height: HEIGHT },
@@ -56,6 +58,13 @@ export default function () {
 
   on(Constants.EVENT_ONBOARDING_COMPLETE, () => {
     Onboarding.completed();
+  })
+
+  on(Constants.EVENT_REQUEST_STATS, () => {
+    console.log('stats request received in main')
+    Stats.getStats().then(
+      (stats) => emit(Constants.EVENT_RECEIVE_STATS, stats)
+    )
   })
 
   function runPlugin(config: Config, mode: Mode) {
