@@ -6,6 +6,7 @@ import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
 
 export function doGeneratePrototype(config: Config) {
+  figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
   let instances: Array<InstanceNode> = filterInstancesFromSelection(figma.currentPage.selection)
 
   // Validate instances

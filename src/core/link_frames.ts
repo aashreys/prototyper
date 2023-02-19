@@ -3,6 +3,7 @@ import { Utils } from "../utils";
 import { Navigable, NearestNeighbor, Neighbors } from "./nearest_neighbor";
 
 export function doLinkFrames(config: Config) {
+  figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
   let selection = figma.currentPage.selection
   validateSelection(selection)
 
