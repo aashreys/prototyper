@@ -11,6 +11,7 @@ export class Stats {
             if (stats) resolve(stats)
             else resolve({
               secondsSaved: 0,
+              prototypesCreated: 0,
               framesDuped: 0,
               statesChanged: 0,
               interactionsCreated: 0
@@ -25,13 +26,14 @@ export class Stats {
     )
   }
 
-  public static addStats(framesDuped: number, statesChanged: number, interactionsCreated: number): Promise<StatsModel> {
+  public static addStats(prototypesCreated: number, framesDuped: number, statesChanged: number, interactionsCreated: number): Promise<StatsModel> {
     return new Promise<StatsModel> (
       (resolve) => {
         this.getStats().then(
           (currentStats) => {
-            let newStats = {
+            let newStats: StatsModel = {
               secondsSaved: currentStats.secondsSaved + this.calculateSeconds(framesDuped, statesChanged, interactionsCreated),
+              prototypesCreated: currentStats.prototypesCreated + prototypesCreated,
               framesDuped: currentStats.framesDuped + framesDuped,
               statesChanged: currentStats.statesChanged + statesChanged,
               interactionsCreated: currentStats.interactionsCreated + interactionsCreated
@@ -71,6 +73,7 @@ export class Stats {
 export interface StatsModel {
 
   readonly secondsSaved: number
+  readonly prototypesCreated: number
   readonly framesDuped: number
   readonly statesChanged: number
   readonly interactionsCreated: number

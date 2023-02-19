@@ -132,11 +132,11 @@
 .statsBigText {
   font-size: 36px;
   font-weight: 600;
-  line-height: 130%;
+  line-height: 120%;
 }
 
 .statsMedText {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
   line-height: 130%;
 }

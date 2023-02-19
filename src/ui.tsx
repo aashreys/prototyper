@@ -6,6 +6,8 @@ import { Constants } from './constants';
 import { Mode } from './main';
 import { OnboardingBanner } from './components/onboarding_banner';
 import { StatsPage } from './stats_ui';
+import { Config } from './config';
+import { StatsModel } from './stats';
 
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
@@ -20,7 +22,7 @@ const TAB_STATS = 'Stats'
 
 const HEIGHT_OFFSET = 16
 
-export class UI extends Component<any, any> {
+export class UI extends Component<{ config: Config }, { activeTab: string, isOnboardingComplete: boolean, stats: StatsModel}> {
 
   constructor(props) {
     super(props);
@@ -29,6 +31,7 @@ export class UI extends Component<any, any> {
       isOnboardingComplete: true,
       stats: {
         secondsSaved: 0,
+        prototypesCreated: 0,
         framesDuped: 0,
         statesChanged: 0,
         interactionsCreated: 0

@@ -39,7 +39,7 @@ export function doGeneratePrototype(config: Config) {
 
   let framesDuped = protoFrames.length - 1
 
-  Stats.addStats(framesDuped, statesChanged, interactionsCreated).then(
+  Stats.addStats(1, framesDuped, statesChanged, interactionsCreated).then(
     (stats) => emit(Constants.EVENT_RECEIVE_STATS, stats)
   )
 }

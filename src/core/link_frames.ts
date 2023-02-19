@@ -21,7 +21,7 @@ export function doLinkFrames(config: Config) {
 
   if (!isLinked) addStartingPoint(linkableFrames)
   
-  Stats.addStats(0, 0, interactionsCreated).then(
+  Stats.addStats(1, 0, 0, interactionsCreated).then(
     (stats) => emit(Constants.EVENT_RECEIVE_STATS, stats)
   )
 }

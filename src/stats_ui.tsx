@@ -21,10 +21,10 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
         <VerticalSpace space='large' />
 
         <Text align="center">
-          Quantify just how efficient you are with Prototyper with these stats. ❤️
+          Quantify just how efficient Prototyper makes you with these stats. ❤️
         </Text>
 
-        <VerticalSpace space='large' />
+        <VerticalSpace space='medium' />
 
         <text class={styles.statsBigText}>
           {this.formatTime(props.stats.secondsSaved)}
@@ -32,7 +32,15 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
         <br/>
         <text>Minutes Saved</text>
 
-        <VerticalSpace space='large' />
+        <VerticalSpace space='medium' />
+
+        <text class={styles.statsMedText}>
+          {this.formatNumber(props.stats.prototypesCreated)}
+        </text>
+        <br />
+        <text>Prototypes Created</text>
+
+        <VerticalSpace space='medium' />
 
         <text class={styles.statsMedText}>
           {this.formatNumber(props.stats.framesDuped)}
@@ -40,7 +48,7 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
         <br />
         <text>Frames Duplicated</text>
 
-        <VerticalSpace space='medium' />
+        <VerticalSpace space='small' />
 
         <text class={styles.statsMedText}>
           {this.formatNumber(props.stats.statesChanged)}
@@ -48,7 +56,7 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
         <br />
         <text>Focus States Changed</text>
 
-        <VerticalSpace space='medium' />
+        <VerticalSpace space='small' />
 
         <text class={styles.statsMedText}>
           {this.formatNumber(props.stats.interactionsCreated)}
@@ -56,7 +64,7 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
         <br />
         <text>Interactions Created</text>
 
-        <VerticalSpace space='large' />
+        <VerticalSpace space='medium' />
 
         <text>Stats are tracked and stored locally.</text>
 
