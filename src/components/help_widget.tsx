@@ -31,13 +31,12 @@ export class HelpWdiget extends Component<any, any> {
         {
           this.state.isMenuShown &&
           <div class={styles.verticalMenu}
-          ref={(container) => (this.container = container)}>
-            <p>Video Tutorials</p>
-            <a href="https://www.youtube.com/watch?v=yqkr5FtuSKA&t=15s" target="_blank">Generate prototype</a>
-            <a href="https://www.youtube.com/watch?v=yqkr5FtuSKA&t=111s" target="_blank">Link frames</a>
-            <a href="https://www.youtube.com/watch?v=yqkr5FtuSKA&t=197s" target="_blank">Advanced techniques</a>
-            <div class={styles.separator} />
-            <a href="mailto:aashrey9sharma@gmail.com?subject=Prototyper Feedback" target="_blank">Report a problem</a>
+            ref={(container) => (this.container = container)}>
+              <p>Video Tutorials</p>
+              <a href="https://youtu.be/6KvnigBr6i4?t=1251" target="_blank">Using Prototyper</a>
+              <a href="https://youtu.be/6KvnigBr6i4" target="_blank">Game UI Navigation</a>
+              <div class={styles.separator} />
+              <a href="mailto:aashrey9sharma@gmail.com?subject=Prototyper: Report a problem" target="_blank">Report a problem</a>
           </div>
         }
         {

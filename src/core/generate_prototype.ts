@@ -1,11 +1,15 @@
+import { emit } from "@create-figma-plugin/utilities";
 import { Config } from "../config";
+import { Constants } from "../constants";
 import { PrototypeFrame } from "../prototype_frame";
 import { PrototypeNode } from "../prototype_node";
+import { Stats } from "../stats";
 import { SwapVariant } from "../swap_variant";
 import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
 
 export function doGeneratePrototype(config: Config) {
+  figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
   let instances: Array<InstanceNode> = filterInstancesFromSelection(figma.currentPage.selection)
 
   // Validate instances
@@ -28,10 +32,16 @@ export function doGeneratePrototype(config: Config) {
   let protoFrames = createProtoFrames(protoNodes, parent);
   assignFrameNeighors(protoFrames, protoNodes);
   positionFrames(protoFrames);
-  setInstanceFocus(protoFrames, config);
-  createInteractions(protoFrames, config);
+  let statesChanged = setInstanceFocus(protoFrames, config);
+  let interactionsCreated = createInteractions(protoFrames, config);
 
   if (!isLinked) addFlowStartingPoint(protoFrames);
+
+  let framesDuped = protoFrames.length - 1
+
+  Stats.addStats(1, framesDuped, statesChanged, interactionsCreated).then(
+    (stats) => emit(Constants.EVENT_RECEIVE_STATS, stats)
+  )
 }
 
 function filterInstancesFromSelection(selection: ReadonlyArray<SceneNode>): Array<InstanceNode> {
@@ -116,7 +126,7 @@ function assignNodeNeighbors(protoNodes: Array<PrototypeNode>) {
   NearestNeighbor.assignNeigbors(protoNodes);
 }
 
-function createProtoFrames(protoNodes: Array<PrototypeNode>, parent: PageNode | SectionNode) {
+function createProtoFrames(protoNodes: Array<PrototypeNode>, parent: PageNode | SectionNode): Array<PrototypeFrame> {
   let protoFrames = new Array();
   let node = protoNodes[0].instance;
   let topLevelFrame = Utils.findTopLevelFrame(node);
@@ -186,17 +196,21 @@ function positionFrames(frames: Array<PrototypeFrame>) {
   }
 }
 
-function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config) {
+function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config): number {
   let property = config.swapVariant.property
   let toVariant = config.swapVariant.to
+  let numStatesChanged = 0
   for (let protoFrame of protoFrames) {
     Utils.setComponentProperty(protoFrame.instance, property, toVariant)
+    numStatesChanged++
   }
+  return numStatesChanged
 }
 
-function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config) {
+function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config): number {
+  let totalInteractions = 0
   for (let protoFrame of protoFrames) {
-    Utils.addInteractions(
+    let interactions = Utils.addInteractions(
       protoFrame.topLevelFrame,
       protoFrame.neighbors.left?.topLevelFrame,
       protoFrame.neighbors.right?.topLevelFrame,
@@ -204,7 +218,9 @@ function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config) 
       protoFrame.neighbors.bottom?.topLevelFrame,
       config
     )
+    totalInteractions = totalInteractions + interactions
   }
+  return totalInteractions
 }
 
 function addFlowStartingPoint(protoFrames: Array<PrototypeFrame>) {

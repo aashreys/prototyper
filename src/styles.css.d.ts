@@ -8,6 +8,9 @@ declare const styles: {
   readonly "errorText": string;
   readonly "themedIcon": string;
   readonly "greyIcon": string;
+  readonly "statsBigText": string;
+  readonly "statsMedText": string;
+  readonly "textTertiary": string;
 };
 export = styles;
 

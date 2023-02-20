@@ -1,8 +1,12 @@
+import { emit } from "@create-figma-plugin/utilities";
 import { Config } from "../config";
+import { Constants } from "../constants";
+import { Stats } from "../stats";
 import { Utils } from "../utils";
 import { Navigable, NearestNeighbor, Neighbors } from "./nearest_neighbor";
 
 export function doLinkFrames(config: Config) {
+  figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
   let selection = figma.currentPage.selection
   validateSelection(selection)
 
@@ -13,9 +17,13 @@ export function doLinkFrames(config: Config) {
   let isLinked = isLinkedToPrototype(linkableFrames)
 
   assignNeighbors(linkableFrames)
-  createInteractions(linkableFrames, config)
+  let interactionsCreated = createInteractions(linkableFrames, config)
 
   if (!isLinked) addStartingPoint(linkableFrames)
+  
+  Stats.addStats(1, 0, 0, interactionsCreated).then(
+    (stats) => emit(Constants.EVENT_RECEIVE_STATS, stats)
+  )
 }
 
 function isLinkedToPrototype(linkableFrames: LinkableFrame[]) {
@@ -86,9 +94,10 @@ function assignNeighbors(linkableFrames: LinkableFrame[]) {
   NearestNeighbor.assignNeigbors(linkableFrames)
 }
 
-function createInteractions(linkableFrames: Array<LinkableFrame>, config: Config) {
+function createInteractions(linkableFrames: Array<LinkableFrame>, config: Config): number {
+   let totalInteractions = 0
   for (let linkableFrame of linkableFrames) {
-    Utils.addInteractions(
+    let interactions = Utils.addInteractions(
       linkableFrame.frame,
       linkableFrame.neighbors.left?.frame,
       linkableFrame.neighbors.right?.frame,
@@ -96,7 +105,9 @@ function createInteractions(linkableFrames: Array<LinkableFrame>, config: Config
       linkableFrame.neighbors.bottom?.frame,
       config
     )
+    totalInteractions = totalInteractions + interactions
   }
+  return totalInteractions
 }
 
 function addStartingPoint(linkableFrames: Array<LinkableFrame>) {

@@ -198,9 +198,11 @@ export class PrototypeForm extends Component<any, any>  {
     return (
       <div>
 
-        <VerticalSpace space='extraLarge' />
+        <VerticalSpace space='large' />
 
-        <Text style={'margin-left: 16px; margin-right: 16px;'}>{this.props.uiMessage}</Text>
+        <div style='padding-left: 16px; padding-right: 16px;'> 
+          <Text>{this.props.uiMessage}</Text>
+        </div>
         
         {
           this.state.ui.errorMessage.length > 0 && 

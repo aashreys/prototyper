@@ -128,3 +128,20 @@
 .greyIcon {
   fill: #b0b0b0
 }
+
+.statsBigText {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 120%;
+}
+
+.statsMedText {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 130%;
+}
+
+.textTertiary {
+  font-size: 11px;
+  color: var(--figma-color-text-tertiary);
+}
