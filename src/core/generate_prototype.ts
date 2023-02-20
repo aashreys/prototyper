@@ -208,9 +208,9 @@ function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config): n
 }
 
 function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config): number {
-  let totalInteractionsAdded = 0
+  let totalInteractions = 0
   for (let protoFrame of protoFrames) {
-    let numInteractions = Utils.addInteractions(
+    let interactions = Utils.addInteractions(
       protoFrame.topLevelFrame,
       protoFrame.neighbors.left?.topLevelFrame,
       protoFrame.neighbors.right?.topLevelFrame,
@@ -218,9 +218,9 @@ function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config):
       protoFrame.neighbors.bottom?.topLevelFrame,
       config
     )
-    totalInteractionsAdded = totalInteractionsAdded + numInteractions
+    totalInteractions = totalInteractions + interactions
   }
-  return totalInteractionsAdded
+  return totalInteractions
 }
 
 function addFlowStartingPoint(protoFrames: Array<PrototypeFrame>) {

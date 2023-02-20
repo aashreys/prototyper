@@ -95,7 +95,7 @@ function assignNeighbors(linkableFrames: LinkableFrame[]) {
 }
 
 function createInteractions(linkableFrames: Array<LinkableFrame>, config: Config): number {
-   let totalInteractionsAdded = 0
+   let totalInteractions = 0
   for (let linkableFrame of linkableFrames) {
     let interactions = Utils.addInteractions(
       linkableFrame.frame,
@@ -105,9 +105,9 @@ function createInteractions(linkableFrames: Array<LinkableFrame>, config: Config
       linkableFrame.neighbors.bottom?.frame,
       config
     )
-    totalInteractionsAdded = totalInteractionsAdded + interactions
+    totalInteractions = totalInteractions + interactions
   }
-  return totalInteractionsAdded
+  return totalInteractions
 }
 
 function addStartingPoint(linkableFrames: Array<LinkableFrame>) {

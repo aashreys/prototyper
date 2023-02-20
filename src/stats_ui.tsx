@@ -21,7 +21,7 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
         <VerticalSpace space='large' />
 
         <Text align="center">
-          Quantify just how efficient Prototyper makes you with these stats. ❤️
+          Quantify just how efficient Prototyper makes you. ❤️
         </Text>
 
         <VerticalSpace space='medium' />

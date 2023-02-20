@@ -53,21 +53,25 @@ export class Stats {
 
   public static clearStats() {
     figma.clientStorage.deleteAsync(Stats.STATS_KEY).then(
-      () => {console.log('Cleared stats')}
+      () => console.log('Cleared stats')
     )
   }
 
   private static calculateSeconds(framesDuped: number, statesChanged: number, interactionsCreated: number) {
     let time = framesDuped * 4
-    time = time + statesChanged * 8
-    time = time + interactionsCreated * 10
+    time = time + statesChanged * 12
+    time = time + interactionsCreated * 16
 
-    /* Add 15% to 30% to time estimate to simulate time lost to human error and variance */
-    let errorVariance = Math.random() * (0.30 - 0.15) + 0.15
-    time = time + time * errorVariance
+    /* Calculate complexity between 0 and 1 based on the number of prototype interactions with anything over 50 interactions being very complex. I realize I could make this logic infinitely more accurate by scaling complexity non-linearly, accounting for additional factores like the number of frames created or focus states changed and better modeling psuedo-random human behavior, but at some point you gotta ask, where does it end?
+    JK... I will probably come back to this at some point and complicate it */
+    let interactionLimit = 50
+    let complexity = (interactionsCreated / interactionLimit) > 1 ? 1 : (interactionsCreated / interactionLimit)
+
+    /* Depending on complexity, add a maximum of 30% to 50% time padding to simulate time lost of human error, variance and prototype testing */
+    let variance = (Math.random() * (0.5 - 0.30) + 0.30) * complexity
+    time = time + time * variance
     return time
   }
-
 }
 
 export interface StatsModel {

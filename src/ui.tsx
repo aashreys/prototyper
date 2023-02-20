@@ -56,7 +56,6 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
       this.updateOnboardingComplete(isComplete)
     })
     on(Constants.EVENT_RECEIVE_STATS, (stats) => {
-      console.log(stats)
       this.setState(prevState => ({
         stats: stats,
       }))
