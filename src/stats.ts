@@ -7,7 +7,6 @@ export class Stats {
       (resolve) => {
         figma.clientStorage.getAsync(Stats.STATS_KEY).then(
           (stats) => {
-            console.log(stats)
             if (stats) resolve(stats)
             else resolve({
               secondsSaved: 0,

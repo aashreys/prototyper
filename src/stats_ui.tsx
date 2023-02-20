@@ -14,7 +14,6 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
   }
 
   render(props?: { stats: StatsModel }, state?: Readonly<any>, context?: any): ComponentChild {
-    console.log('render stats')
     return(
       <div style={'margin-left: 16px; margin-right: 16px; text-align: center;'}>
 

@@ -59,7 +59,6 @@ export default function () {
   })
 
   on(Constants.EVENT_REQUEST_STATS, () => {
-    console.log('stats request received in main')
     Stats.getStats().then(
       (stats) => emit(Constants.EVENT_RECEIVE_STATS, stats)
     )
