@@ -49,6 +49,7 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
     this.updateOnboardingComplete = this.updateOnboardingComplete.bind(this)
     this.onOnboardingDismiss = this.onOnboardingDismiss.bind(this)
     this.requestStats = this.requestStats.bind(this)
+    this.onEscPress = this.onEscPress.bind(this)
   }
 
   registerEventListeners() {
@@ -60,6 +61,11 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
         stats: stats,
       }))
     })
+  }
+
+  onEscPress(e) {
+    console.log(e)
+    if (e.key === "Escape") emit(Constants.EVENT_ESC_PRESS)
   }
 
   requestStats() {
@@ -89,8 +95,16 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
     this.updateOnboardingComplete(true)
   }
 
+  componentDidMount() {
+    document.addEventListener('keydown', this.onEscPress)
+  }
+
   componentDidUpdate() {
     emit(Constants.EVENT_UI_RESIZE, UI.getUIHeight())
+  }
+
+  componentDidUnmount() {
+    document.removeEventListener('keydown', this.onEscPress)
   }
 
   render(props, state) {
