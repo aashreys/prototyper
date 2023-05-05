@@ -20,7 +20,7 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
         <VerticalSpace space='large' />
 
         <Text align="center">
-          Quantify just how efficient Prototyper makes you. ❤️
+          Quantify just how efficient Prototyper makes you ❤️
         </Text>
 
         <VerticalSpace space='medium' />
@@ -65,7 +65,7 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
 
         <VerticalSpace space='medium' />
 
-        <text>Stats are tracked and stored locally.</text>
+        <text>Stats are tracked and stored locally</text>
 
       </div>
     )
