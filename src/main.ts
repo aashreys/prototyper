@@ -38,10 +38,6 @@ export default function () {
     }
   )
 
-  on(Constants.EVENT_ESC_PRESS, () => {
-    figma.closePlugin()
-  })
-
   on(Constants.EVENT_GENERATE, (config) => {
     runPlugin(config, Mode.GENERATE);
   });
