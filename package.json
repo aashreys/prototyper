@@ -9,7 +9,7 @@
     "@create-figma-plugin/build": "^2.1.1",
     "@create-figma-plugin/tsconfig": "^2.1.1",
     "@figma/plugin-typings": "^1.42.1",
-    "typescript": "^4"
+    "typescript": "^5"
   },
   "scripts": {
     "build": "build-figma-plugin --typecheck --minify",
@@ -29,6 +29,10 @@
         "main": "src/main.ts",
         "ui": "src/ui.tsx"
       }
+    },
+    "networkAccess": {
+      "allowedDomains": [],
+      "reasoning": ""
     }
   }
 }

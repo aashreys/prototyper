@@ -2,7 +2,7 @@
   "extends": "@create-figma-plugin/tsconfig",
   "compilerOptions": {
     "typeRoots": ["node_modules/@figma", "node_modules/@types"],
-    "noImplicitUseStrict": true,
+    "ignoreDeprecations": "5.0",
     "strict": false
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
