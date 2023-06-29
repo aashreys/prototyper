@@ -40,5 +40,9 @@ export enum AnimationEasing {
   EASE_IN_BACK = 'EASE_IN_BACK',
   EASE_OUT_BACK = 'EASE_OUT_BACK',
   EASE_IN_AND_OUT_BACK = 'EASE_IN_AND_OUT_BACK',
+  GENTLE = 'GENTLE',
+  QUICK = 'QUICK',
+  BOUNCY = 'BOUNCY',
+  SLOW = 'SLOW'
 
 }

@@ -19,6 +19,7 @@ import { TransitionMoveIcon } from '../icons/move'
 import { TransitionSmartAnimateIcon } from '../icons/smart_animate'
 import { TimerIcon } from '../icons/timer'
 import styles from '../styles.css'
+import { CurveSpringIcon } from '../icons/curve_spring'
 
 // Animation Type
 const INSTANT = 'Instant'
@@ -45,6 +46,10 @@ const EASE_IN_AND_OUT = 'Ease in and out'
 const EASE_IN_BACK = 'Ease in back'
 const EASE_OUT_BACK = 'Ease out back'
 const EASE_IN_AND_OUT_BACK = 'Ease in and out back'
+const GENTLE = 'Gentle'
+const QUICK = 'Quick'
+const BOUNCY = 'Bouncy'
+const SLOW = 'Slow'
 
 const TRANSITION_OPTIONS: Array<DropdownOption> = [
   { value: INSTANT },
@@ -72,10 +77,14 @@ const EASING_OPTIONS: Array<DropdownOption> = [
   { value: EASE_IN },
   { value: EASE_OUT },
   { value: EASE_IN_AND_OUT },
-  { separator: true },
   { value: EASE_IN_BACK },
   { value: EASE_OUT_BACK },
   { value: EASE_IN_AND_OUT_BACK },
+  { separator: true },
+  { value: GENTLE },
+  { value: QUICK },
+  { value: BOUNCY },
+  { value: SLOW },
 ]
 
 const DurationInput = function (props) {
@@ -229,6 +238,10 @@ export class AnimationOptions extends Component<any, any> {
       case AnimationEasing.EASE_IN_BACK: return EASE_IN_BACK
       case AnimationEasing.EASE_OUT_BACK: return EASE_OUT_BACK
       case AnimationEasing.EASE_IN_AND_OUT_BACK: return EASE_IN_AND_OUT_BACK
+      case AnimationEasing.GENTLE: return GENTLE
+      case AnimationEasing.QUICK: return QUICK
+      case AnimationEasing.BOUNCY: return BOUNCY
+      case AnimationEasing.SLOW: return SLOW
     }
   }
 
@@ -253,6 +266,10 @@ export class AnimationOptions extends Component<any, any> {
       case EASE_IN_BACK: return AnimationEasing.EASE_IN_BACK
       case EASE_OUT_BACK: return AnimationEasing.EASE_OUT_BACK
       case EASE_IN_AND_OUT_BACK: return AnimationEasing.EASE_IN_AND_OUT_BACK
+      case GENTLE: return AnimationEasing.GENTLE
+      case QUICK: return AnimationEasing.QUICK
+      case BOUNCY: return AnimationEasing.BOUNCY
+      case SLOW: return AnimationEasing.SLOW
     }
   }
 
@@ -268,6 +285,10 @@ export class AnimationOptions extends Component<any, any> {
       case EASE_IN_BACK: return <CurveEaseInBackIcon />
       case EASE_OUT_BACK: return <CurveEaseOutBackIcon />
       case EASE_IN_AND_OUT_BACK: return <CurveEaseInOutBackIcon />
+      case GENTLE:
+      case QUICK:
+      case BOUNCY:
+      case SLOW: return <CurveSpringIcon />
       default: return <TransitionMoveIcon />
     }
   }
