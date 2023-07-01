@@ -129,7 +129,7 @@ const DurationInput = function (props) {
 
   return (
     <Textbox
-    icon={<TimerIcon />}
+    // icon={<TimerIcon />}
     validateOnBlur={validateOnBlur}
     onInput={handleInput}
     placeholder='Duration'
@@ -283,7 +283,7 @@ export class AnimationOptions extends Component<any, any> {
 
           <Dropdown // Transition Select
           style={'min-width: 35%; flex-grow: 1'}
-          icon={this.getIcon(this.getUiValue(props.animation.type))}
+          // icon={this.getIcon(this.getUiValue(props.animation.type))}
           onChange={e => this.onTypeChange(e.currentTarget.value)}
           options={TRANSITION_OPTIONS}
           value={this.getUiValue(props.animation.type)} />
@@ -298,19 +298,19 @@ export class AnimationOptions extends Component<any, any> {
 
           }
         </div>
-
+        
         {
           this.isTimedAndEased() &&
           <div style='display: flex; margin-top: 4px;'>
 
             <Dropdown // Easing Select
-            style={'width: 50%;'}
-            icon={this.getIcon(this.getUiValue(props.animation.easing))}
+            style={'width: 60%;'}
+            // icon={this.getIcon(this.getUiValue(props.animation.easing))}
             onChange={e => this.onEasingChange(e.currentTarget.value)}
             options={EASING_OPTIONS}
             value={this.getUiValue(props.animation.easing)} />
 
-            <div style='width: 50%;'>
+            <div style='width: 40%;'>
               <DurationInput // Duration Input
               callback={this.onDurationChange} 
               value={props.animation.duration} />

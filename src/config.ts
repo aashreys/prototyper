@@ -86,8 +86,8 @@ export class Config {
       isAutoDirection: true,
       direction: AnimationDirection.LEFT,
       isMatchLayers: false,
-      easing: AnimationEasing.EASE_IN,
-      duration: 200
+      easing: AnimationEasing.EASE_OUT,
+      duration: 300
     }
 
     return new Config(
