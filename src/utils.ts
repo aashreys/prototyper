@@ -307,13 +307,13 @@ export class Utils {
 
   static createReaction(toFrame: FrameNode, device: Device, animation: Animation, keycode: Array<number>): Reaction {
     let reaction: Reaction = {
-      action: {
+      actions: [{
         type: "NODE",
         destinationId: toFrame.id,
         navigation: "NAVIGATE",
         transition: Utils.createTransition(animation),
         preserveScrollPosition: false,
-      },
+      }],
       trigger: {
         type: "ON_KEY_DOWN",
         device: device,

@@ -19,12 +19,6 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
 
         <VerticalSpace space='large' />
 
-        <Text align="center">
-          Quantify just how efficient Prototyper makes you ❤️
-        </Text>
-
-        <VerticalSpace space='medium' />
-
         <text class={styles.statsBigText}>
           {this.formatTime(props.stats.secondsSaved)}
         </text>
@@ -65,7 +59,7 @@ export class StatsPage extends Component<{ stats: StatsModel }, any>  {
 
         <VerticalSpace space='medium' />
 
-        <text>Stats are tracked and stored locally</text>
+        <text>Stats are stored locally ❤️</text>
 
       </div>
     )
