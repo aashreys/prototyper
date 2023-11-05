@@ -1,4 +1,4 @@
-import { Dropdown, DropdownOption, VerticalSpace, Text, Textbox, SegmentedControl, SegmentedControlOption, Checkbox, MiddleAlign, Bold} from '@create-figma-plugin/ui'
+import { Dropdown, DropdownOption, VerticalSpace, Text, Textbox, SegmentedControl, SegmentedControlOption, Checkbox, Bold} from '@create-figma-plugin/ui'
 import { Component, h, JSX } from 'preact'
 import { useState } from 'preact/hooks'
 import { AnimationDirection, AnimationEasing, AnimationType } from '../animation'
@@ -17,7 +17,6 @@ import { CurveLinearIcon } from '../icons/curve_linear'
 import { TransitionDissolveIcon } from '../icons/dissolve'
 import { TransitionMoveIcon } from '../icons/move'
 import { TransitionSmartAnimateIcon } from '../icons/smart_animate'
-import { TimerIcon } from '../icons/timer'
 import styles from '../styles.css'
 import { CurveSpringIcon } from '../icons/curve_spring'
 
@@ -55,7 +54,7 @@ const TRANSITION_OPTIONS: Array<DropdownOption> = [
   { value: INSTANT },
   { value: DISSOLVE },
   { value: SMART_ANIMATE },
-  { separator: true },
+  "-",
   { value: MOVE_IN },
   { value: MOVE_OUT },
   { value: PUSH },
@@ -73,14 +72,15 @@ const DIRECTION_OPTIONS: Array<SegmentedControlOption> = [
 
 const EASING_OPTIONS: Array<DropdownOption> = [
   { value: LINEAR },
-  { separator: true },
+  "-",
   { value: EASE_IN },
   { value: EASE_OUT },
   { value: EASE_IN_AND_OUT },
+  "-",
   { value: EASE_IN_BACK },
   { value: EASE_OUT_BACK },
   { value: EASE_IN_AND_OUT_BACK },
-  { separator: true },
+  "-",
   { value: GENTLE },
   { value: QUICK },
   { value: BOUNCY },
