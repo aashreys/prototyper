@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "@create-figma-plugin/ui": "^2.1.1",
-    "@create-figma-plugin/utilities": "^2.1.1",
-    "gamepad.js": "^1.0.4",
+    "@create-figma-plugin/ui": "^3",
+    "@create-figma-plugin/utilities": "^3",
+    "gamepad.js": "^2",
     "preact": "^10.5.14"
   },
   "devDependencies": {
-    "@create-figma-plugin/build": "^2.1.1",
-    "@create-figma-plugin/tsconfig": "^2.1.1",
+    "@create-figma-plugin/build": "^3",
+    "@create-figma-plugin/tsconfig": "^3",
     "@figma/plugin-typings": "^1.42.1",
     "typescript": "^5"
   },

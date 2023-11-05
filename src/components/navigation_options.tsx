@@ -41,22 +41,20 @@ const CONTROLLER_OPTIONS: Array<DropdownOption> = [
   { value: DPAD },
   { value: LEFT_STICK },
   { value: RIGHT_STICK },
-  { separator: true },
-  { header: 'Horizontal' },
+  "-",
   { value: SHOULDER_BUTTONS },
   { value: TRIGGER_BUTTONS },
-  { separator: true },
+  "-",
   { value: CUSTOM },
 ]
 
 const KEYBOARD_OPTIONS: Array<DropdownOption> = [
   { value: ARROW_KEYS },
   { value: WASD },
-  { separator: true },
-  { header: 'Horizontal' },
+  "-",
   { value: QE },
   { value: TAB },
-  { separator: true },
+  "-",
   { value: CUSTOM },
 ]
 
@@ -64,7 +62,7 @@ const DEVICES: Array<DropdownOption> = [
   { value: XBOX },
   { value: PS4 },
   { value: SWITCH },
-  { separator: true },
+  "-",
   { value: KEYBOARD },
 ]
 
