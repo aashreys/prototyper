@@ -141,7 +141,6 @@ function createProtoFrames(protoNodes: Array<PrototypeNode>, page: PageNode | Se
 
   for (let i = 1; i < protoNodes.length; i++) {
     topLevelFrame = topLevelFrame.clone();
-    // TODO: DYNAMIC
     page.appendChild(topLevelFrame)
     topLevelFrame.name = baseName + (suffix + i);
     node = Utils.findNodeFromNodePath(protoNodes[i].nodePath, topLevelFrame);
