@@ -8,8 +8,8 @@
   "devDependencies": {
     "@create-figma-plugin/build": "^3",
     "@create-figma-plugin/tsconfig": "^3",
-    "@figma/plugin-typings": "^1.42.1",
-    "typescript": "^5"
+    "@figma/plugin-typings": "*",
+    "typescript": "^5.5.2"
   },
   "scripts": {
     "build": "build-figma-plugin --typecheck --minify",
@@ -33,6 +33,7 @@
     "networkAccess": {
       "allowedDomains": [],
       "reasoning": ""
-    }
+    },
+    "documentAccess": "dynamic-page"
   }
 }

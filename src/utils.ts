@@ -80,13 +80,16 @@ export class Utils {
     }
   }
 
-  static canAcceptComponentPropertyValue(instance: InstanceNode, propertyName: string, value: string) {
+  static async canAcceptComponentPropertyValue(instance: InstanceNode, propertyName: string, value: string) {
     let property = this.getMatchingComponentPropertyNames(instance, propertyName)[0]
-    let parent: ComponentNode | ComponentSetNode = Utils.isComponentSet(instance.mainComponent.parent) ? instance.mainComponent.parent as ComponentSetNode : instance.mainComponent
-    if (parent.componentPropertyDefinitions[property].type === 'VARIANT') {
-      return parent.componentPropertyDefinitions[property].variantOptions.includes(value.toString())
+    let tempMainComponent = await instance.getMainComponentAsync()
+    
+    let component: ComponentNode | ComponentSetNode = Utils.isComponentSet
+      (tempMainComponent.parent) ? tempMainComponent.parent as ComponentSetNode : tempMainComponent
+    if (component.componentPropertyDefinitions[property].type === 'VARIANT') {
+      return component.componentPropertyDefinitions[property].variantOptions.includes(value.toString())
     }
-    else if (parent.componentPropertyDefinitions[property].type === 'BOOLEAN') {
+    else if (component.componentPropertyDefinitions[property].type === 'BOOLEAN') {
       value = value.toLowerCase()
       return value === 'true' || value === 'false'
     }
@@ -182,7 +185,7 @@ export class Utils {
     return node.absoluteTransform[1][2]
   }
 
-  static addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config): number
+  static async addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config): Promise<number>
   {
     let numInteractionsAdded = 0
     let device = config.activeNavigation.device
@@ -233,7 +236,7 @@ export class Utils {
       numInteractionsAdded++
     }
 
-    frame.reactions = reactions;
+    await frame.setReactionsAsync(reactions)
     return numInteractionsAdded
   }
 

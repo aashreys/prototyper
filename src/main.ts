@@ -39,23 +39,23 @@ export default function () {
   )
 
   on(Constants.EVENT_GENERATE, (config) => {
-    runPlugin(config, Mode.GENERATE);
+    runPlugin(config, Mode.GENERATE)
   });
 
   on(Constants.EVENT_LINK, (config) => {
-    runPlugin(config, Mode.LINK);
+    runPlugin(config, Mode.LINK)
   });
 
   on(Constants.EVENT_UI_RESIZE, (height) => {
-    figma.ui.resize(WIDTH, height);
+    figma.ui.resize(WIDTH, height)
   })
 
   on(Constants.EVENT_TAB_SWTICH, () => {
-    emit(Constants.EVENT_CLEAR_UI_ERRORS);
+    emit(Constants.EVENT_CLEAR_UI_ERRORS)
   })
 
   on(Constants.EVENT_ONBOARDING_COMPLETE, () => {
-    Onboarding.completed();
+    Onboarding.completed()
   })
 
   on(Constants.EVENT_REQUEST_STATS, () => {
@@ -64,11 +64,11 @@ export default function () {
     )
   })
 
-  function runPlugin(config: Config, mode: Mode) {
+  async function runPlugin(config: Config, mode: Mode) {
     try {
       Config.save(config)
-      if (mode === Mode.GENERATE) doGeneratePrototype(config)
-      if (mode === Mode.LINK) doLinkFrames(config)
+      if (mode === Mode.GENERATE) await doGeneratePrototype(config)
+      if (mode === Mode.LINK) await doLinkFrames(config)
     } catch (error) {
       postError(0, error.message)
     } finally {
