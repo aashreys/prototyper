@@ -274,7 +274,9 @@ export class AnimationOptions extends Component<any, any> {
   render(props, state) {
     return (
       <div style={props.style ? props.style : ''}>
-        <Text style={'margin-left: 8px'}><Bold>Animation</Bold></Text>
+        <Text style={'margin-left: 8px'}>
+          <Bold>Animation</Bold>
+        </Text>
         
         <VerticalSpace space='small' />
         

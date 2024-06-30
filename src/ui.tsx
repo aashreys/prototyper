@@ -1,4 +1,4 @@
-import { render, Tabs, TabsOption } from '@create-figma-plugin/ui'
+import { render, Tabs } from '@create-figma-plugin/ui'
 import { Component, h } from 'preact';
 import { PrototypeForm } from './prototype_form';
 import { emit, on } from '@create-figma-plugin/utilities';
@@ -12,9 +12,9 @@ import { StatsModel } from './stats';
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
 
-const GENERATE_MESSAGE = "Select 2 or more component instances in the same top-level frame to generate a prototype"
+const GENERATE_MESSAGE = "Select component instances in the same top-level frame to generate a prototype"
 
-const LINK_MESSAGE = "Select 2 or more top-level frames to link into a prototype"
+const LINK_MESSAGE = "Select top-level frames to link into a prototype"
 
 const TAB_GENERATE = 'Generate'
 const TAB_LINK = 'Link'
