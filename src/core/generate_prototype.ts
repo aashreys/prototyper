@@ -8,13 +8,13 @@ import { SwapVariant } from "../swap_variant";
 import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
 
-export function doGeneratePrototype(config: Config) {
+export async function doGeneratePrototype(config: Config) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
   let instances: Array<InstanceNode> = filterInstancesFromSelection(figma.currentPage.selection)
 
   // Validate instances
   validateInstancesLength(instances)
-  validateInstanceProperties(instances, config.swapVariant)
+  await validateInstanceProperties(instances, config.swapVariant)
 
   // Sanitize instances
   removeFlowStaringPoints(instances)
@@ -33,7 +33,7 @@ export function doGeneratePrototype(config: Config) {
   assignFrameNeighors(protoFrames, protoNodes);
   positionFrames(protoFrames);
   let statesChanged = setInstanceFocus(protoFrames, config);
-  let interactionsCreated = createInteractions(protoFrames, config);
+  let interactionsCreated = await createInteractions(protoFrames, config);
 
   if (!isLinked) addFlowStartingPoint(protoFrames);
 
@@ -63,7 +63,7 @@ function validateInstancesLength(instances: Array<InstanceNode>) {
   }
 }
 
-function validateInstanceProperties(instances: Array<InstanceNode>, swapVariant: SwapVariant) {
+async function validateInstanceProperties(instances: Array<InstanceNode>, swapVariant: SwapVariant) {
   let property = swapVariant.property;
   let from = swapVariant.from;
   let to = swapVariant.to;
@@ -90,10 +90,10 @@ function validateInstanceProperties(instances: Array<InstanceNode>, swapVariant:
     }
     
     /* Check if the unique component property can accept the values supplied by the user */
-    if (from.length > 0 && !Utils.canAcceptComponentPropertyValue(instance, property, from)) {
+    if (from.length > 0 && !await Utils.canAcceptComponentPropertyValue(instance, property, from)) {
       throw new Error(`Cannot find value "${from}" for component property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
     }
-    if (!Utils.canAcceptComponentPropertyValue(instance, property, to)) {
+    if (!await Utils.canAcceptComponentPropertyValue(instance, property, to)) {
       throw new Error(`Cannot find value "${to}" for component property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
     }
 
@@ -126,7 +126,7 @@ function assignNodeNeighbors(protoNodes: Array<PrototypeNode>) {
   NearestNeighbor.assignNeigbors(protoNodes);
 }
 
-function createProtoFrames(protoNodes: Array<PrototypeNode>, parent: PageNode | SectionNode): Array<PrototypeFrame> {
+function createProtoFrames(protoNodes: Array<PrototypeNode>, page: PageNode | SectionNode): Array<PrototypeFrame> {
   let protoFrames = new Array();
   let node = protoNodes[0].instance;
   let topLevelFrame = Utils.findTopLevelFrame(node);
@@ -141,7 +141,8 @@ function createProtoFrames(protoNodes: Array<PrototypeNode>, parent: PageNode | 
 
   for (let i = 1; i < protoNodes.length; i++) {
     topLevelFrame = topLevelFrame.clone();
-    parent.appendChild(topLevelFrame)
+    // TODO: DYNAMIC
+    page.appendChild(topLevelFrame)
     topLevelFrame.name = baseName + (suffix + i);
     node = Utils.findNodeFromNodePath(protoNodes[i].nodePath, topLevelFrame);
     protoFrames.push(new PrototypeFrame(node, topLevelFrame));
@@ -207,10 +208,10 @@ function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config): n
   return numStatesChanged
 }
 
-function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config): number {
+async function createInteractions(protoFrames: Array<PrototypeFrame>, config: Config): Promise<number> {
   let totalInteractions = 0
   for (let protoFrame of protoFrames) {
-    let interactions = Utils.addInteractions(
+    let interactions = await Utils.addInteractions(
       protoFrame.topLevelFrame,
       protoFrame.neighbors.left?.topLevelFrame,
       protoFrame.neighbors.right?.topLevelFrame,
