@@ -190,50 +190,52 @@ export class Utils {
     let numInteractionsAdded = 0
     let device = config.activeNavigation.device
     let animation: Animation = config.animation
-    let keycodes = NavigationKeycodes.fromConfig(config);
+    let keycodesList = NavigationKeycodes.fromConfig(config);
     
     let isAutoDirection = animation.isAutoDirection
     let autoDirectionAnimations = Utils.createAutoDirectionAnimation(animation)
 
     let reactions: Array<Reaction> = Utils.clone(frame.reactions);
-    if (left && keycodes.left.length > 0) {
-      reactions.push(Utils.createReaction(
-        left,
-        device,
-        isAutoDirection ? autoDirectionAnimations.left : animation,
-        keycodes.left
-      ))
-      numInteractionsAdded++
-    }
-    
-    if (right && keycodes.right.length > 0) {
-      reactions.push(Utils.createReaction(
-        right,
-        device,
-        isAutoDirection ? autoDirectionAnimations.right : animation,
-        keycodes.right
-      ))
-      numInteractionsAdded++
-    }
+    for (let keycodes of keycodesList) {
+      if (left && keycodes.left.length > 0) {
+        reactions.push(Utils.createReaction(
+          left,
+          device,
+          isAutoDirection ? autoDirectionAnimations.left : animation,
+          keycodes.left
+        ))
+        numInteractionsAdded++
+      }
 
-    if (top && keycodes.up.length > 0) {
-      reactions.push(Utils.createReaction(
-        top,
-        device,
-        isAutoDirection ? autoDirectionAnimations.top : animation,
-        keycodes.up
-      ))
-      numInteractionsAdded++
-    }
+      if (right && keycodes.right.length > 0) {
+        reactions.push(Utils.createReaction(
+          right,
+          device,
+          isAutoDirection ? autoDirectionAnimations.right : animation,
+          keycodes.right
+        ))
+        numInteractionsAdded++
+      }
 
-    if (bottom && keycodes.down.length > 0) {
-      reactions.push(Utils.createReaction(
-        bottom,
-        device,
-        isAutoDirection ? autoDirectionAnimations.bottom : animation,
-        keycodes.down
-      ))
-      numInteractionsAdded++
+      if (top && keycodes.up.length > 0) {
+        reactions.push(Utils.createReaction(
+          top,
+          device,
+          isAutoDirection ? autoDirectionAnimations.top : animation,
+          keycodes.up
+        ))
+        numInteractionsAdded++
+      }
+
+      if (bottom && keycodes.down.length > 0) {
+        reactions.push(Utils.createReaction(
+          bottom,
+          device,
+          isAutoDirection ? autoDirectionAnimations.bottom : animation,
+          keycodes.down
+        ))
+        numInteractionsAdded++
+      }
     }
 
     await frame.setReactionsAsync(reactions)
