@@ -68,8 +68,8 @@ export class Config {
 
   static getDefaultConfig() {
     let controllerNavigation: Navigation = {
-      device: Device.XBOX,
-      scheme: NavScheme.DPAD,
+      device: Device.PS4,
+      scheme: NavScheme.DPAD_AND_LEFT_STICK,
       customKeycodes: new NavigationKeycodes()
     }
 

@@ -22,7 +22,7 @@ const SWITCH = 'Switch Pro'
 const KEYBOARD = 'Keyboard'
 
 // Controller
-const DPAD_AND_LEFT_STICK = 'D-Pad & Left Stick (Beta)'
+const DPAD_AND_LEFT_STICK = 'D-Pad & Left Stick'
 const DPAD = 'D-Pad'
 const LEFT_STICK = 'Left Stick'
 const RIGHT_STICK = 'Right Stick'
@@ -61,8 +61,8 @@ const KEYBOARD_OPTIONS: Array<DropdownOption> = [
 ]
 
 const DEVICES: Array<DropdownOption> = [
-  { value: XBOX },
   { value: PS4 },
+  { value: XBOX },
   { value: SWITCH },
   "-",
   { value: KEYBOARD },
