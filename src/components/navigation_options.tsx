@@ -22,6 +22,7 @@ const SWITCH = 'Switch Pro'
 const KEYBOARD = 'Keyboard'
 
 // Controller
+const DPAD_AND_LEFT_STICK = 'D-Pad & Left Stick (Beta)'
 const DPAD = 'D-Pad'
 const LEFT_STICK = 'Left Stick'
 const RIGHT_STICK = 'Right Stick'
@@ -38,6 +39,7 @@ const TAB = 'Tab & ⇧Tab'
 const CUSTOM = 'Custom'
 
 const CONTROLLER_OPTIONS: Array<DropdownOption> = [
+  { value: DPAD_AND_LEFT_STICK },
   { value: DPAD },
   { value: LEFT_STICK },
   { value: RIGHT_STICK },
@@ -158,6 +160,7 @@ export class NavigationOptions extends Component<any, any> {
   getUiValueFromConfig(configValue: NavScheme | Device): string {
     switch (configValue) {
       // Controller Nav
+      case NavScheme.DPAD_AND_LEFT_STICK: return DPAD_AND_LEFT_STICK
       case NavScheme.DPAD: return DPAD
       case NavScheme.LEFT_STICK: return LEFT_STICK
       case NavScheme.RIGHT_STICK: return RIGHT_STICK
@@ -184,6 +187,7 @@ export class NavigationOptions extends Component<any, any> {
   getConfigValueFromUi(uiValue: string): NavScheme | Device {
     switch (uiValue) {
       // Controller Nav
+      case DPAD_AND_LEFT_STICK: return NavScheme.DPAD_AND_LEFT_STICK
       case DPAD: return NavScheme.DPAD
       case LEFT_STICK: return NavScheme.LEFT_STICK
       case RIGHT_STICK: return NavScheme.RIGHT_STICK
@@ -209,6 +213,7 @@ export class NavigationOptions extends Component<any, any> {
 
   getIcon(value) {
     switch (value) {
+      case DPAD_AND_LEFT_STICK: return <DPadIcon />
       case DPAD: return <DPadIcon />
       case LEFT_STICK: return <LeftStickIcon />
       case RIGHT_STICK: return <RightStickIcon />

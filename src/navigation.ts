@@ -25,7 +25,8 @@ export enum NavScheme {
   WASD,
   ARROW_KEYS,
   QE,
-  TAB
+  TAB,
+  DPAD_AND_LEFT_STICK
 
 }
 
@@ -72,6 +73,7 @@ export class NavigationKeycodes {
           case NavScheme.RIGHT_STICK: return [Keycode.XBX_RS_LEFT]
           case NavScheme.SHOULDER_BUTTONS: return [Keycode.XBX_LB]
           case NavScheme.TRIGGER_BUTTONS: return [Keycode.XBX_LT]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.XBX_DPAD_LEFT, Keycode.XBX_LS_LEFT]
           default: []
         }
 
@@ -82,6 +84,7 @@ export class NavigationKeycodes {
           case NavScheme.RIGHT_STICK: return [Keycode.PS4_RS_LEFT]
           case NavScheme.SHOULDER_BUTTONS: return [Keycode.PS4_L1]
           case NavScheme.TRIGGER_BUTTONS: return [Keycode.PS4_L2]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.PS4_DPAD_LEFT, Keycode.PS4_LS_LEFT]
           default: []
         }
 
@@ -92,6 +95,7 @@ export class NavigationKeycodes {
           case NavScheme.RIGHT_STICK: return [Keycode.SWITCH_RS_LEFT]
           case NavScheme.SHOULDER_BUTTONS: return [Keycode.SWITCH_L]
           case NavScheme.TRIGGER_BUTTONS: return [Keycode.SWITCH_ZL]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.SWITCH_DPAD_LEFT, Keycode.SWITCH_LS_LEFT]
           default: []
         }
       
@@ -115,6 +119,7 @@ export class NavigationKeycodes {
           case NavScheme.RIGHT_STICK: return [Keycode.XBX_RS_RIGHT]
           case NavScheme.SHOULDER_BUTTONS: return [Keycode.XBX_RB]
           case NavScheme.TRIGGER_BUTTONS: return [Keycode.XBX_RT]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.XBX_DPAD_RIGHT, Keycode.XBX_LS_RIGHT]
           default: []
         }
 
@@ -125,6 +130,7 @@ export class NavigationKeycodes {
           case NavScheme.RIGHT_STICK: return [Keycode.PS4_RS_RIGHT]
           case NavScheme.SHOULDER_BUTTONS: return [Keycode.PS4_R1]
           case NavScheme.TRIGGER_BUTTONS: return [Keycode.PS4_R2]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.PS4_DPAD_RIGHT, Keycode.PS4_LS_RIGHT]
           default: []
         }
 
@@ -135,6 +141,7 @@ export class NavigationKeycodes {
           case NavScheme.RIGHT_STICK: return [Keycode.SWITCH_RS_RIGHT]
           case NavScheme.SHOULDER_BUTTONS: return [Keycode.SWITCH_R]
           case NavScheme.TRIGGER_BUTTONS: return [Keycode.SWITCH_ZR]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.SWITCH_DPAD_RIGHT, Keycode.SWITCH_LS_RIGHT]
           default: []
         }
 
@@ -156,6 +163,7 @@ export class NavigationKeycodes {
           case NavScheme.DPAD: return [Keycode.XBX_DPAD_UP]
           case NavScheme.LEFT_STICK: return [Keycode.XBX_LS_UP]
           case NavScheme.RIGHT_STICK: return [Keycode.XBX_RS_UP]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.XBX_DPAD_UP, Keycode.XBX_LS_UP]
           default: []
         }
 
@@ -164,6 +172,7 @@ export class NavigationKeycodes {
           case NavScheme.DPAD: return [Keycode.PS4_DPAD_UP]
           case NavScheme.LEFT_STICK: return [Keycode.PS4_LS_UP]
           case NavScheme.RIGHT_STICK: return [Keycode.PS4_RS_UP]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.PS4_DPAD_UP, Keycode.PS4_LS_UP]
           default: []
         }
 
@@ -172,6 +181,7 @@ export class NavigationKeycodes {
           case NavScheme.DPAD: return [Keycode.SWITCH_DPAD_UP]
           case NavScheme.LEFT_STICK: return [Keycode.SWITCH_LS_UP]
           case NavScheme.RIGHT_STICK: return [Keycode.SWITCH_RS_UP]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.SWITCH_DPAD_UP, Keycode.SWITCH_LS_UP]
           default: []
         }
 
@@ -191,6 +201,7 @@ export class NavigationKeycodes {
           case NavScheme.DPAD: return [Keycode.XBX_DPAD_DOWN]
           case NavScheme.LEFT_STICK: return [Keycode.XBX_LS_DOWN]
           case NavScheme.RIGHT_STICK: return [Keycode.XBX_RS_DOWN]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.XBX_DPAD_DOWN, Keycode.XBX_LS_DOWN]
           default: []
         }
 
@@ -199,6 +210,7 @@ export class NavigationKeycodes {
           case NavScheme.DPAD: return [Keycode.PS4_DPAD_DOWN]
           case NavScheme.LEFT_STICK: return [Keycode.PS4_LS_DOWN]
           case NavScheme.RIGHT_STICK: return [Keycode.PS4_RS_DOWN]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.PS4_DPAD_DOWN, Keycode.PS4_LS_DOWN]
           default: []
         }
 
@@ -207,6 +219,7 @@ export class NavigationKeycodes {
           case NavScheme.DPAD: return [Keycode.SWITCH_DPAD_DOWN]
           case NavScheme.LEFT_STICK: return [Keycode.SWITCH_LS_DOWN]
           case NavScheme.RIGHT_STICK: return [Keycode.SWITCH_RS_DOWN]
+          case NavScheme.DPAD_AND_LEFT_STICK: return [Keycode.SWITCH_DPAD_DOWN, Keycode.SWITCH_LS_DOWN]
           default: []
         }
 
