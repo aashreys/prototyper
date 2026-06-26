@@ -218,6 +218,9 @@ $RECYCLE.BIN/
 .vscode/
 build/
 node_modules/
+
+# Codex local workspace config
+.codex/
 manifest.json
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,node,visualstudiocode
