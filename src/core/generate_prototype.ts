@@ -215,7 +215,7 @@ function removeFlowStaringPoints(focusTargets: Array<SceneNode>) {
 
 function resetFocus(focusTargets: Array<SceneNode>, config: Config) {
   if (!isVariantFocusMode(config.focus)) {
-    FocusOverlay.removeManagedOverlays(Utils.findTopLevelFrame(focusTargets[0]))
+    FocusOverlay.resetManagedFocus(Utils.findTopLevelFrame(focusTargets[0]))
     return
   }
   resetInstanceFocus(focusTargets as Array<InstanceNode>, config)
@@ -246,7 +246,8 @@ function orderProtoNodesFromStart(protoNodes: Array<PrototypeNode>, startNode: P
 function createProtoFrames(protoNodes: Array<PrototypeNode>, page: PageNode | SectionNode): Array<PrototypeFrame> {
   let protoFrames = new Array();
   let node = protoNodes[0].instance;
-  let topLevelFrame = Utils.findTopLevelFrame(node);
+  const sourceTopLevelFrame = Utils.findTopLevelFrame(node);
+  let topLevelFrame = sourceTopLevelFrame;
 
   protoFrames.push(new PrototypeFrame(node, topLevelFrame));
 
@@ -257,7 +258,7 @@ function createProtoFrames(protoNodes: Array<PrototypeNode>, page: PageNode | Se
   suffix = Number(suffix)
 
   for (let i = 1; i < protoNodes.length; i++) {
-    topLevelFrame = topLevelFrame.clone();
+    topLevelFrame = sourceTopLevelFrame.clone();
     page.appendChild(topLevelFrame)
     topLevelFrame.name = baseName + (suffix + i);
     node = Utils.findNodeFromNodePath(protoNodes[i].nodePath, topLevelFrame);
@@ -340,7 +341,7 @@ function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config): n
 function setOverlayFocus(protoFrames: Array<PrototypeFrame>, focus: NavigationFocusConfig): number {
   let numStatesChanged = 0
   for (let protoFrame of protoFrames) {
-    FocusOverlay.removeManagedOverlays(protoFrame.topLevelFrame)
+    FocusOverlay.resetManagedFocus(protoFrame.topLevelFrame)
     FocusOverlay.create(protoFrame.topLevelFrame, protoFrame.instance, focus)
     numStatesChanged++
   }

@@ -88,6 +88,7 @@ function createLayer(id: string, parent: any, bounds: Rect, properties = {}) {
     width: bounds.width,
     height: bounds.height,
     absoluteBoundingBox: bounds,
+    effects: [],
     pluginData: {},
     ...properties,
     rescale(scale: number) {
@@ -129,6 +130,7 @@ function createLayerNode(id: string, bounds: Rect, properties = {}) {
     width: bounds.width,
     height: bounds.height,
     absoluteBoundingBox: { ...bounds },
+    effects: [],
     pluginData: {},
     ...properties,
     rescale(scale: number) {
@@ -204,7 +206,7 @@ test('creates stroke overlay from target bounds relative to top-level frame', ()
   let overlay = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.STROKE) as any) as any
 
   assert.equal(frame.children.includes(overlay), true)
-  assert.equal(overlay.name, '__Prototyper Focus Overlay')
+  assert.equal(overlay.name, '__Prototyper Focus Overlay Frame')
   assert.equal(overlay.getPluginData('prototyper_focus_overlay'), 'true')
   assert.equal(overlay.layoutPositioning, 'AUTO')
   assert.equal(overlay.x, 45)
@@ -276,75 +278,41 @@ test('uses absolute positioning only inside auto-layout frames', () => {
   assert.equal(overlay.layoutPositioning, 'ABSOLUTE')
 })
 
-test('creates shadow overlay with configured glow effect', () => {
+test('applies shadow focus directly to the target layer', () => {
   setFigmaForOverlay()
   let frame = createFrame('Frame', { x: 10, y: 20, width: 300, height: 200 })
   let target = createLayer('Target', frame, { x: 30, y: 50, width: 40, height: 60 })
 
-  let overlay = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SHADOW) as any) as any
+  let result = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SHADOW) as any) as any
 
-  assert.equal(overlay.x, 13)
-  assert.equal(overlay.y, 23)
-  assert.equal(overlay.width, 54)
-  assert.equal(overlay.height, 74)
-  assert.deepEqual(overlay.strokes, [])
-  assert.equal(overlay.fills[0].opacity, 0.01)
-  assert.equal(overlay.effects[0].type, 'DROP_SHADOW')
-  assert.equal(overlay.effects[0].radius, 16)
-  assert.equal(overlay.effects[0].spread, 2)
-  assert.equal(overlay.effects[0].color.r, 0)
-  assert.equal(overlay.effects[0].color.g, 170 / 255)
-  assert.equal(overlay.effects[0].color.b, 1)
-  assert.equal(overlay.cornerRadius, 4)
+  assert.equal(result, target)
+  assert.deepEqual(frame.children, [target])
+  assert.equal(target.effects[0].type, 'DROP_SHADOW')
+  assert.equal(target.effects[0].radius, 16)
+  assert.equal(target.effects[0].spread, 2)
+  assert.equal(target.effects[0].offset.y, 0)
+  assert.equal(target.effects[0].color.r, 0)
+  assert.equal(target.effects[0].color.g, 170 / 255)
+  assert.equal(target.effects[0].color.b, 1)
 })
 
-test('creates shadow overlay below a direct target layer', () => {
-  setFigmaForOverlay()
-  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
-  let target = createLayer('Target', frame, { x: 30, y: 50, width: 40, height: 60 })
-
-  let overlay = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SHADOW) as any) as any
-
-  assert.deepEqual(frame.children, [overlay, target])
-})
-
-test('creates shadow overlay below the top-level ancestor for nested target layers', () => {
-  setFigmaForOverlay()
-  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
-  let background = createLayer('Background', frame, { x: 0, y: 0, width: 300, height: 200 })
-  let container = createNestedFrame('Container', frame, { x: 20, y: 20, width: 100, height: 100 })
-  let target = createLayer('Target', container, { x: 30, y: 50, width: 40, height: 60 })
-
-  let overlay = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SHADOW) as any) as any
-
-  assert.deepEqual(frame.children, [background, overlay, container])
-})
-
-test('creates scale shadow artifacts with shadow below target and scaled clone above target', () => {
+test('applies scale shadow focus directly to the target layer', () => {
   setFigmaForOverlay()
   let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
   let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, { cornerRadius: 10 })
 
-  let clone = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SCALE_SHADOW) as any) as any
+  let result = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SCALE_SHADOW) as any) as any
 
-  let shadow = frame.children[0] as any
-  assert.deepEqual(frame.children, [shadow, target, clone])
-  assert.equal(shadow.name, '__Prototyper Focus Overlay')
-  assert.equal(shadow.getPluginData('prototyper_focus_overlay'), 'true')
-  assert.equal(shadow.x, 20)
-  assert.equal(shadow.y, 50)
-  assert.equal(shadow.width, 120)
-  assert.equal(shadow.height, 66)
-  assert.equal(shadow.cornerRadius, 16.8)
-  assert.equal(shadow.effects[0].type, 'DROP_SHADOW')
-  assert.equal(shadow.effects[0].radius, 24)
-  assert.equal(shadow.effects[0].color.a, 0.35)
-  assert.equal(clone.name, '__Prototyper Focus Scale Clone')
-  assert.equal(clone.getPluginData('prototyper_focus_overlay'), 'true')
-  assert.equal(clone.x, 26)
-  assert.equal(clone.y, 48)
-  assert.equal(clone.width, 108)
-  assert.equal(clone.height, 54)
+  assert.equal(result, target)
+  assert.deepEqual(frame.children, [target])
+  assert.equal(target.x, 26)
+  assert.equal(target.y, 48)
+  assert.equal(target.width, 108)
+  assert.equal(target.height, 54)
+  assert.equal(target.effects[0].type, 'DROP_SHADOW')
+  assert.equal(target.effects[0].radius, 24)
+  assert.equal(target.effects[0].offset.y, 8)
+  assert.equal(target.effects[0].color.a, 0.35)
 })
 
 test('removes only plugin-managed overlays', () => {
@@ -359,4 +327,45 @@ test('removes only plugin-managed overlays', () => {
   assert.equal(frame.children.includes(unrelated), true)
   assert.equal(frame.children.includes(managed), false)
   assert.equal(managed.removed, true)
+})
+
+test('restores managed direct focus state', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
+  let originalEffect = {
+    type: 'DROP_SHADOW',
+    color: { r: 1, g: 0, b: 0, a: 0.5 },
+    offset: { x: 1, y: 2 },
+    radius: 3,
+    spread: 4,
+    visible: true,
+    blendMode: 'NORMAL',
+    showShadowBehindNode: true
+  }
+  let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, { effects: [originalEffect] })
+
+  FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SCALE_SHADOW) as any)
+  FocusOverlay.resetManagedFocus(frame)
+
+  assert.equal(target.x, 30)
+  assert.equal(target.y, 50)
+  assert.equal(target.width, 100)
+  assert.equal(target.height, 50)
+  assert.deepEqual(target.effects, [originalEffect])
+  assert.equal(target.getPluginData('prototyper_focus_direct_state'), '')
+})
+
+test('creates different focus artifact names for different frames', () => {
+  setFigmaForOverlay()
+  let firstFrame = createFrame('Frame 1', { x: 0, y: 0, width: 300, height: 200 })
+  let secondFrame = createFrame('Frame 2', { x: 400, y: 0, width: 300, height: 200 })
+  let firstTarget = createLayer('Target 1', firstFrame, { x: 30, y: 50, width: 40, height: 60 })
+  let secondTarget = createLayer('Target 2', secondFrame, { x: 430, y: 50, width: 40, height: 60 })
+
+  let firstOverlay = FocusOverlay.create(firstFrame, firstTarget, createFocus(NavigationFocusMode.STROKE) as any) as any
+  let secondOverlay = FocusOverlay.create(secondFrame, secondTarget, createFocus(NavigationFocusMode.STROKE) as any) as any
+
+  assert.notEqual(firstOverlay.name, secondOverlay.name)
+  assert.equal(firstOverlay.name, '__Prototyper Focus Overlay Frame 1')
+  assert.equal(secondOverlay.name, '__Prototyper Focus Overlay Frame 2')
 })

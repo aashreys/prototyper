@@ -22,15 +22,13 @@ import { ArrowRightIcon } from "../icons/arrow_right";
 import styles from "../styles.css";
 
 type StrokeNumberKey = "weight" | "padding" | "cornerRadius";
-type ShadowNumberKey = "blur" | "spread" | "padding" | "cornerRadius";
+type ShadowNumberKey = "blur" | "spread";
 type ScaleShadowNumberKey =
   | "scalePercent"
   | "opacity"
   | "blur"
   | "spread"
-  | "offsetY"
-  | "padding"
-  | "cornerRadius";
+  | "offsetY";
 
 const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
@@ -158,13 +156,6 @@ export class NavigationFocusOptions extends Component<
         key === "scalePercent" ? 1 : 0,
         key === "opacity" ? 100 : undefined,
       ),
-    });
-  }
-
-  onScaleShadowAutoCornerRadiusChange(useAutoCornerRadius: boolean) {
-    this.updateScaleShadow({
-      ...this.props.focus.scaleShadow,
-      useAutoCornerRadius: useAutoCornerRadius,
     });
   }
 
@@ -312,16 +303,6 @@ export class NavigationFocusOptions extends Component<
           props.focus.shadow.spread,
           (value) => this.onShadowNumberChange("spread", value),
         )}
-        {this.renderNumericControl(
-          "Padding",
-          props.focus.shadow.padding,
-          (value) => this.onShadowNumberChange("padding", value),
-        )}
-        {this.renderNumericControl(
-          "Corner radius",
-          props.focus.shadow.cornerRadius,
-          (value) => this.onShadowNumberChange("cornerRadius", value),
-        )}
       </div>
     );
   }
@@ -363,27 +344,6 @@ export class NavigationFocusOptions extends Component<
           props.focus.scaleShadow.offsetY,
           (value) => this.onScaleShadowNumberChange("offsetY", value),
         )}
-        {this.renderNumericControl(
-          "Padding",
-          props.focus.scaleShadow.padding,
-          (value) => this.onScaleShadowNumberChange("padding", value),
-        )}
-        <div style="grid-column: 1 / -1;">
-          <Checkbox
-            onChange={(e) =>
-              this.onScaleShadowAutoCornerRadiusChange(e.currentTarget.checked)
-            }
-            value={props.focus.scaleShadow.useAutoCornerRadius}
-          >
-            <Text>Auto corner radius</Text>
-          </Checkbox>
-        </div>
-        {!props.focus.scaleShadow.useAutoCornerRadius &&
-          this.renderNumericControl(
-            "Corner radius",
-            props.focus.scaleShadow.cornerRadius,
-            (value) => this.onScaleShadowNumberChange("cornerRadius", value),
-          )}
       </div>
     );
   }
