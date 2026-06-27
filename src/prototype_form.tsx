@@ -264,13 +264,16 @@ export class PrototypeForm extends Component<any, any>  {
         
         {
           this.props.mode !== Mode.LINK &&
-          <NavigationFocusOptions
-          style='padding-left: 16px; padding-right: 16px; padding-bottom: 16px;'
-          focus={this.state.config.focus}
-          onComponentMappingAdd={this.clearComponentFocusErrors}
-          onNavigationFocusChange={this.onNavigationFocusChange}
-          showPropertyError={this.state.ui.showVariantPropertyError}
-          showToVariantError={this.state.ui.showVariantToValueError} />
+          <div>
+            <NavigationFocusOptions
+            style='padding-left: 16px; padding-right: 16px;'
+            focus={this.state.config.focus}
+            onComponentMappingAdd={this.clearComponentFocusErrors}
+            onNavigationFocusChange={this.onNavigationFocusChange}
+            showPropertyError={this.state.ui.showVariantPropertyError}
+            showToVariantError={this.state.ui.showVariantToValueError} />
+            <VerticalSpace space='large' />
+          </div>
         }
 
         <div class={styles.actionDivider} />
