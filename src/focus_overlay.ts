@@ -22,7 +22,7 @@ export class FocusOverlay {
     const overlay = figma.createRectangle()
     overlay.name = OVERLAY_NAME
     overlay.setPluginData(OVERLAY_PLUGIN_DATA_KEY, 'true')
-    topLevelFrame.appendChild(overlay)
+    FocusOverlay.insertOverlay(topLevelFrame, target, overlay, focus.mode)
 
     if (FocusOverlay.canUseAbsoluteLayout(overlay, topLevelFrame)) {
       overlay.layoutPositioning = 'ABSOLUTE'
@@ -49,6 +49,35 @@ export class FocusOverlay {
 
   private static isManagedOverlay(node): boolean {
     return Boolean(node?.getPluginData && node.getPluginData(OVERLAY_PLUGIN_DATA_KEY) === 'true')
+  }
+
+  private static insertOverlay(topLevelFrame: FrameNode, target: SceneNode, overlay: RectangleNode, mode: NavigationFocusMode) {
+    if (mode !== NavigationFocusMode.SHADOW) {
+      topLevelFrame.appendChild(overlay)
+      return
+    }
+
+    const topLevelChild = FocusOverlay.findTopLevelChild(topLevelFrame, target)
+    const index = topLevelChild ? topLevelFrame.children.indexOf(topLevelChild) : -1
+    if (index >= 0) {
+      topLevelFrame.insertChild(index, overlay)
+      return
+    }
+
+    topLevelFrame.appendChild(overlay)
+  }
+
+  private static findTopLevelChild(topLevelFrame: FrameNode, target: SceneNode): SceneNode | null {
+    let current: any = target
+    while (
+      current?.parent &&
+      current.parent !== topLevelFrame &&
+      current.parent.id !== topLevelFrame.id
+    ) {
+      current = current.parent
+    }
+    if (current?.parent === topLevelFrame || current?.parent?.id === topLevelFrame.id) return current
+    return null
   }
 
   private static canUseAbsoluteLayout(overlay: RectangleNode, parent: FrameNode): boolean {

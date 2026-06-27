@@ -64,6 +64,10 @@ function createFrame(id: string, bounds: Rect) {
     appendChild(child) {
       child.parent = this
       this.children.push(child)
+    },
+    insertChild(index: number, child) {
+      child.parent = this
+      this.children.splice(index, 0, child)
     }
   } as any
 }
@@ -78,6 +82,13 @@ function createLayer(id: string, parent: any, bounds: Rect) {
   } as any
   parent.children.push(layer)
   return layer
+}
+
+function createNestedFrame(id: string, parent: any, bounds: Rect) {
+  let frame = createFrame(id, bounds)
+  frame.parent = parent
+  parent.children.push(frame)
+  return frame
 }
 
 function createFocus(mode: NavigationFocusMode) {
@@ -155,6 +166,28 @@ test('creates shadow overlay with configured glow effect', () => {
   assert.equal(overlay.effects[0].color.g, 170 / 255)
   assert.equal(overlay.effects[0].color.b, 1)
   assert.equal(overlay.cornerRadius, 4)
+})
+
+test('creates shadow overlay below a direct target layer', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
+  let target = createLayer('Target', frame, { x: 30, y: 50, width: 40, height: 60 })
+
+  let overlay = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SHADOW) as any) as any
+
+  assert.deepEqual(frame.children, [overlay, target])
+})
+
+test('creates shadow overlay below the top-level ancestor for nested target layers', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
+  let background = createLayer('Background', frame, { x: 0, y: 0, width: 300, height: 200 })
+  let container = createNestedFrame('Container', frame, { x: 20, y: 20, width: 100, height: 100 })
+  let target = createLayer('Target', container, { x: 30, y: 50, width: 40, height: 60 })
+
+  let overlay = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SHADOW) as any) as any
+
+  assert.deepEqual(frame.children, [background, overlay, container])
 })
 
 test('removes only plugin-managed overlays', () => {
