@@ -15,12 +15,17 @@
     "@typescript-eslint/parser": "^8.62.0",
     "eslint": "^10.6.0",
     "patch-package": "^8.0.1",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },
   "scripts": {
     "build": "build-figma-plugin --typecheck --minify",
     "postinstall": "patch-package",
+    "test": "tsx --test tests/**/*.test.ts",
     "watch": "build-figma-plugin --typecheck --watch"
+  },
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
   },
   "eslintConfig": {
     "extends": [

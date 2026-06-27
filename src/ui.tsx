@@ -8,6 +8,8 @@ import { OnboardingBanner } from './components/onboarding_banner';
 import { StatsPage } from './stats_ui';
 import { Config } from './config';
 import { StatsModel } from './stats';
+import { DebugOptions } from './components/debug_options';
+import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from './prototype_algorithm';
 
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
@@ -18,16 +20,18 @@ const LINK_MESSAGE = "Select top-level frames to link into a prototype"
 
 const TAB_GENERATE = 'Generate'
 const TAB_LINK = 'Link'
+const TAB_DEBUG = 'Debug'
 const TAB_STATS = 'Stats'
 
 const HEIGHT_OFFSET = 16
 
-export class UI extends Component<{ config: Config }, { activeTab: string, isOnboardingComplete: boolean, stats: StatsModel}> {
+export class UI extends Component<{ config: Config }, { activeTab: string, isOnboardingComplete: boolean, stats: StatsModel, algorithm: PrototypeAlgorithm}> {
 
   constructor(props) {
     super(props);
     this.state = {
       activeTab: TAB_GENERATE,
+      algorithm: DEFAULT_PROTOTYPE_ALGORITHM,
       isOnboardingComplete: true,
       stats: {
         secondsSaved: 0,
@@ -49,6 +53,7 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
     this.updateOnboardingComplete = this.updateOnboardingComplete.bind(this)
     this.onOnboardingDismiss = this.onOnboardingDismiss.bind(this)
     this.requestStats = this.requestStats.bind(this)
+    this.onAlgorithmChange = this.onAlgorithmChange.bind(this)
   }
 
   registerEventListeners() {
@@ -89,6 +94,12 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
     this.updateOnboardingComplete(true)
   }
 
+  onAlgorithmChange(algorithm: PrototypeAlgorithm) {
+    this.setState({
+      algorithm: algorithm
+    })
+  }
+
   componentDidUpdate() {
     emit(Constants.EVENT_UI_RESIZE, UI.getUIHeight())
   }
@@ -115,6 +126,7 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
                   buttonTitle={BUTTON_GENERATE}
                   uiMessage={GENERATE_MESSAGE}
                   buttonEvent={Constants.EVENT_GENERATE}
+                  algorithm={state.algorithm}
                 />,
               value: TAB_GENERATE
             },
@@ -126,8 +138,17 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
                   buttonTitle={BUTTON_LINK}
                   uiMessage={LINK_MESSAGE}
                   buttonEvent={Constants.EVENT_LINK}
+                  algorithm={state.algorithm}
                 />,
               value: TAB_LINK
+            },
+            {
+              children:
+                <DebugOptions
+                  algorithm={state.algorithm}
+                  onAlgorithmChange={this.onAlgorithmChange}
+                />,
+              value: TAB_DEBUG
             },
             {
               children:

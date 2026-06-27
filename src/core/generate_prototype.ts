@@ -7,13 +7,15 @@ import { Stats } from "../stats";
 import { SwapVariant } from "../swap_variant";
 import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
+import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from "../prototype_algorithm";
 
-export async function doGeneratePrototype(config: Config) {
+export async function doGeneratePrototype(config: Config, algorithm: PrototypeAlgorithm = DEFAULT_PROTOTYPE_ALGORITHM) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
   let instances: Array<InstanceNode> = filterInstancesFromSelection(figma.currentPage.selection)
 
   // Validate instances
   validateInstancesLength(instances)
+  validateInstancesInSameTopLevelFrame(instances)
   await validateInstanceProperties(instances, config.swapVariant)
 
   // Sanitize instances
@@ -27,7 +29,7 @@ export async function doGeneratePrototype(config: Config) {
   
   let protoNodes: Array<PrototypeNode> = instances.map(node => PrototypeNode.fromInstance(node));
   sortProtoNodes(protoNodes);
-  assignNodeNeighbors(protoNodes);
+  assignNodeNeighbors(protoNodes, algorithm);
 
   let protoFrames = createProtoFrames(protoNodes, parent);
   assignFrameNeighors(protoFrames, protoNodes);
@@ -44,7 +46,7 @@ export async function doGeneratePrototype(config: Config) {
   )
 }
 
-function filterInstancesFromSelection(selection: ReadonlyArray<SceneNode>): Array<InstanceNode> {
+export function filterInstancesFromSelection(selection: ReadonlyArray<SceneNode>): Array<InstanceNode> {
   let instances: Array<InstanceNode> = [];
   if (selection.length > 1) {
     instances = selection.filter(node => Utils.isInstance(node)) as Array<InstanceNode>;
@@ -57,13 +59,43 @@ function filterInstancesFromSelection(selection: ReadonlyArray<SceneNode>): Arra
   return instances;
 }
 
-function validateInstancesLength(instances: Array<InstanceNode>) {
+export function validateInstancesLength(instances: Array<InstanceNode>) {
   if (instances.length < 2) {
+    console.error('Invalid generate selection', {
+      selectedNodes: figma.currentPage.selection.length,
+      resolvedInstances: instances.length
+    })
     throw new Error('Please select 2 or more component instances and try again.')
   }
 }
 
-async function validateInstanceProperties(instances: Array<InstanceNode>, swapVariant: SwapVariant) {
+export function validateInstancesInSameTopLevelFrame(instances: Array<InstanceNode>) {
+  let topLevelFrame = Utils.findTopLevelFrame(instances[0])
+  let invalidInstances = instances.filter(instance => {
+    let instanceTopLevelFrame = Utils.findTopLevelFrame(instance)
+    return !Utils.isTopLevelFrame(instanceTopLevelFrame) || instanceTopLevelFrame.id !== topLevelFrame.id
+  })
+
+  if (!Utils.isTopLevelFrame(topLevelFrame) || invalidInstances.length > 0) {
+    console.error('Invalid generate selection', {
+      selectedNodes: figma.currentPage.selection.length,
+      resolvedInstances: instances.length,
+      topLevelFrames: getUniqueTopLevelFrameIds(instances).length
+    })
+    throw new Error('Please select component instances from one top-level frame and try again.')
+  }
+}
+
+function getUniqueTopLevelFrameIds(instances: Array<InstanceNode>): Array<string> {
+  let topLevelFrameIds = []
+  for (let instance of instances) {
+    let topLevelFrameId = Utils.findTopLevelFrame(instance).id
+    if (topLevelFrameIds.indexOf(topLevelFrameId) === -1) topLevelFrameIds.push(topLevelFrameId)
+  }
+  return topLevelFrameIds
+}
+
+export async function validateInstanceProperties(instances: Array<InstanceNode>, swapVariant: SwapVariant) {
   let property = swapVariant.property;
   let from = swapVariant.from;
   let to = swapVariant.to;
@@ -122,8 +154,8 @@ function sortProtoNodes(protoNodes: Array<PrototypeNode>) {
   });
 }
 
-function assignNodeNeighbors(protoNodes: Array<PrototypeNode>) {
-  NearestNeighbor.assignNeigbors(protoNodes);
+function assignNodeNeighbors(protoNodes: Array<PrototypeNode>, algorithm: PrototypeAlgorithm) {
+  NearestNeighbor.assignNeigbors(protoNodes, algorithm);
 }
 
 function createProtoFrames(protoNodes: Array<PrototypeNode>, page: PageNode | SectionNode): Array<PrototypeFrame> {

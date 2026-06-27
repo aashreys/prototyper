@@ -6,6 +6,8 @@ import { doGeneratePrototype } from './core/generate_prototype.js';
 import { doLinkFrames } from './core/link_frames.js';
 import { setRelaunchButton } from '@create-figma-plugin/utilities';
 import { Stats } from './stats.js';
+import { DEFAULT_PROTOTYPE_ALGORITHM, parsePrototypeAlgorithm, PrototypeAlgorithm } from './prototype_algorithm.js';
+import { DEFAULT_ERROR_MESSAGE, getErrorType, normalizeErrorMessage } from './errors.js';
 
 const WIDTH = 240;
 const HEIGHT = 460;
@@ -38,12 +40,14 @@ export default function () {
     }
   )
 
-  on(Constants.EVENT_GENERATE, (config) => {
-    runPlugin(config, Mode.GENERATE)
+  on(Constants.EVENT_GENERATE, (request) => {
+    const payload = getRunPluginPayload(request)
+    runPlugin(payload.config, Mode.GENERATE, payload.algorithm)
   });
 
-  on(Constants.EVENT_LINK, (config) => {
-    runPlugin(config, Mode.LINK)
+  on(Constants.EVENT_LINK, (request) => {
+    const payload = getRunPluginPayload(request)
+    runPlugin(payload.config, Mode.LINK, payload.algorithm)
   });
 
   on(Constants.EVENT_UI_RESIZE, (height) => {
@@ -64,20 +68,43 @@ export default function () {
     )
   })
 
-  async function runPlugin(config: Config, mode: Mode) {
+  async function runPlugin(config: Config, mode: Mode, algorithm: PrototypeAlgorithm) {
     try {
+      console.log(`Running ${Mode[mode]} with nearest-neighbor algorithm "${algorithm}"`)
       Config.save(config)
-      if (mode === Mode.GENERATE) await doGeneratePrototype(config)
-      if (mode === Mode.LINK) await doLinkFrames(config)
+      if (mode === Mode.GENERATE) await doGeneratePrototype(config, algorithm)
+      if (mode === Mode.LINK) await doLinkFrames(config, algorithm)
     } catch (error) {
-      postError(0, error.message)
+      postError(0, normalizeErrorMessage(error), error)
     } finally {
       emit(Constants.EVENT_DONE)
     }
   }
 }
 
-function postError(code: number, message: string) {
+function getRunPluginPayload(payload): RunPluginPayload {
+  if (payload && payload.config) {
+    return {
+      config: payload.config,
+      algorithm: parsePrototypeAlgorithm(payload.algorithm)
+    }
+  }
+
+  return {
+    config: payload,
+    algorithm: DEFAULT_PROTOTYPE_ALGORITHM
+  }
+}
+
+function postError(code: number, message: string, error?) {
   console.error(message);
+  if (message === DEFAULT_ERROR_MESSAGE) {
+    console.error(`Unknown plugin error type: ${getErrorType(error)}`);
+  }
   emit(Constants.EVENT_ERROR, { code: code, message: message });
+}
+
+interface RunPluginPayload {
+  config: Config
+  algorithm: PrototypeAlgorithm
 }

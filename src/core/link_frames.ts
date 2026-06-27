@@ -1,11 +1,12 @@
 import { emit } from "@create-figma-plugin/utilities";
 import { Config } from "../config";
 import { Constants } from "../constants";
+import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from "../prototype_algorithm";
 import { Stats } from "../stats";
 import { Utils } from "../utils";
 import { Navigable, NearestNeighbor, Neighbors } from "./nearest_neighbor";
 
-export async function doLinkFrames(config: Config) {
+export async function doLinkFrames(config: Config, algorithm: PrototypeAlgorithm = DEFAULT_PROTOTYPE_ALGORITHM) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
   let selection = figma.currentPage.selection
   validateSelection(selection)
@@ -16,7 +17,7 @@ export async function doLinkFrames(config: Config) {
 
   let isLinked = isLinkedToPrototype(linkableFrames)
 
-  assignNeighbors(linkableFrames)
+  assignNeighbors(linkableFrames, algorithm)
   let interactionsCreated = await createInteractions(linkableFrames, config)
 
   if (!isLinked) addStartingPoint(linkableFrames)
@@ -33,18 +34,18 @@ function isLinkedToPrototype(linkableFrames: LinkableFrame[]) {
   return false;
 }
 
-function validateSelection(selection: readonly SceneNode[]) {
+export function validateSelection(selection: readonly SceneNode[]) {
   validateSelectionLength(selection)
   validateTopLevelFrames(selection)  
 }
 
-function validateSelectionLength(selection: readonly SceneNode[]) {
+export function validateSelectionLength(selection: readonly SceneNode[]) {
   if (selection.length < 2) {
     throw new Error('Please select 2 or more top-level frames and try again.')
   }
 }
 
-function validateTopLevelFrames(selection: readonly SceneNode[]) {
+export function validateTopLevelFrames(selection: readonly SceneNode[]) {
   for (let node of selection) {
     if(!Utils.isTopLevelFrame(node)) {
       throw new Error(`Layer "${node.name}" is not a top-level frame. Please only select top-level frames and try again.`)
@@ -90,8 +91,8 @@ export class LinkableFrame implements Navigable {
   
 }
 
-function assignNeighbors(linkableFrames: LinkableFrame[]) {
-  NearestNeighbor.assignNeigbors(linkableFrames)
+function assignNeighbors(linkableFrames: LinkableFrame[], algorithm: PrototypeAlgorithm) {
+  NearestNeighbor.assignNeigbors(linkableFrames, algorithm)
 }
 
 async function createInteractions(linkableFrames: Array<LinkableFrame>, config: Config): Promise<number> {

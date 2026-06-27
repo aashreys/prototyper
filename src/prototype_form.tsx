@@ -86,7 +86,10 @@ export class PrototypeForm extends Component<any, any>  {
     this.setErrorMessage('')
     if (this.validateAndShowErrors()) {
       this.setButtonLoading(true);
-      emit(this.props.buttonEvent, this.state.config);
+      emit(this.props.buttonEvent, {
+        config: this.state.config,
+        algorithm: this.props.algorithm
+      });
     }
   }
 

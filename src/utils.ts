@@ -188,6 +188,7 @@ export class Utils {
   static async addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config): Promise<number>
   {
     let numInteractionsAdded = 0
+    let numDuplicateInteractionsSkipped = 0
     let device = config.activeNavigation.device
     let animation: Animation = config.animation
     let keycodesList = NavigationKeycodes.fromConfig(config);
@@ -198,48 +199,101 @@ export class Utils {
     let reactions: Array<Reaction> = Utils.clone(frame.reactions);
     for (let keycodes of keycodesList) {
       if (left && keycodes.left.length > 0) {
-        reactions.push(Utils.createReaction(
+        let reaction = Utils.createReaction(
           left,
           device,
           isAutoDirection ? autoDirectionAnimations.left : animation,
           keycodes.left
-        ))
-        numInteractionsAdded++
+        )
+        if (Utils.hasReaction(reactions, reaction)) {
+          numDuplicateInteractionsSkipped++
+        } else {
+          reactions.push(reaction)
+          numInteractionsAdded++
+        }
       }
 
       if (right && keycodes.right.length > 0) {
-        reactions.push(Utils.createReaction(
+        let reaction = Utils.createReaction(
           right,
           device,
           isAutoDirection ? autoDirectionAnimations.right : animation,
           keycodes.right
-        ))
-        numInteractionsAdded++
+        )
+        if (Utils.hasReaction(reactions, reaction)) {
+          numDuplicateInteractionsSkipped++
+        } else {
+          reactions.push(reaction)
+          numInteractionsAdded++
+        }
       }
 
       if (top && keycodes.up.length > 0) {
-        reactions.push(Utils.createReaction(
+        let reaction = Utils.createReaction(
           top,
           device,
           isAutoDirection ? autoDirectionAnimations.top : animation,
           keycodes.up
-        ))
-        numInteractionsAdded++
+        )
+        if (Utils.hasReaction(reactions, reaction)) {
+          numDuplicateInteractionsSkipped++
+        } else {
+          reactions.push(reaction)
+          numInteractionsAdded++
+        }
       }
 
       if (bottom && keycodes.down.length > 0) {
-        reactions.push(Utils.createReaction(
+        let reaction = Utils.createReaction(
           bottom,
           device,
           isAutoDirection ? autoDirectionAnimations.bottom : animation,
           keycodes.down
-        ))
-        numInteractionsAdded++
+        )
+        if (Utils.hasReaction(reactions, reaction)) {
+          numDuplicateInteractionsSkipped++
+        } else {
+          reactions.push(reaction)
+          numInteractionsAdded++
+        }
       }
     }
 
-    await frame.setReactionsAsync(reactions)
+    if (numInteractionsAdded === 0) {
+      if (numDuplicateInteractionsSkipped > 0) {
+        console.log('Skipped duplicate prototype reactions', {
+          frameId: frame.id,
+          duplicateInteractionsSkipped: numDuplicateInteractionsSkipped
+        })
+      }
+      return numInteractionsAdded
+    }
+
+    try {
+      await frame.setReactionsAsync(reactions)
+    } catch (e) {
+      console.error('Failed to write prototype reactions', {
+        frameId: frame.id,
+        existingReactions: frame.reactions.length,
+        nextReactions: reactions.length,
+        interactionsAdded: numInteractionsAdded,
+        duplicateInteractionsSkipped: numDuplicateInteractionsSkipped
+      })
+      console.error(e)
+      throw e
+    }
+    if (numDuplicateInteractionsSkipped > 0) {
+      console.log('Skipped duplicate prototype reactions', {
+        frameId: frame.id,
+        duplicateInteractionsSkipped: numDuplicateInteractionsSkipped
+      })
+    }
     return numInteractionsAdded
+  }
+
+  static hasReaction(reactions: Array<Reaction>, reaction: Reaction): boolean {
+    let reactionSignature = Utils.getReactionSignature(reaction)
+    return reactions.some(existingReaction => Utils.getReactionSignature(existingReaction) === reactionSignature)
   }
 
   private static createAutoDirectionAnimation(animation: Animation) {
@@ -327,6 +381,43 @@ export class Utils {
       }
     };
     return reaction;
+  }
+
+  private static getReactionSignature(reaction: Reaction): string {
+    let trigger = (reaction as any).trigger
+    let actions = ((reaction as any).actions || []).map(action => Utils.normalizeReactionAction(action))
+    return Utils.stableStringify({
+      trigger: trigger ? {
+        type: trigger.type,
+        device: trigger.device,
+        keyCodes: trigger.keyCodes
+      } : undefined,
+      actions: actions
+    })
+  }
+
+  private static normalizeReactionAction(action) {
+    if (!action || action.type !== 'NODE') return action
+    return {
+      type: action.type,
+      destinationId: action.destinationId,
+      navigation: action.navigation,
+      transition: typeof action.transition === 'undefined' ? null : action.transition,
+      preserveScrollPosition: action.preserveScrollPosition === true
+    }
+  }
+
+  private static stableStringify(value): string {
+    let type = typeof value
+    if (value === null || type === 'number' || type === 'string' || type === 'boolean') {
+      return JSON.stringify(value)
+    }
+    if (type === 'undefined') return 'undefined'
+    if (value instanceof Array) {
+      return '[' + value.map(item => Utils.stableStringify(item)).join(',') + ']'
+    }
+    let keys = Object.keys(value).sort()
+    return '{' + keys.map(key => JSON.stringify(key) + ':' + Utils.stableStringify(value[key])).join(',') + '}'
   }
 
   static createTransition(animation: Animation): Transition {

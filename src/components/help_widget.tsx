@@ -1,10 +1,15 @@
 import { Component, Fragment, h } from "preact";
 import styles from "../styles.css";
 
-export class HelpWdiget extends Component<any, any> {
+interface HelpWidgetState {
+  readonly isMenuShown: boolean
+  readonly isTooltipShown: boolean
+}
 
-  container
-  button
+export class HelpWdiget extends Component<Record<string, never>, HelpWidgetState> {
+
+  container?: HTMLDivElement
+  button?: HTMLButtonElement
 
   state = {
     isMenuShown: false,
@@ -25,7 +30,7 @@ export class HelpWdiget extends Component<any, any> {
     this.onButtonMouseLeave = this.onButtonMouseLeave.bind(this)
   }
 
-  render(props, state) {
+  render(_props, _state) {
     return (
       <Fragment>
         {
@@ -54,23 +59,28 @@ export class HelpWdiget extends Component<any, any> {
     )
   }
 
-  componentWillUpdate(nextProps, nextState) {
-    if (this.state.isMenuShown) {
+  componentDidUpdate(_prevProps, prevState) {
+    if (!prevState.isMenuShown && this.state.isMenuShown) {
       document.addEventListener('mousedown', this.handleOutsideClick, false)
     }
-    else {
+    else if (prevState.isMenuShown && !this.state.isMenuShown) {
       document.removeEventListener('mousedown', this.handleOutsideClick, false);
     }
   }
 
-  handleOutsideClick = (e) => {
-    if (e.target !== this.button && !this.container?.contains(e.target)) {
+  componentWillUnmount() {
+    document.removeEventListener('mousedown', this.handleOutsideClick, false);
+  }
+
+  handleOutsideClick = (e: MouseEvent) => {
+    const target = e.target as Node;
+    if (target !== this.button && !this.container?.contains(target)) {
       this.showMenu(false);
     }
   }
 
   private onButtonClick() {
-    let isMenuShown = this.state.isMenuShown;
+    const isMenuShown = this.state.isMenuShown;
     this.showMenu(!isMenuShown);
     this.showTooltip(isMenuShown);
   }

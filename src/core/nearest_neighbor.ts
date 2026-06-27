@@ -1,4 +1,4 @@
-import { Utils } from "../utils";
+import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from "../prototype_algorithm";
 
 export interface Navigable {
 
@@ -23,6 +23,22 @@ export interface Neighbors<T> {
   
 }
 
+export type NeighborStrategyId = PrototypeAlgorithm
+
+export interface NeighborStrategy {
+
+  readonly id: NeighborStrategyId
+
+  assignNeighbors(navigables: Array<Navigable>): void
+
+}
+
+export const NeighborStrategyIds: Record<string, NeighborStrategyId> = {
+  EDGE_ANCHOR_CURRENT: PrototypeAlgorithm.EDGE_ANCHOR_CURRENT,
+  BEAM_ALIGNED_FIRST: PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
+  WEIGHTED_SCORE: PrototypeAlgorithm.WEIGHTED_SCORE
+}
+
 interface AnchorPoints {
 
   readonly navigable: Navigable
@@ -40,10 +56,58 @@ enum Direction {
   BOTTOM
 }
 
+interface CandidateMetrics {
+
+  readonly anchor: AnchorPoints
+  readonly primaryDistance: number
+  readonly perpendicularCenterDistance: number
+  readonly diagonalDistance: number
+  readonly hasPerpendicularOverlap: boolean
+
+}
+
+const WEIGHTED_SCORE_PRIMARY_DISTANCE_WEIGHT = 1
+const WEIGHTED_SCORE_PERPENDICULAR_DISTANCE_WEIGHT = 0.5
+const WEIGHTED_SCORE_DIAGONAL_PENALTY_WEIGHT = 0.25
+
 export class NearestNeighbor {
-  
-  static assignNeigbors(navigables: Array<Navigable>): void {
-    NearestNeighbor._assignNeigborsFromAnchors(navigables);
+
+  static assignNeighbors(navigables: Array<Navigable>, strategyId: NeighborStrategyId = DEFAULT_PROTOTYPE_ALGORITHM): void {
+    NearestNeighbor.assignNeigbors(navigables, strategyId);
+  }
+
+  static assignNeigbors(navigables: Array<Navigable>, strategyId: NeighborStrategyId = DEFAULT_PROTOTYPE_ALGORITHM): void {
+    NearestNeighbor.getStrategy(strategyId).assignNeighbors(navigables);
+  }
+
+  static getStrategy(strategyId: NeighborStrategyId): NeighborStrategy {
+    const strategy = NearestNeighbor.STRATEGIES[strategyId]
+    if (!strategy) {
+      console.warn(`Unknown nearest-neighbor strategy "${strategyId}". Using "${DEFAULT_PROTOTYPE_ALGORITHM}".`)
+      return NearestNeighbor.STRATEGIES[DEFAULT_PROTOTYPE_ALGORITHM]
+    }
+    return strategy
+  }
+
+  static readonly STRATEGIES: Record<NeighborStrategyId, NeighborStrategy> = {
+    [PrototypeAlgorithm.EDGE_ANCHOR_CURRENT]: {
+      id: PrototypeAlgorithm.EDGE_ANCHOR_CURRENT,
+      assignNeighbors(navigables: Array<Navigable>): void {
+        NearestNeighbor._assignNeigborsFromAnchors(navigables);
+      }
+    },
+    [PrototypeAlgorithm.BEAM_ALIGNED_FIRST]: {
+      id: PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
+      assignNeighbors(navigables: Array<Navigable>): void {
+        NearestNeighbor._assignNeighborsWithBeamAlignedFirst(navigables);
+      }
+    },
+    [PrototypeAlgorithm.WEIGHTED_SCORE]: {
+      id: PrototypeAlgorithm.WEIGHTED_SCORE,
+      assignNeighbors(navigables: Array<Navigable>): void {
+        NearestNeighbor._assignNeighborsWithWeightedScore(navigables);
+      }
+    }
   }
 
   /* First nearest neighbor algorithm for Prototyper. Works great for regular symmetric grids, but poor for staggered, asymmetric grids. Replaced by new anchor point based algorithm. */
@@ -168,37 +232,106 @@ export class NearestNeighbor {
     }
   }
 
-  static dedupeNeighbors(anchor: AnchorPoints, neighbors: Neighbors<AnchorPoints>){
-    let leftDist, rightDist, topDist, bottomDist
-    if (neighbors.left) leftDist = NearestNeighbor.getLeftDistance(anchor, neighbors.left)
-    if (neighbors.right) rightDist =NearestNeighbor.getRightDistance(anchor, neighbors.right)
-    if (neighbors.top) topDist = NearestNeighbor.getTopDistance(anchor, neighbors.top)
-    if (neighbors.bottom) bottomDist = NearestNeighbor.getBottomDistance(anchor, neighbors.bottom)
+  static _assignNeighborsWithBeamAlignedFirst(navigables: Array<Navigable>): void {
+    NearestNeighbor._assignNeighborsWithMetrics(navigables, function (metrics) {
+      const alignedMetrics = metrics.filter(metric => metric.hasPerpendicularOverlap)
+      if (alignedMetrics.length === 0) {
+        return NearestNeighbor.getLowestMetric(metrics, function (metric) {
+          return {
+            primary: metric.diagonalDistance,
+            secondary: metric.primaryDistance,
+            tertiary: metric.perpendicularCenterDistance
+          }
+        })
+      }
 
-    if (neighbors.left && neighbors.left === neighbors.right) {
-      neighbors.left = leftDist <= rightDist ? neighbors.left : undefined
+      return NearestNeighbor.getLowestMetric(alignedMetrics, function (metric) {
+        return {
+          primary: metric.primaryDistance,
+          secondary: metric.perpendicularCenterDistance,
+          tertiary: metric.diagonalDistance
+        }
+      })
+    })
+  }
+
+  static _assignNeighborsWithWeightedScore(navigables: Array<Navigable>): void {
+    NearestNeighbor._assignNeighborsWithMetrics(navigables, function (metrics) {
+      return NearestNeighbor.getLowestMetric(metrics, function (metric) {
+        const diagonalPenalty = metric.diagonalDistance - metric.primaryDistance
+        return {
+          primary: (
+            metric.primaryDistance * WEIGHTED_SCORE_PRIMARY_DISTANCE_WEIGHT +
+            metric.perpendicularCenterDistance * WEIGHTED_SCORE_PERPENDICULAR_DISTANCE_WEIGHT +
+            diagonalPenalty * WEIGHTED_SCORE_DIAGONAL_PENALTY_WEIGHT
+          ),
+          secondary: metric.primaryDistance,
+          tertiary: metric.diagonalDistance
+        }
+      })
+    })
+  }
+
+  static _assignNeighborsWithMetrics(
+    navigables: Array<Navigable>,
+    selectNeighbor: (metrics: Array<CandidateMetrics>) => AnchorPoints
+  ): void {
+    const anchors = navigables.map(nav => NearestNeighbor.createAnchor(nav));
+    for (const anchor of anchors) {
+      const neighborAnchors: Neighbors<AnchorPoints> = {
+        left: selectNeighbor(NearestNeighbor.getCandidateMetrics(anchor, anchors, Direction.LEFT)),
+        right: selectNeighbor(NearestNeighbor.getCandidateMetrics(anchor, anchors, Direction.RIGHT)),
+        top: selectNeighbor(NearestNeighbor.getCandidateMetrics(anchor, anchors, Direction.TOP)),
+        bottom: selectNeighbor(NearestNeighbor.getCandidateMetrics(anchor, anchors, Direction.BOTTOM))
+      }
+      NearestNeighbor.dedupeNeighbors(anchor, neighborAnchors)
+
+      anchor.navigable.setNeighbors({
+        left: neighborAnchors.left?.navigable,
+        right: neighborAnchors.right?.navigable,
+        top: neighborAnchors.top?.navigable,
+        bottom: neighborAnchors.bottom?.navigable
+      })
+    }
+  }
+
+  static dedupeNeighbors(anchor: AnchorPoints, neighbors: Neighbors<AnchorPoints>) {
+    type NeighborDirection = 'left' | 'right' | 'top' | 'bottom'
+    type NeighborCandidate = {
+      direction: NeighborDirection,
+      anchor: AnchorPoints,
+      distance: number
     }
 
-    if (neighbors.left && neighbors.left === neighbors.top) {
-      neighbors.left = leftDist <= topDist ? neighbors.left : undefined
+    const candidates: NeighborCandidate[] = []
+    if (neighbors.left) {
+      candidates.push({ direction: 'left', anchor: neighbors.left, distance: NearestNeighbor.getLeftDistance(anchor, neighbors.left) })
+    }
+    if (neighbors.right) {
+      candidates.push({ direction: 'right', anchor: neighbors.right, distance: NearestNeighbor.getRightDistance(anchor, neighbors.right) })
+    }
+    if (neighbors.top) {
+      candidates.push({ direction: 'top', anchor: neighbors.top, distance: NearestNeighbor.getTopDistance(anchor, neighbors.top) })
+    }
+    if (neighbors.bottom) {
+      candidates.push({ direction: 'bottom', anchor: neighbors.bottom, distance: NearestNeighbor.getBottomDistance(anchor, neighbors.bottom) })
     }
 
-    if (neighbors.left && neighbors.left === neighbors.bottom) {
-      neighbors.left = leftDist <= bottomDist ? neighbors.left : undefined
+    const processed: AnchorPoints[] = []
+    for (const candidate of candidates) {
+      if (processed.indexOf(candidate.anchor) !== -1) continue
+      const duplicates = candidates.filter(value => value.anchor === candidate.anchor)
+      if (duplicates.length > 1) {
+        let closest = duplicates[0]
+        for (const duplicate of duplicates) {
+          if (duplicate.distance < closest.distance) closest = duplicate
+        }
+        for (const duplicate of duplicates) {
+          if (duplicate !== closest) neighbors[duplicate.direction] = undefined
+        }
+      }
+      processed.push(candidate.anchor)
     }
-
-    if (neighbors.right && neighbors.right === neighbors.top) {
-      neighbors.right = rightDist <= topDist ? neighbors.right : undefined
-    }
-
-    if (neighbors.right && neighbors.right === neighbors.bottom) {
-      neighbors.right = rightDist <= bottomDist ? neighbors.right : undefined
-    }
-
-    if (neighbors.top && neighbors.top === neighbors.bottom) {
-      neighbors.top = topDist <= bottomDist ? neighbors.top : undefined
-    }
-    
   }
 
   private static computeDirection(origin: Vector, point: Vector) {
@@ -248,6 +381,110 @@ export class NearestNeighbor {
 
   private static isTopOf(anchor1: AnchorPoints, anchor2: AnchorPoints): boolean {
     return anchor2.bottom.y <= anchor1.top.y
+  }
+
+  private static isInDirection(anchor1: AnchorPoints, anchor2: AnchorPoints, direction: Direction): boolean {
+    switch (direction) {
+      case Direction.LEFT:
+        return NearestNeighbor.isLeftOf(anchor1, anchor2)
+      case Direction.RIGHT:
+        return NearestNeighbor.isRightOf(anchor1, anchor2)
+      case Direction.TOP:
+        return NearestNeighbor.isTopOf(anchor1, anchor2)
+      case Direction.BOTTOM:
+        return NearestNeighbor.isBottomOf(anchor1, anchor2)
+    }
+  }
+
+  private static getCandidateMetrics(anchor: AnchorPoints, anchors: Array<AnchorPoints>, direction: Direction): Array<CandidateMetrics> {
+    const metrics = new Array<CandidateMetrics>()
+    for (const candidate of anchors) {
+      if (anchor.navigable !== candidate.navigable && NearestNeighbor.isInDirection(anchor, candidate, direction)) {
+        metrics.push({
+          anchor: candidate,
+          primaryDistance: NearestNeighbor.getPrimaryDistance(anchor, candidate, direction),
+          perpendicularCenterDistance: NearestNeighbor.getPerpendicularCenterDistance(anchor, candidate, direction),
+          diagonalDistance: NearestNeighbor.getDirectionalDistance(anchor, candidate, direction),
+          hasPerpendicularOverlap: NearestNeighbor.hasPerpendicularOverlap(anchor, candidate, direction)
+        })
+      }
+    }
+    return metrics
+  }
+
+  private static getLowestMetric(
+    metrics: Array<CandidateMetrics>,
+    getScore: (metric: CandidateMetrics) => { primary: number, secondary: number, tertiary: number }
+  ): AnchorPoints {
+    let lowestMetric: CandidateMetrics
+    let lowestScore: { primary: number, secondary: number, tertiary: number }
+    for (const metric of metrics) {
+      const score = getScore(metric)
+      if (
+        lowestMetric === undefined ||
+        score.primary < lowestScore.primary ||
+        (score.primary === lowestScore.primary && score.secondary < lowestScore.secondary) ||
+        (score.primary === lowestScore.primary && score.secondary === lowestScore.secondary && score.tertiary < lowestScore.tertiary)
+      ) {
+        lowestMetric = metric
+        lowestScore = score
+      }
+    }
+    return lowestMetric?.anchor
+  }
+
+  private static getPrimaryDistance(anchor1: AnchorPoints, anchor2: AnchorPoints, direction: Direction): number {
+    switch (direction) {
+      case Direction.LEFT:
+        return anchor1.left.x - anchor2.right.x
+      case Direction.RIGHT:
+        return anchor2.left.x - anchor1.right.x
+      case Direction.TOP:
+        return anchor1.top.y - anchor2.bottom.y
+      case Direction.BOTTOM:
+        return anchor2.top.y - anchor1.bottom.y
+    }
+  }
+
+  private static getPerpendicularCenterDistance(anchor1: AnchorPoints, anchor2: AnchorPoints, direction: Direction): number {
+    const center1 = NearestNeighbor.getCenter(anchor1.navigable)
+    const center2 = NearestNeighbor.getCenter(anchor2.navigable)
+    switch (direction) {
+      case Direction.LEFT:
+      case Direction.RIGHT:
+        return Math.abs(center1.y - center2.y)
+      case Direction.TOP:
+      case Direction.BOTTOM:
+        return Math.abs(center1.x - center2.x)
+    }
+  }
+
+  private static getDirectionalDistance(anchor1: AnchorPoints, anchor2: AnchorPoints, direction: Direction): number {
+    switch (direction) {
+      case Direction.LEFT:
+        return NearestNeighbor.getLeftDistance(anchor1, anchor2)
+      case Direction.RIGHT:
+        return NearestNeighbor.getRightDistance(anchor1, anchor2)
+      case Direction.TOP:
+        return NearestNeighbor.getTopDistance(anchor1, anchor2)
+      case Direction.BOTTOM:
+        return NearestNeighbor.getBottomDistance(anchor1, anchor2)
+    }
+  }
+
+  private static hasPerpendicularOverlap(anchor1: AnchorPoints, anchor2: AnchorPoints, direction: Direction): boolean {
+    switch (direction) {
+      case Direction.LEFT:
+      case Direction.RIGHT:
+        return NearestNeighbor.spansOverlap(anchor1.top.y, anchor1.bottom.y, anchor2.top.y, anchor2.bottom.y)
+      case Direction.TOP:
+      case Direction.BOTTOM:
+        return NearestNeighbor.spansOverlap(anchor1.left.x, anchor1.right.x, anchor2.left.x, anchor2.right.x)
+    }
+  }
+
+  private static spansOverlap(start1: number, end1: number, start2: number, end2: number): boolean {
+    return start1 <= end2 && start2 <= end1
   }
 
   static getLeftDistance(anchors1: AnchorPoints, anchors2: AnchorPoints): number {

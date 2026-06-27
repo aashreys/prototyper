@@ -11,7 +11,11 @@ If you spend hours on hours creating game or TV prototypes, this plugin is for y
 Install it here - https://www.figma.com/community/plugin/1020894954864594118/Prototyper
 
 ## Build
+Use Node `22.13.0` or newer. The repo includes an `.nvmrc`.
+
 Run `npm run watch` to continously build the plugin as you make changes, or `npm run build` to build just once.
+
+Run `npm test` to execute the unit test suite.
 
 ## Roadmap
 Features:

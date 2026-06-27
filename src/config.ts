@@ -32,13 +32,15 @@ export class Config {
   }
 
   static isConfigSaved() {
-    let configString = figma.root.getPluginData(Config.CONFIG_KEY);
+    const configString = figma.root.getPluginData(Config.CONFIG_KEY);
     return configString && configString.length > 0;
   }
 
   static getSavedConfig() {
     try {
-      return JSON.parse(figma.root.getPluginData(Config.CONFIG_KEY));
+      const configString = figma.root.getPluginData(Config.CONFIG_KEY);
+      if (!configString || configString.length === 0) return this.getDefaultConfig()
+      return this.mergeWithDefaults(this.getDefaultConfig(), JSON.parse(configString));
     }
     catch (e) {
       console.error('Unable to retrieve saved config with error: ' + e)
@@ -57,8 +59,15 @@ export class Config {
   }
 
   private static getConfigVersion() {
-    let versionString = figma.root.getPluginData(Config.CONFIG_VERSION_KEY);
-    return versionString && versionString.length > 0 ? JSON.parse(versionString) : 0;
+    const versionString = figma.root.getPluginData(Config.CONFIG_VERSION_KEY);
+    try {
+      const version = versionString && versionString.length > 0 ? JSON.parse(versionString) : 0;
+      return typeof version === 'number' ? version : 0;
+    }
+    catch (e) {
+      console.error('Unable to retrieve saved config version with error: ' + e)
+      return 0;
+    }
   }
 
   private static saveConfigVersion(version: number) {
@@ -67,21 +76,21 @@ export class Config {
   
 
   static getDefaultConfig() {
-    let controllerNavigation: Navigation = {
+    const controllerNavigation: Navigation = {
       device: Device.PS4,
       scheme: NavScheme.DPAD_AND_LEFT_STICK,
       customKeycodes: new NavigationKeycodes()
     }
 
-    let keyboardNavigation: Navigation = {
+    const keyboardNavigation: Navigation = {
       device: Device.KEYBOARD,
       scheme: NavScheme.ARROW_KEYS,
       customKeycodes: new NavigationKeycodes()
     }
 
-    let activeNavigation = controllerNavigation
+    const activeNavigation = controllerNavigation
 
-    let animation: Animation = {
+    const animation: Animation = {
       type: AnimationType.SMART_ANIMATE,
       isAutoDirection: true,
       direction: AnimationDirection.LEFT,
@@ -102,13 +111,35 @@ export class Config {
   }
 
   static migrateConfig() {
-    let prevConfigVersion = this.getConfigVersion();
+    const prevConfigVersion = this.getConfigVersion();
     if (this.CONFIG_VERSION > prevConfigVersion) {
       console.log(`Migrating config from version ${prevConfigVersion} to ${this.CONFIG_VERSION}`);
-      this.clear(); // Clear old configuration
-      this.save(this.getDefaultConfig()); // Save default configuration as latest
+      const config = this.isConfigSaved() ? this.getSavedConfig() : this.getDefaultConfig();
+      this.save(config); // Save known settings with missing defaults filled
       this.saveConfigVersion(this.CONFIG_VERSION); // Update current config version
     }
+  }
+
+  private static mergeWithDefaults(defaultValue, savedValue) {
+    if (Array.isArray(defaultValue)) {
+      return Array.isArray(savedValue) ? savedValue : defaultValue;
+    }
+
+    if (defaultValue && typeof defaultValue === 'object') {
+      if (!savedValue || typeof savedValue !== 'object' || Array.isArray(savedValue)) return defaultValue;
+
+      const merged = {
+        ...savedValue
+      };
+
+      for (const key of Object.keys(defaultValue)) {
+        merged[key] = this.mergeWithDefaults(defaultValue[key], savedValue[key]);
+      }
+
+      return merged;
+    }
+
+    return savedValue !== undefined && savedValue !== null ? savedValue : defaultValue;
   }
 
 }

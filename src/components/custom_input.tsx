@@ -1,5 +1,6 @@
 import { Textbox } from "@create-figma-plugin/ui";
 import { Component, h } from "preact";
+import type { ComponentChildren } from "preact";
 import { GamepadListener } from 'gamepad.js'
 import { Device, Keycode, KeycodeUtils } from "../device";
 import { OS, Utils } from "../utils";
@@ -12,14 +13,47 @@ import styles from "../styles.css";
 
 const PRESS_KEY = 'Press Key'
 
-class CustomInputTextbox extends Component<any, any> {
+interface CustomInputKeycodes {
+  readonly left: Array<number>
+  readonly right: Array<number>
+  readonly up: Array<number>
+  readonly down: Array<number>
+}
+
+interface CustomInputTextboxProps {
+  readonly icon: ComponentChildren
+  readonly placeholder: string
+  readonly device: Device
+  readonly keycodes: Array<number>
+  readonly onKeycodeChange: (keycode: Array<number>) => void
+}
+
+interface CustomInputTextboxState {
+  readonly isFocused: boolean
+}
+
+interface GamepadButtonEvent {
+  readonly detail: {
+    readonly button: number
+  }
+}
+
+interface GamepadAxisEvent {
+  readonly detail: {
+    readonly stick: number
+    readonly axis: number
+    readonly value: number
+  }
+}
+
+class CustomInputTextbox extends Component<CustomInputTextboxProps, CustomInputTextboxState> {
   
   private gamepadListener = new GamepadListener({ 
     analog: false,
     deadZone: 0.6
   });
 
-  constructor(props) {
+  constructor(props: CustomInputTextboxProps) {
     super(props)
     this.state = {isFocused: false}
     this.bindMethods()
@@ -45,9 +79,11 @@ class CustomInputTextbox extends Component<any, any> {
 
   componentWillUnmount() {
     this.gamepadListener.stop()
+    this.gamepadListener.off('gamepad:button', this.onGamepadButtonEvent)
+    this.gamepadListener.off('gamepad:axis', this.onGamepadAxisEvent)
   }
   
-  render(props, state) {
+  render(props: CustomInputTextboxProps, state: CustomInputTextboxState) {
     return (
       <Textbox
       icon={props.icon}
@@ -67,7 +103,7 @@ class CustomInputTextbox extends Component<any, any> {
     this.setState({isFocused: false});
   }
 
-  onKeyDownCapture(event) {
+  onKeyDownCapture(event: KeyboardEvent) {
     // Clear keycode when Backspace is pressed
     if (event.keyCode === Keycode.KBD_BACKSPC) this.clearInput()
     // If keycode is not just a modifer press, consume it as a custom input
@@ -85,7 +121,7 @@ class CustomInputTextbox extends Component<any, any> {
   }
 
   onKeyboardEvent(event: KeyboardEvent) {
-    let keycodes: number[] = []
+    const keycodes: number[] = []
     keycodes.push(event.keyCode)
     if (event.metaKey) keycodes.push(Keycode.KBD_META)
     if (event.ctrlKey) keycodes.push(Keycode.KBD_CTRL)
@@ -95,25 +131,25 @@ class CustomInputTextbox extends Component<any, any> {
   }
   
 
-  onGamepadButtonEvent(event) {
+  onGamepadButtonEvent(event: GamepadButtonEvent) {
     if (this.state.isFocused) {
       this.props.onKeycodeChange([event.detail.button])
     }
   }
 
-  onGamepadAxisEvent(event) {
+  onGamepadAxisEvent(event: GamepadAxisEvent) {
     if (this.state.isFocused) {
-      let axisKeycode = this.getAxisKeycode(event)
+      const axisKeycode = this.getAxisKeycode(event)
       if (axisKeycode && axisKeycode > 0) { // Use > 0 value because axis reset keycode is -1
         this.props.onKeycodeChange([axisKeycode])
       }
     }
   }
 
-  getAxisKeycode(gamepadEvent): number {
-    let stick = gamepadEvent.detail.stick // 0 is LStick, 1 is RStick
-    let axis = gamepadEvent.detail.axis // 0 is Horizontal, 1 is Vertical
-    let value = gamepadEvent.detail.value // 1 is Right or Down, -1 is Left or Up, 0 is no input
+  getAxisKeycode(gamepadEvent: GamepadAxisEvent): number {
+    const stick = gamepadEvent.detail.stick // 0 is LStick, 1 is RStick
+    const axis = gamepadEvent.detail.axis // 0 is Horizontal, 1 is Vertical
+    const value = gamepadEvent.detail.value // 1 is Right or Down, -1 is Left or Up, 0 is no input
 
     if (stick === 0) { // Left Stick
       if (axis === 0) { // Horizontal Axis
@@ -168,7 +204,7 @@ class CustomInputTextbox extends Component<any, any> {
   }
 
   getKeyboardKeyString(keycodes: number[]) {
-    let os = Utils.getOs()
+    const os = Utils.getOs()
     let string = ''
     
 
@@ -218,9 +254,16 @@ class CustomInputTextbox extends Component<any, any> {
 
 }
 
-export class CustomInput extends Component<any, any> {
+interface CustomInputProps {
+  readonly showError: boolean
+  readonly device: Device
+  readonly keycodes: CustomInputKeycodes
+  readonly onCustomInputChange: (keycodes: CustomInputKeycodes) => void
+}
 
-  constructor(props) {
+export class CustomInput extends Component<CustomInputProps, Record<string, never>> {
+
+  constructor(props: CustomInputProps) {
     super(props)
     this.bindMethods()
   }
@@ -232,7 +275,7 @@ export class CustomInput extends Component<any, any> {
     this.onRightKeycodeChange = this.onRightKeycodeChange.bind(this)
   }
 
-  render(props, state) {
+  render(props: CustomInputProps, _state: Record<string, never>) {
     return (
       <div style="display: block; margin: auto; caret-color: transparent;">
         {
