@@ -2,7 +2,7 @@ import { Navigable, Neighbors } from './core/nearest_neighbor';
 import { Utils } from './utils'
 
 export class PrototypeNode implements Navigable {
-  readonly instance; InstanceNode
+  readonly instance: SceneNode
   readonly nodePath: Array<Number> // A map describing this nodes position in it's top-level frame
 
   readonly x;
@@ -53,9 +53,13 @@ export class PrototypeNode implements Navigable {
     return new PrototypeNode(this.instance, this.x - x, this.y - y, this.width, this.height);
   }
 
-  static fromInstance(node: InstanceNode) {
+  static fromSceneNode(node: SceneNode) {
     const bounds = Utils.getAbsoluteBounds(node);
     return new PrototypeNode(node, bounds.x, bounds.y, bounds.width, bounds.height);
+  }
+
+  static fromInstance(node: InstanceNode) {
+    return PrototypeNode.fromSceneNode(node);
   }
 
 }

@@ -4,6 +4,7 @@ import { Config } from '../src/config'
 import { Device } from '../src/device'
 import { normalizeErrorMessage } from '../src/errors'
 import { NavScheme, NavigationKeycodes } from '../src/navigation'
+import { NavigationFocusMode } from '../src/navigation_focus'
 import { Stats } from '../src/stats'
 
 function setFigma(figma: unknown) {
@@ -47,6 +48,17 @@ function createRoot(data: Map<string, string>) {
   }
 }
 
+test('defaults new configs to stroke focus', () => {
+  let config = Config.getDefaultConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
+  assert.deepEqual(config.swapVariant, {
+    property: '',
+    from: '',
+    to: ''
+  })
+})
+
 test('migrates stale config by merging saved settings with defaults', () => {
   let savedConfig = {
     activeNavigation: {
@@ -73,8 +85,97 @@ test('migrates stale config by merging saved settings with defaults', () => {
   assert.equal(migratedConfig.activeNavigation.device, Device.KEYBOARD)
   assert.equal(migratedConfig.activeNavigation.scheme, NavScheme.TAB)
   assert.equal(migratedConfig.swapVariant.property, 'State')
+  assert.equal(migratedConfig.focus.mode, NavigationFocusMode.VARIANT)
+  assert.deepEqual(migratedConfig.focus.variant, {
+    property: 'State',
+    from: 'Default',
+    to: 'Focus'
+  })
   assert.equal(migratedConfig.storedNavigation.keyboard.device, Device.KEYBOARD)
   assert.equal(migratedConfig.storedNavigation.controller.device, Device.PS4)
+})
+
+test('migrates stale config without legacy variant settings to stroke focus', () => {
+  let savedConfig = {
+    activeNavigation: {
+      device: Device.KEYBOARD,
+      scheme: NavScheme.TAB,
+      customKeycodes: new NavigationKeycodes([1], [2], [], [])
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_VERSION_KEY, JSON.stringify(1)],
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  withMutedConsole('log', () => Config.migrateConfig())
+
+  let migratedConfig = JSON.parse(data.get(Config.CONFIG_KEY) as string)
+  assert.equal(migratedConfig.focus.mode, NavigationFocusMode.STROKE)
+  assert.deepEqual(migratedConfig.swapVariant, {
+    property: '',
+    from: '',
+    to: ''
+  })
+})
+
+test('normalizes saved swapVariant into focus variant for transition compatibility', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    swapVariant: {
+      property: 'State',
+      from: 'Rest',
+      to: 'Focused'
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.deepEqual(config.swapVariant, {
+    property: 'State',
+    from: 'Rest',
+    to: 'Focused'
+  })
+  assert.deepEqual(config.focus.variant, config.swapVariant)
+})
+
+test('preserves saved focus variant when compatibility swapVariant is empty', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: NavigationFocusMode.VARIANT,
+      variant: {
+        property: 'State',
+        from: 'Rest',
+        to: 'Focused'
+      }
+    },
+    swapVariant: {
+      property: '',
+      from: '',
+      to: ''
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.VARIANT)
+  assert.deepEqual(config.focus.variant, {
+    property: 'State',
+    from: 'Rest',
+    to: 'Focused'
+  })
+  assert.deepEqual(config.swapVariant, config.focus.variant)
 })
 
 test('keeps current config when the stored version matches', () => {

@@ -2,11 +2,12 @@ import { Animation, AnimationDirection, AnimationEasing, AnimationType } from ".
 import { Navigation, NavigationKeycodes, NavScheme } from "./navigation";
 import { Device } from "./device";
 import { SwapVariant } from "./swap_variant";
+import { getDefaultNavigationFocusConfig, isVariantFocusConfigured, NavigationFocusConfig, normalizeNavigationFocusConfig } from "./navigation_focus";
 
 export class Config {
 
   static CONFIG_VERSION_KEY = 'config_version';
-  static CONFIG_VERSION = 7;
+  static CONFIG_VERSION = 8;
 
   static CONFIG_KEY = 'config';
   static GAP = 100;
@@ -17,17 +18,20 @@ export class Config {
 
   readonly swapVariant: SwapVariant
 
+  readonly focus: NavigationFocusConfig
+
   readonly animation: Animation
 
   constructor(
     activeNavigation: Navigation,
     storedNavigation: StoredNavigation,
-    swapVariant: SwapVariant,
+    focus: NavigationFocusConfig,
     animation: Animation
   ) {
     this.activeNavigation = activeNavigation
     this.storedNavigation = storedNavigation
-    this.swapVariant = swapVariant;
+    this.focus = normalizeNavigationFocusConfig(focus)
+    this.swapVariant = this.focus.variant;
     this.animation = animation;
   }
 
@@ -40,7 +44,8 @@ export class Config {
     try {
       const configString = figma.root.getPluginData(Config.CONFIG_KEY);
       if (!configString || configString.length === 0) return this.getDefaultConfig()
-      return this.mergeWithDefaults(this.getDefaultConfig(), JSON.parse(configString));
+      const savedConfig = JSON.parse(configString)
+      return this.normalizeConfig(this.mergeWithDefaults(this.getDefaultConfig(), savedConfig), savedConfig);
     }
     catch (e) {
       console.error('Unable to retrieve saved config with error: ' + e)
@@ -105,7 +110,7 @@ export class Config {
         keyboard: keyboardNavigation,
         controller: controllerNavigation
       },
-      { property: '', from: '', to: '' },
+      getDefaultNavigationFocusConfig(),
       animation
     )
   }
@@ -140,6 +145,28 @@ export class Config {
     }
 
     return savedValue !== undefined && savedValue !== null ? savedValue : defaultValue;
+  }
+
+  private static normalizeConfig(config, savedConfig?) {
+    const savedSwapVariant = savedConfig?.swapVariant
+    const focusVariant = config.focus?.variant
+    const legacyVariant = isVariantFocusConfigured(savedSwapVariant)
+      ? savedSwapVariant
+      : isVariantFocusConfigured(focusVariant)
+        ? focusVariant
+        : savedSwapVariant || config.swapVariant || focusVariant || { property: '', from: '', to: '' }
+    const focusSource = savedConfig && !savedConfig.focus
+      ? undefined
+      : {
+        ...config.focus,
+        variant: legacyVariant
+      }
+    const focus = normalizeNavigationFocusConfig(focusSource, legacyVariant)
+    return {
+      ...config,
+      focus: focus,
+      swapVariant: focus.variant
+    }
   }
 
 }

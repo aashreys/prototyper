@@ -1,7 +1,7 @@
 import { Neighbors } from "./core/nearest_neighbor"
 
 export class PrototypeFrame {
-  readonly instance: InstanceNode
+  readonly instance: SceneNode
   readonly topLevelFrame: FrameNode
 
   neighbors: Neighbors<PrototypeFrame> = {

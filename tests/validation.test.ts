@@ -74,6 +74,26 @@ function createInstanceInFrame(name: string, frame: any) {
   return instance
 }
 
+function createLayerInFrame(name: string, frame: any) {
+  let layer = {
+    id: name,
+    name: name,
+    type: 'RECTANGLE',
+    parent: frame
+  } as any
+  frame.children.push(layer)
+  return layer
+}
+
+function createStrokeFocus() {
+  return {
+    mode: 'stroke',
+    variant: { property: '', from: '', to: '' },
+    stroke: { color: '#0C8CE9', weight: 4, padding: 4, cornerRadius: 8 },
+    shadow: { color: '#0C8CE9', blur: 24, spread: 0, padding: 4, cornerRadius: 8 }
+  } as any
+}
+
 test('rejects selections with fewer than two generated instances', async () => {
   let { validateInstancesLength } = await loadGenerateValidation()
   let selection = [createInstance()]
@@ -113,6 +133,75 @@ test('accepts generated instances in one top-level frame', async () => {
   assert.doesNotThrow(
     () => validateInstancesInSameTopLevelFrame([firstInstance, secondInstance])
   )
+})
+
+test('overlay focus accepts non-instance layers in one top-level frame', async () => {
+  let {
+    filterFocusTargetsFromSelection,
+    validateFocusTargetsAreNotTopLevelFrames,
+    validateFocusTargetsLength,
+    validateFocusTargetsInSameTopLevelFrame
+  } = await loadGenerateValidation()
+  let frame = createTopLevelFrame('Frame')
+  let firstLayer = createLayerInFrame('First', frame)
+  let secondLayer = createLayerInFrame('Second', frame)
+
+  let focusTargets = filterFocusTargetsFromSelection([firstLayer, secondLayer], createStrokeFocus())
+
+  assert.deepEqual(focusTargets, [firstLayer, secondLayer])
+  assert.doesNotThrow(() => validateFocusTargetsAreNotTopLevelFrames(focusTargets))
+  assert.doesNotThrow(() => validateFocusTargetsLength(focusTargets))
+  assert.doesNotThrow(() => validateFocusTargetsInSameTopLevelFrame(focusTargets))
+})
+
+test('overlay focus uses children of a single selected nested parent', async () => {
+  let { filterFocusTargetsFromSelection } = await loadGenerateValidation()
+  let frame = createTopLevelFrame('Frame')
+  let nestedFrame = {
+    id: 'Nested',
+    name: 'Nested',
+    type: 'FRAME',
+    parent: frame,
+    children: []
+  } as any
+  frame.children.push(nestedFrame)
+  let firstLayer = createLayerInFrame('First', nestedFrame)
+  let secondLayer = createLayerInFrame('Second', nestedFrame)
+
+  let focusTargets = filterFocusTargetsFromSelection([nestedFrame], createStrokeFocus())
+
+  assert.deepEqual(focusTargets, [firstLayer, secondLayer])
+})
+
+test('overlay focus rejects selected top-level frames', async () => {
+  let { filterFocusTargetsFromSelection, validateFocusTargetsAreNotTopLevelFrames } = await loadGenerateValidation()
+  let frame = createTopLevelFrame('Frame')
+  setFigmaForUtilities([frame])
+
+  let focusTargets = filterFocusTargetsFromSelection([frame], createStrokeFocus())
+
+  withMutedConsole('error', () => {
+    assert.throws(
+      () => validateFocusTargetsAreNotTopLevelFrames(focusTargets),
+      /Please select layers inside one top-level frame/
+    )
+  })
+})
+
+test('overlay focus rejects layers from multiple top-level frames', async () => {
+  let { validateFocusTargetsInSameTopLevelFrame } = await loadGenerateValidation()
+  let firstFrame = createTopLevelFrame('Frame 1')
+  let secondFrame = createTopLevelFrame('Frame 2')
+  let firstLayer = createLayerInFrame('First', firstFrame)
+  let secondLayer = createLayerInFrame('Second', secondFrame)
+  setFigmaForUtilities([firstLayer, secondLayer])
+
+  withMutedConsole('error', () => {
+    assert.throws(
+      () => validateFocusTargetsInSameTopLevelFrame([firstLayer, secondLayer]),
+      /Please select layers inside one top-level frame/
+    )
+  })
 })
 
 test('accepts variant properties that can receive the configured values', async () => {

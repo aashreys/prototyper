@@ -1,6 +1,8 @@
 import { emit } from "@create-figma-plugin/utilities";
 import { Config } from "../config";
 import { Constants } from "../constants";
+import { FocusOverlay } from "../focus_overlay";
+import { isVariantFocusMode, NavigationFocusConfig } from "../navigation_focus";
 import { PrototypeFrame } from "../prototype_frame";
 import { PrototypeNode } from "../prototype_node";
 import { Stats } from "../stats";
@@ -12,31 +14,38 @@ import { DebugReport } from "../debug_report";
 
 export async function doGeneratePrototype(config: Config, algorithm: PrototypeAlgorithm = DEFAULT_PROTOTYPE_ALGORITHM) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
-  let instances: Array<InstanceNode> = filterInstancesFromSelection(figma.currentPage.selection)
+  let focus = config.focus
+  let focusTargets: Array<SceneNode> = filterFocusTargetsFromSelection(figma.currentPage.selection, focus)
 
-  // Validate instances
-  validateInstancesLength(instances)
-  validateInstancesInSameTopLevelFrame(instances)
-  await validateInstanceProperties(instances, config.swapVariant)
+  // Validate focus targets
+  if (isVariantFocusMode(focus)) {
+    validateInstancesLength(focusTargets as Array<InstanceNode>)
+    validateInstancesInSameTopLevelFrame(focusTargets)
+    await validateInstanceProperties(focusTargets as Array<InstanceNode>, focus.variant)
+  } else {
+    validateFocusTargetsAreNotTopLevelFrames(focusTargets)
+    validateFocusTargetsLength(focusTargets)
+    validateFocusTargetsInSameTopLevelFrame(focusTargets)
+  }
 
-  // Sanitize instances
-  removeFlowStaringPoints(instances)
-  resetInstanceFocus(instances, config)
+  // Sanitize focus targets
+  removeFlowStaringPoints(focusTargets)
+  resetFocus(focusTargets, config)
 
-  let topLevelFrame: FrameNode = Utils.findTopLevelFrame(instances[0])
+  let topLevelFrame: FrameNode = Utils.findTopLevelFrame(focusTargets[0])
   let parent = topLevelFrame.parent as PageNode | SectionNode // either a Page or Section
 
   let isLinked: boolean = topLevelFrame.reactions.length > 0
   
-  let protoNodes: Array<PrototypeNode> = instances.map(node => PrototypeNode.fromInstance(node));
+  let protoNodes: Array<PrototypeNode> = focusTargets.map(node => PrototypeNode.fromSceneNode(node));
   assignNodeNeighbors(protoNodes, algorithm);
   protoNodes = orderProtoNodesFromStart(protoNodes, NearestNeighbor.findStart(protoNodes))
 
   let protoFrames = createProtoFrames(protoNodes, parent);
   assignFrameNeighors(protoFrames, protoNodes);
   positionFrames(protoFrames);
-  let statesChanged = setInstanceFocus(protoFrames, config);
-  saveGenerateDebugReport(algorithm, protoNodes, protoFrames, isLinked);
+  let statesChanged = setFocus(protoFrames, config);
+  saveGenerateDebugReport(algorithm, focus, protoNodes, protoFrames, isLinked);
   let interactionsCreated = await createInteractions(protoFrames, config);
   DebugReport.update({
     phase: 'complete',
@@ -67,6 +76,24 @@ export function filterInstancesFromSelection(selection: ReadonlyArray<SceneNode>
   return instances;
 }
 
+export function filterFocusTargetsFromSelection(selection: ReadonlyArray<SceneNode>, focus: NavigationFocusConfig): Array<SceneNode> {
+  if (isVariantFocusMode(focus)) return filterInstancesFromSelection(selection)
+
+  if (selection.length > 1) {
+    return selection.slice()
+  }
+
+  if (selection.length === 1) {
+    if (Utils.isTopLevelFrame(selection[0])) return selection.slice()
+    if (Utils.hasChildren(selection[0]) && (selection[0] as any).children.length > 1) {
+      return (selection[0] as any).children.slice()
+    }
+    return selection.slice()
+  }
+
+  return []
+}
+
 export function validateInstancesLength(instances: Array<InstanceNode>) {
   if (instances.length < 2) {
     console.error('Invalid generate selection', {
@@ -77,24 +104,65 @@ export function validateInstancesLength(instances: Array<InstanceNode>) {
   }
 }
 
-export function validateInstancesInSameTopLevelFrame(instances: Array<InstanceNode>) {
-  let topLevelFrame = Utils.findTopLevelFrame(instances[0])
-  let invalidInstances = instances.filter(instance => {
-    let instanceTopLevelFrame = Utils.findTopLevelFrame(instance)
-    return !Utils.isTopLevelFrame(instanceTopLevelFrame) || instanceTopLevelFrame.id !== topLevelFrame.id
-  })
-
-  if (!Utils.isTopLevelFrame(topLevelFrame) || invalidInstances.length > 0) {
+export function validateFocusTargetsLength(focusTargets: Array<SceneNode>) {
+  if (focusTargets.length < 2) {
     console.error('Invalid generate selection', {
       selectedNodes: figma.currentPage.selection.length,
-      resolvedInstances: instances.length,
-      topLevelFrames: getUniqueTopLevelFrameIds(instances).length
+      resolvedFocusTargets: focusTargets.length
     })
-    throw new Error('Please select component instances from one top-level frame and try again.')
+    throw new Error('Please select 2 or more layers and try again.')
   }
 }
 
-function getUniqueTopLevelFrameIds(instances: Array<InstanceNode>): Array<string> {
+export function validateFocusTargetsAreNotTopLevelFrames(focusTargets: Array<SceneNode>) {
+  const topLevelTargets = focusTargets.filter(node => Utils.isTopLevelFrame(node))
+  if (topLevelTargets.length > 0) {
+    console.error('Invalid generate selection', {
+      selectedNodes: figma.currentPage.selection.length,
+      topLevelTargets: topLevelTargets.length
+    })
+    throw new Error('Please select layers inside one top-level frame and try again.')
+  }
+}
+
+export function validateInstancesInSameTopLevelFrame(instances: Array<SceneNode>) {
+  validateFocusTargetsShareTopLevelFrame(
+    instances,
+    'resolvedInstances',
+    'Please select component instances from one top-level frame and try again.'
+  )
+}
+
+export function validateFocusTargetsInSameTopLevelFrame(focusTargets: Array<SceneNode>) {
+  validateFocusTargetsShareTopLevelFrame(
+    focusTargets,
+    'resolvedFocusTargets',
+    'Please select layers inside one top-level frame and try again.'
+  )
+}
+
+function validateFocusTargetsShareTopLevelFrame(
+  focusTargets: Array<SceneNode>,
+  countLabel: string,
+  message: string
+) {
+  let topLevelFrame = Utils.findTopLevelFrame(focusTargets[0])
+  let invalidTargets = focusTargets.filter(focusTarget => {
+    let targetTopLevelFrame = Utils.findTopLevelFrame(focusTarget)
+    return !Utils.isTopLevelFrame(targetTopLevelFrame) || targetTopLevelFrame.id !== topLevelFrame.id
+  })
+
+  if (!Utils.isTopLevelFrame(topLevelFrame) || invalidTargets.length > 0) {
+    console.error('Invalid generate selection', {
+      selectedNodes: figma.currentPage.selection.length,
+      [countLabel]: focusTargets.length,
+      topLevelFrames: getUniqueTopLevelFrameIds(focusTargets).length
+    })
+    throw new Error(message)
+  }
+}
+
+function getUniqueTopLevelFrameIds(instances: Array<SceneNode>): Array<string> {
   let topLevelFrameIds = []
   for (let instance of instances) {
     let topLevelFrameId = Utils.findTopLevelFrame(instance).id
@@ -140,15 +208,23 @@ export async function validateInstanceProperties(instances: Array<InstanceNode>,
   }
 }
 
-function removeFlowStaringPoints(instances: Array<InstanceNode>) {
-  let topLevelFrame = Utils.findTopLevelFrame(instances[0]);
+function removeFlowStaringPoints(focusTargets: Array<SceneNode>) {
+  let topLevelFrame = Utils.findTopLevelFrame(focusTargets[0]);
   Utils.removeFlowStartingPoint(topLevelFrame);
+}
+
+function resetFocus(focusTargets: Array<SceneNode>, config: Config) {
+  if (!isVariantFocusMode(config.focus)) {
+    FocusOverlay.removeManagedOverlays(Utils.findTopLevelFrame(focusTargets[0]))
+    return
+  }
+  resetInstanceFocus(focusTargets as Array<InstanceNode>, config)
 }
 
 function resetInstanceFocus(instances: Array<InstanceNode>, config: Config) {
   // If variant from value is defined, reset all variants to their from value
-  let fromVariant = config.swapVariant.from
-  let property = config.swapVariant.property
+  let fromVariant = config.focus.variant.from
+  let property = config.focus.variant.property
   if (fromVariant.length > 0) {
     for (let instance of instances) {
       Utils.setComponentProperty(instance, property, fromVariant);
@@ -245,12 +321,27 @@ function positionFrames(frames: Array<PrototypeFrame>) {
   }
 }
 
+function setFocus(protoFrames: Array<PrototypeFrame>, config: Config): number {
+  if (!isVariantFocusMode(config.focus)) return setOverlayFocus(protoFrames, config.focus)
+  return setInstanceFocus(protoFrames, config)
+}
+
 function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config): number {
-  let property = config.swapVariant.property
-  let toVariant = config.swapVariant.to
+  let property = config.focus.variant.property
+  let toVariant = config.focus.variant.to
   let numStatesChanged = 0
   for (let protoFrame of protoFrames) {
-    Utils.setComponentProperty(protoFrame.instance, property, toVariant)
+    Utils.setComponentProperty(protoFrame.instance as InstanceNode, property, toVariant)
+    numStatesChanged++
+  }
+  return numStatesChanged
+}
+
+function setOverlayFocus(protoFrames: Array<PrototypeFrame>, focus: NavigationFocusConfig): number {
+  let numStatesChanged = 0
+  for (let protoFrame of protoFrames) {
+    FocusOverlay.removeManagedOverlays(protoFrame.topLevelFrame)
+    FocusOverlay.create(protoFrame.topLevelFrame, protoFrame.instance, focus)
     numStatesChanged++
   }
   return numStatesChanged
@@ -281,6 +372,7 @@ function addFlowStartingPoint(protoFrames: Array<PrototypeFrame>) {
 
 function saveGenerateDebugReport(
   algorithm: PrototypeAlgorithm,
+  focus: NavigationFocusConfig,
   protoNodes: Array<PrototypeNode>,
   protoFrames: Array<PrototypeFrame>,
   isLinked: boolean
@@ -289,6 +381,7 @@ function saveGenerateDebugReport(
     mode: 'GENERATE',
     phase: 'before-reactions',
     algorithm: algorithm,
+    focusMode: focus.mode,
     topLevelFrame: DebugReport.getNodeRef(protoFrames[0].topLevelFrame),
     wasLinkedBeforeRun: isLinked,
     selection: figma.currentPage.selection.map(node => DebugReport.getNodeRef(node)),

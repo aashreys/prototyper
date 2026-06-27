@@ -5,13 +5,13 @@ import { Navigation, NavScheme } from "./navigation";
 import { Constants } from './constants';
 import { AnimationOptions } from './components/animation_options';
 import { NavigationOptions } from './components/navigation_options';
-import { VariantSwapOptions } from './components/variant_swap_options';
-import { SwapVariant } from './swap_variant';
+import { NavigationFocusOptions } from './components/navigation_focus_options';
 import { Mode } from './main';
 import { HelpWdiget } from './components/help_widget';
 import { UI } from './ui';
 import { Config, StoredNavigation } from './config';
 import { Device } from './device';
+import { isVariantFocusMode, NavigationFocusConfig } from './navigation_focus';
 import styles from './styles.css';
 
 export class PrototypeForm extends Component<any, any>  {
@@ -44,7 +44,7 @@ export class PrototypeForm extends Component<any, any>  {
     this.componentDidMount = this.componentDidMount.bind(this);
     this.onAnimationChange = this.onAnimationChange.bind(this);
     this.onNavigationChange = this.onNavigationChange.bind(this);
-    this.onSwapVariantChange = this.onSwapVariantChange.bind(this);
+    this.onNavigationFocusChange = this.onNavigationFocusChange.bind(this);
     this.registerEventHandlers = this.registerEventHandlers.bind(this);
   }
 
@@ -139,8 +139,9 @@ export class PrototypeForm extends Component<any, any>  {
     let scheme = config.activeNavigation.scheme
     let keyCodes = config.activeNavigation.customKeycodes;
 
-    let isVariantPropertyValid = config.swapVariant.property.length > 0
-    let isVariantToValueValid = config.swapVariant.to.length > 0
+    let shouldValidateVariant = this.props.mode === Mode.GENERATE && isVariantFocusMode(config.focus)
+    let isVariantPropertyValid = !shouldValidateVariant || config.focus.variant.property.length > 0
+    let isVariantToValueValid = !shouldValidateVariant || config.focus.variant.to.length > 0
     let isCustonInputValid = (scheme !== NavScheme.CUSTOM || 
       (scheme === NavScheme.CUSTOM && 
         keyCodes.left.length > 0 || keyCodes.right.length > 0 || keyCodes.up.length > 0 || keyCodes.down.length > 0))
@@ -187,11 +188,12 @@ export class PrototypeForm extends Component<any, any>  {
     }));
   }
 
-  onSwapVariantChange(swapVariant: SwapVariant) {
+  onNavigationFocusChange(focus: NavigationFocusConfig) {
     this.setState(prevState => ({
       config: {
         ...prevState.config,
-        swapVariant: swapVariant
+        focus: focus,
+        swapVariant: focus.variant
       }
     }));
   }
@@ -238,11 +240,10 @@ export class PrototypeForm extends Component<any, any>  {
         
         {
           this.props.mode !== Mode.LINK &&
-          <VariantSwapOptions
+          <NavigationFocusOptions
           style='padding-left: 8px; padding-right: 8px; padding-bottom: 12px;'
-          disabled={this.props.mode === Mode.LINK}
-          swapVariant={this.state.config.swapVariant}
-          onSwapVariantChange={this.onSwapVariantChange}
+          focus={this.state.config.focus}
+          onNavigationFocusChange={this.onNavigationFocusChange}
           showPropertyError={this.state.ui.showVariantPropertyError}
           showToVariantError={this.state.ui.showVariantToValueError} />
         }
