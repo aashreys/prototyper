@@ -24,14 +24,27 @@ const TAB_DEBUG = 'Debug'
 const TAB_STATS = 'Stats'
 
 const HEIGHT_OFFSET = 16
+const SAVE_CONFIG_DEBOUNCE_MS = 250
 
-export class UI extends Component<{ config: Config }, { activeTab: string, isOnboardingComplete: boolean, stats: StatsModel, algorithm: PrototypeAlgorithm}> {
+interface UIState {
+  activeTab: string
+  algorithm: PrototypeAlgorithm
+  config: Config
+  isOnboardingComplete: boolean
+  stats: StatsModel
+}
+
+export class UI extends Component<{ config: Config }, UIState> {
+
+  private configSaveTimeout: ReturnType<typeof setTimeout> | undefined
+  private pendingConfig: Config | undefined
 
   constructor(props) {
     super(props);
     this.state = {
       activeTab: TAB_GENERATE,
       algorithm: DEFAULT_PROTOTYPE_ALGORITHM,
+      config: props.config,
       isOnboardingComplete: true,
       stats: {
         secondsSaved: 0,
@@ -54,6 +67,8 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
     this.onOnboardingDismiss = this.onOnboardingDismiss.bind(this)
     this.requestStats = this.requestStats.bind(this)
     this.onAlgorithmChange = this.onAlgorithmChange.bind(this)
+    this.onConfigChange = this.onConfigChange.bind(this)
+    this.flushConfigSave = this.flushConfigSave.bind(this)
   }
 
   registerEventListeners() {
@@ -83,6 +98,7 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
 
   onTabChange(tab) {
     if (tab !== this.state.activeTab) {
+      this.flushConfigSave()
       this.setState(prevState => ({
         activeTab: tab,
       }))
@@ -104,6 +120,30 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
     emit(Constants.EVENT_UI_RESIZE, UI.getUIHeight())
   }
 
+  componentWillUnmount() {
+    this.flushConfigSave()
+  }
+
+  onConfigChange(config: Config) {
+    this.pendingConfig = config
+    if (this.configSaveTimeout) clearTimeout(this.configSaveTimeout)
+    this.configSaveTimeout = setTimeout(this.flushConfigSave, SAVE_CONFIG_DEBOUNCE_MS)
+    this.setState(prevState => ({
+      ...prevState,
+      config: config
+    }))
+  }
+
+  flushConfigSave() {
+    if (this.configSaveTimeout) {
+      clearTimeout(this.configSaveTimeout)
+      this.configSaveTimeout = undefined
+    }
+    if (!this.pendingConfig) return
+    emit(Constants.EVENT_SAVE_CONFIG, this.pendingConfig)
+    this.pendingConfig = undefined
+  }
+
   render(props, state) {
     return (
       <div>
@@ -121,24 +161,28 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
             {
               children:
                 <PrototypeForm
-                  value={this.props.config}
+                  value={{ config: state.config }}
                   mode={Mode.GENERATE}
                   buttonTitle={BUTTON_GENERATE}
                   uiMessage={GENERATE_MESSAGE}
                   buttonEvent={Constants.EVENT_GENERATE}
                   algorithm={state.algorithm}
+                  onConfigChange={this.onConfigChange}
+                  onConfigFlush={this.flushConfigSave}
                 />,
               value: TAB_GENERATE
             },
             {
               children:
                 <PrototypeForm
-                  value={this.props.config}
+                  value={{ config: state.config }}
                   mode={Mode.LINK}
                   buttonTitle={BUTTON_LINK}
                   uiMessage={LINK_MESSAGE}
                   buttonEvent={Constants.EVENT_LINK}
                   algorithm={state.algorithm}
+                  onConfigChange={this.onConfigChange}
+                  onConfigFlush={this.flushConfigSave}
                 />,
               value: TAB_LINK
             },
@@ -169,7 +213,7 @@ export class UI extends Component<{ config: Config }, { activeTab: string, isOnb
 }
 
 function Plugin(props) {
-  return (<UI config={props} />)
+  return (<UI config={props.config} />)
 }
 
 export default render(Plugin)

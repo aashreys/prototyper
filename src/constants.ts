@@ -7,6 +7,7 @@ export abstract class Constants {
   static readonly EVENT_UI_RESIZE = 'UI_RESIZE';
   static readonly EVENT_GENERATE = 'GENERATE';
   static readonly EVENT_LINK = 'LINK';
+  static readonly EVENT_SAVE_CONFIG = 'SAVE_CONFIG';
   static readonly EVENT_CLEAR_UI_ERRORS = 'CLEAR_UI_ERRORS'
   static readonly EVENT_TAB_SWTICH = 'TAB_SWITCH'
   static readonly EVENT_ONBOARDING_STATUS_LOADED = 'ONBOARDING_STATUS_LOADED'

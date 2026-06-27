@@ -11,6 +11,7 @@ import { HelpWdiget } from './components/help_widget';
 import { UI } from './ui';
 import { Config, StoredNavigation } from './config';
 import { Device } from './device';
+import { Animation } from './animation';
 import { isVariantFocusMode, NavigationFocusConfig } from './navigation_focus';
 import styles from './styles.css';
 
@@ -42,6 +43,7 @@ export class PrototypeForm extends Component<any, any>  {
     this.onDone = this.onDone.bind(this);
     this.componentDidUpdate = this.componentDidUpdate.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.onFormBlur = this.onFormBlur.bind(this);
     this.onAnimationChange = this.onAnimationChange.bind(this);
     this.onNavigationChange = this.onNavigationChange.bind(this);
     this.onNavigationFocusChange = this.onNavigationFocusChange.bind(this);
@@ -59,6 +61,10 @@ export class PrototypeForm extends Component<any, any>  {
 
   onHeightChanged() {
     emit(Constants.EVENT_UI_RESIZE, UI.getUIHeight());
+  }
+
+  onFormBlur() {
+    this.props.onConfigFlush()
   }
 
   registerEventHandlers() {
@@ -85,6 +91,7 @@ export class PrototypeForm extends Component<any, any>  {
 
   onClick = e => {
     this.setErrorMessage('')
+    this.props.onConfigFlush()
     if (this.validateAndShowErrors()) {
       this.setButtonLoading(true);
       emit(this.props.buttonEvent, {
@@ -119,20 +126,20 @@ export class PrototypeForm extends Component<any, any>  {
   }
 
   onNavigationChange(navigation: Navigation) {
-    let storedNavigation: StoredNavigation = this.state.config.storedNavigation
+    let storedNavigation: StoredNavigation = {
+      ...this.state.config.storedNavigation
+    }
     if (navigation.device === Device.KEYBOARD) {
       storedNavigation.keyboard = navigation
     } else {
       storedNavigation.controller = navigation
     }
 
-    this.setState(prevState => ({
-      config: {
-        ...prevState.config,
-        activeNavigation: navigation,
-        storedNavigation: storedNavigation
-      }
-    }));
+    this.setConfig({
+      ...this.state.config,
+      activeNavigation: navigation,
+      storedNavigation: storedNavigation
+    });
   }
 
   validateAndShowErrors() {
@@ -194,29 +201,31 @@ export class PrototypeForm extends Component<any, any>  {
 
 
   onAnimationChange(animation: Animation) {
-
-    this.setState(prevState => ({
-      config: {
-        ...prevState.config,
-        animation: animation
-      }
-    }));
+    this.setConfig({
+      ...this.state.config,
+      animation: animation
+    });
   }
 
   onNavigationFocusChange(focus: NavigationFocusConfig) {
+    this.setConfig({
+      ...this.state.config,
+      focus: focus,
+      swapVariant: focus.variant
+    });
+  }
+
+  setConfig(config: Config) {
     this.setState(prevState => ({
-      config: {
-        ...prevState.config,
-        focus: focus,
-        swapVariant: focus.variant
-      }
+      config: config
     }));
+    this.props.onConfigChange(config)
   }
 
   render() {
 
     return (
-      <div>
+      <div onBlurCapture={this.onFormBlur}>
 
         <VerticalSpace space='large' />
 

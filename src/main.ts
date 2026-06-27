@@ -65,6 +65,10 @@ export default function () {
     runPlugin(payload.config, Mode.LINK, payload.algorithm);
   });
 
+  on(Constants.EVENT_SAVE_CONFIG, (config) => {
+    saveConfig(config);
+  });
+
   on(Constants.EVENT_UI_RESIZE, (height) => {
     figma.ui.resize(WIDTH, height);
   });
@@ -96,7 +100,7 @@ export default function () {
       console.log(
         `Running ${Mode[mode]} with nearest-neighbor algorithm "${algorithm}"`,
       );
-      Config.save(config);
+      saveConfig(config);
       if (mode === Mode.GENERATE) await doGeneratePrototype(config, algorithm);
       if (mode === Mode.LINK) await doLinkFrames(config, algorithm);
     } catch (error) {
@@ -104,6 +108,16 @@ export default function () {
     } finally {
       emit(Constants.EVENT_DONE);
     }
+  }
+}
+
+function saveConfig(config: Config) {
+  try {
+    Config.save(config);
+  } catch (error) {
+    console.error("Unable to save plugin config", {
+      error: error instanceof Error ? error.message : String(error || ""),
+    });
   }
 }
 
