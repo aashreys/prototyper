@@ -101,7 +101,7 @@ function createStrokeFocus() {
   return {
     mode: 'stroke',
     variant: { property: '', from: '', to: '' },
-    stroke: { color: '#0C8CE9', weight: 4, align: 'OUTSIDE' },
+    stroke: { color: '#0C8CE9', weight: 4, align: 'OUTSIDE', gap: 0 },
     fill: { color: '#0C8CE9', opacity: 100 },
     shadow: { color: '#0C8CE9', blur: 24, spread: 0, padding: 4, cornerRadius: 8 }
   } as any

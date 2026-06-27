@@ -17,6 +17,7 @@ export interface StrokeFocusConfig {
   readonly color: string
   readonly weight: number
   readonly align: StrokeAlign
+  readonly gap: number
 }
 
 export interface FillFocusConfig {
@@ -66,7 +67,8 @@ export const DEFAULT_COMPONENT_FOCUS_MAPPING: ComponentFocusMapping = {
 export const DEFAULT_STROKE_FOCUS: StrokeFocusConfig = {
   color: '#0C8CE9',
   weight: 8,
-  align: 'OUTSIDE'
+  align: 'OUTSIDE',
+  gap: 0
 }
 
 export const DEFAULT_FILL_FOCUS: FillFocusConfig = {
@@ -121,7 +123,8 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
     stroke: {
       color: normalizeColor(value.stroke?.color, DEFAULT_STROKE_FOCUS.color),
       weight: normalizeNumber(value.stroke?.weight, DEFAULT_STROKE_FOCUS.weight),
-      align: normalizeStrokeAlign(value.stroke?.align, DEFAULT_STROKE_FOCUS.align)
+      align: normalizeStrokeAlign(value.stroke?.align, DEFAULT_STROKE_FOCUS.align),
+      gap: normalizeNumber(value.stroke?.gap, DEFAULT_STROKE_FOCUS.gap)
     },
     fill: {
       color: normalizeColor(value.fill?.color, DEFAULT_FILL_FOCUS.color),

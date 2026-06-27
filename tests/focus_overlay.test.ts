@@ -185,7 +185,8 @@ function createFocus(mode: NavigationFocusMode) {
     stroke: {
       color: '#FF00AA',
       weight: 6,
-      align: 'OUTSIDE'
+      align: 'OUTSIDE',
+      gap: 4
     },
     fill: {
       color: '#00AAFF',
@@ -208,20 +209,53 @@ function createFocus(mode: NavigationFocusMode) {
   }
 }
 
-test('applies stroke focus directly to the target layer', () => {
+test('applies outside stroke focus as an overlay with gap', () => {
   setFigmaForOverlay()
   let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
   let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
 
   let result = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.STROKE) as any) as any
 
-  assert.equal(result, target)
-  assert.deepEqual(frame.children, [target])
-  assert.equal(target.strokes[0].color.r, 1)
-  assert.equal(target.strokes[0].color.g, 0)
-  assert.equal(target.strokes[0].color.b, 170 / 255)
-  assert.equal(target.strokeWeight, 6)
-  assert.equal(target.strokeAlign, 'OUTSIDE')
+  assert.notEqual(result, target)
+  assert.deepEqual(frame.children, [target, result])
+  assert.equal(result.x, 46)
+  assert.equal(result.y, 56)
+  assert.equal(result.width, 88)
+  assert.equal(result.height, 48)
+  assert.equal(result.strokes[0].color.r, 1)
+  assert.equal(result.strokes[0].color.g, 0)
+  assert.equal(result.strokes[0].color.b, 170 / 255)
+  assert.equal(result.strokeWeight, 6)
+  assert.equal(result.strokeAlign, 'OUTSIDE')
+})
+
+test('applies center and inside stroke focus without user gap', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
+  let focus = createFocus(NavigationFocusMode.STROKE)
+  focus.stroke.align = 'CENTER'
+  focus.stroke.gap = 12
+
+  let result = FocusOverlay.create(frame, target, focus as any) as any
+
+  assert.equal(result.x, 50)
+  assert.equal(result.y, 60)
+  assert.equal(result.width, 80)
+  assert.equal(result.height, 40)
+  assert.equal(result.strokeAlign, 'CENTER')
+
+  let insideFocus = createFocus(NavigationFocusMode.STROKE)
+  insideFocus.stroke.align = 'INSIDE'
+  insideFocus.stroke.gap = 12
+
+  let insideResult = FocusOverlay.create(frame, target, insideFocus as any) as any
+
+  assert.equal(insideResult.x, 50)
+  assert.equal(insideResult.y, 60)
+  assert.equal(insideResult.width, 80)
+  assert.equal(insideResult.height, 40)
+  assert.equal(insideResult.strokeAlign, 'INSIDE')
 })
 
 test('applies fill focus above existing fills', () => {
@@ -359,7 +393,7 @@ test('restores direct fill focus state', () => {
   assert.equal(target.getPluginData('prototyper_focus_direct_state'), '')
 })
 
-test('restores direct stroke focus state', () => {
+test('removes stroke focus overlays without changing target stroke state', () => {
   setFigmaForOverlay()
   let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
   let originalStroke = { type: 'SOLID', color: { r: 0, g: 1, b: 0 }, opacity: 1 }
@@ -372,6 +406,7 @@ test('restores direct stroke focus state', () => {
   FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.STROKE) as any)
   FocusOverlay.resetManagedFocus(frame)
 
+  assert.deepEqual(frame.children, [target])
   assert.deepEqual(target.strokes, [originalStroke])
   assert.equal(target.strokeWeight, 2)
   assert.equal(target.strokeAlign, 'CENTER')

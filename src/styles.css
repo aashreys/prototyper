@@ -187,6 +187,13 @@
     align-items: center;
 }
 
+.strokeSecondaryControlsWithGap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+}
+
 .strokeWeightControl {
     position: relative;
     min-width: 0;

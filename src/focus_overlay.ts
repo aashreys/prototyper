@@ -52,7 +52,7 @@ export class FocusOverlay {
       return FocusOverlay.createScaleShadow(target, focus);
     }
     if (focus.mode === NavigationFocusMode.STROKE) {
-      return FocusOverlay.createDirectStroke(target, focus);
+      return FocusOverlay.createStrokeOverlay(topLevelFrame, target, focus);
     }
     if (focus.mode === NavigationFocusMode.FILL) {
       return FocusOverlay.createDirectFill(target, focus);
@@ -100,19 +100,40 @@ export class FocusOverlay {
     return target;
   }
 
-  private static createDirectStroke(
+  private static createStrokeOverlay(
+    topLevelFrame: FrameNode,
     target: SceneNode,
     focus: NavigationFocusConfig,
   ): SceneNode {
-    FocusOverlay.saveDirectFocusState(target);
-    if (FocusOverlay.applyDirectStroke(target, focus)) {
-      return target;
-    }
-    FocusOverlay.logDirectFocusFailure(
-      "Unable to apply direct stroke focus effect",
-      target,
+    const overlay = FocusOverlay.createManagedRectangle(
+      OVERLAY_NAME,
+      topLevelFrame,
     );
-    return target;
+    FocusOverlay.insertOverlay(
+      topLevelFrame,
+      target,
+      overlay,
+      NavigationFocusMode.STROKE,
+    );
+    if (FocusOverlay.canUseAbsoluteLayout(overlay, topLevelFrame)) {
+      overlay.layoutPositioning = "ABSOLUTE";
+    }
+
+    const targetBounds = FocusOverlay.getRenderedBounds(target);
+    const frameBounds = Utils.getAbsoluteBounds(topLevelFrame);
+    const padding = FocusOverlay.getStrokeOverlayPadding(focus);
+    const focusBounds = FocusOverlay.getFocusBounds(
+      targetBounds,
+      frameBounds,
+      padding,
+    );
+
+    overlay.resize(focusBounds.width, focusBounds.height);
+    overlay.x = focusBounds.x;
+    overlay.y = focusBounds.y;
+    FocusOverlay.applyStrokeCornerRadius(overlay, target, padding, focusBounds);
+    FocusOverlay.applyStroke(overlay, focus);
+    return overlay;
   }
 
   private static createDirectShadow(
@@ -390,19 +411,6 @@ export class FocusOverlay {
     };
   }
 
-  private static applyDirectStroke(
-    target: SceneNode,
-    focus: NavigationFocusConfig,
-  ): boolean {
-    const node: any = target;
-    if (!("strokes" in node) || !("strokeWeight" in node)) return false;
-
-    node.strokes = [FocusOverlay.createSolidPaint(focus.stroke.color)];
-    if ("strokeAlign" in node) node.strokeAlign = focus.stroke.align;
-    node.strokeWeight = focus.stroke.weight;
-    return true;
-  }
-
   private static applyDirectFill(
     target: SceneNode,
     focus: NavigationFocusConfig,
@@ -419,6 +427,99 @@ export class FocusOverlay {
       ),
     ];
     return true;
+  }
+
+  private static getRenderedBounds(node: SceneNode): Rect {
+    return (node as any).absoluteRenderBounds || Utils.getAbsoluteBounds(node);
+  }
+
+  private static getStrokeOverlayPadding(
+    focus: NavigationFocusConfig,
+  ): number {
+    return focus.stroke.align === "OUTSIDE" ? focus.stroke.gap : 0;
+  }
+
+  private static applyStroke(
+    overlay: RectangleNode,
+    focus: NavigationFocusConfig,
+  ) {
+    overlay.fills = [];
+    overlay.strokes = [FocusOverlay.createSolidPaint(focus.stroke.color)];
+    overlay.strokeWeight = focus.stroke.weight;
+    overlay.strokeAlign = focus.stroke.align;
+    overlay.effects = [];
+  }
+
+  private static applyStrokeCornerRadius(
+    overlay: RectangleNode,
+    target: SceneNode,
+    padding: number,
+    focusBounds: Rect,
+  ) {
+    const radii = FocusOverlay.getTargetCornerRadii(target);
+    if (!radii) {
+      overlay.cornerRadius = 0;
+      return;
+    }
+    FocusOverlay.setOverlayCornerRadii(
+      overlay,
+      radii,
+      padding,
+      FocusOverlay.getMaxRadius(focusBounds),
+    );
+  }
+
+  private static getTargetCornerRadii(
+    target: SceneNode,
+  ): [number, number, number, number] | null {
+    const node: any = target;
+    if (!("cornerRadius" in node)) return null;
+    if (typeof node.cornerRadius === "number" && Number.isFinite(node.cornerRadius)) {
+      return [
+        node.cornerRadius,
+        node.cornerRadius,
+        node.cornerRadius,
+        node.cornerRadius,
+      ];
+    }
+    const mixed = typeof figma !== "undefined" ? (figma as any).mixed : undefined;
+    if (node.cornerRadius !== mixed) return null;
+    const radii = [
+      node.topLeftRadius,
+      node.topRightRadius,
+      node.bottomRightRadius,
+      node.bottomLeftRadius,
+    ];
+    if (
+      !radii.every(
+        (radius) => typeof radius === "number" && Number.isFinite(radius),
+      )
+    )
+      return null;
+    return radii as [number, number, number, number];
+  }
+
+  private static setOverlayCornerRadii(
+    overlay: RectangleNode,
+    radii: [number, number, number, number],
+    padding: number,
+    maxRadius: number,
+  ) {
+    const [topLeft, topRight, bottomRight, bottomLeft] = radii.map((radius) =>
+      FocusOverlay.clampRadius(radius + padding, maxRadius),
+    );
+    if (
+      topLeft === topRight &&
+      topRight === bottomRight &&
+      bottomRight === bottomLeft
+    ) {
+      overlay.cornerRadius = topLeft;
+      return;
+    }
+    overlay.topLeftRadius = topLeft;
+    overlay.topRightRadius = topRight;
+    overlay.bottomRightRadius = bottomRight;
+    overlay.bottomLeftRadius = bottomLeft;
   }
 
   private static applyDropShadow(

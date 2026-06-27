@@ -32,7 +32,7 @@ import { SwapVariant } from "../swap_variant";
 import { ArrowRightIcon } from "../icons/arrow_right";
 import styles from "../styles.css";
 
-type StrokeNumberKey = "weight";
+type StrokeNumberKey = "weight" | "gap";
 type ScaleShadowNumberKey = "scale";
 
 const DECIMAL_INPUT_PATTERN = /^\d*(?:\.\d*)?$/;
@@ -505,7 +505,13 @@ export class NavigationFocusOptions extends Component<
           />
         </div>
 
-        <div class={styles.strokeSecondaryControls}>
+        <div
+          class={
+            props.focus.stroke.align === "OUTSIDE"
+              ? styles.strokeSecondaryControlsWithGap
+              : styles.strokeSecondaryControls
+          }
+        >
           <div>
             <Dropdown
               onChange={(e) =>
@@ -527,6 +533,19 @@ export class NavigationFocusOptions extends Component<
               value={props.focus.stroke.weight}
             />
           </div>
+
+          {props.focus.stroke.align === "OUTSIDE" && (
+            <div class={styles.strokeWeightControl}>
+              <FocusNumberInput
+                minimum={0}
+                onNumberInput={(value) =>
+                  this.onStrokeNumberChange("gap", value)
+                }
+                placeholder="Gap"
+                value={props.focus.stroke.gap}
+              />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -647,7 +666,7 @@ interface NavigationFocusOptionsProps {
 }
 
 interface FocusNumberInputProps {
-  icon: JSX.Element;
+  icon?: JSX.Element;
   minimum: number;
   onNumberInput: (value: number) => void;
   placeholder: string;
