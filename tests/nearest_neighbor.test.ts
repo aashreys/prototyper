@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { NearestNeighbor, type Navigable, type Neighbors } from '../src/core/nearest_neighbor'
+import { BeamStackGravity, NearestNeighbor, type Navigable, type Neighbors } from '../src/core/nearest_neighbor'
 import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from '../src/prototype_algorithm'
 import { PrototypeNode } from '../src/prototype_node'
 
@@ -56,6 +56,46 @@ function createGrid() {
     topRight: new TestNavigable('topRight', 120, 0),
     bottomLeft: new TestNavigable('bottomLeft', 0, 120),
     bottomRight: new TestNavigable('bottomRight', 120, 120)
+  }
+}
+
+function createWideBarAndHorizontalStack() {
+  const topBar = new TestNavigable('topBar', 0, 0, 700, 80)
+  const tile1 = new TestNavigable('tile1', 0, 140, 80, 80)
+  const tile2 = new TestNavigable('tile2', 120, 140, 80, 80)
+  const tile3 = new TestNavigable('tile3', 240, 140, 80, 80)
+  const tile4 = new TestNavigable('tile4', 360, 140, 80, 80)
+  const tile5 = new TestNavigable('tile5', 480, 140, 80, 80)
+  const tile6 = new TestNavigable('tile6', 600, 140, 80, 80)
+  const bottomBar = new TestNavigable('bottomBar', 0, 280, 700, 80)
+
+  return {
+    nodes: [topBar, tile1, tile2, tile3, tile4, tile5, tile6, bottomBar],
+    topBar,
+    tile1,
+    tile4,
+    tile6,
+    bottomBar
+  }
+}
+
+function createTallBarAndVerticalStack() {
+  const leftBar = new TestNavigable('leftBar', 0, 0, 80, 700)
+  const tile1 = new TestNavigable('tile1', 140, 0, 80, 80)
+  const tile2 = new TestNavigable('tile2', 140, 120, 80, 80)
+  const tile3 = new TestNavigable('tile3', 140, 240, 80, 80)
+  const tile4 = new TestNavigable('tile4', 140, 360, 80, 80)
+  const tile5 = new TestNavigable('tile5', 140, 480, 80, 80)
+  const tile6 = new TestNavigable('tile6', 140, 600, 80, 80)
+  const rightBar = new TestNavigable('rightBar', 280, 0, 80, 700)
+
+  return {
+    nodes: [leftBar, tile1, tile2, tile3, tile4, tile5, tile6, rightBar],
+    leftBar,
+    tile1,
+    tile4,
+    tile6,
+    rightBar
   }
 }
 
@@ -187,6 +227,82 @@ test('beam includes unequal horizontal row candidates that overlap the vertical 
   assert.equal(right.neighbors.left, middle)
   assert.equal(left.neighbors.top, undefined)
   assert.equal(left.neighbors.bottom, undefined)
+})
+
+test('beam chooses the leftmost candidate when a wide origin points to a horizontal stack', () => {
+  const { nodes, topBar, tile1, bottomBar } = createWideBarAndHorizontalStack()
+
+  NearestNeighbor.assignNeigbors(
+    nodes,
+    PrototypeAlgorithm.BEAM_ALIGNED_FIRST
+  )
+
+  assert.equal(topBar.neighbors.bottom, tile1)
+  assert.equal(bottomBar.neighbors.top, tile1)
+})
+
+test('beam can center gravity when a wide origin points to a horizontal stack', () => {
+  const { nodes, topBar, tile4, bottomBar } = createWideBarAndHorizontalStack()
+
+  NearestNeighbor.assignNeigbors(
+    nodes,
+    PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
+    { beamStackGravity: BeamStackGravity.CENTER }
+  )
+
+  assert.equal(topBar.neighbors.bottom, tile4)
+  assert.equal(bottomBar.neighbors.top, tile4)
+})
+
+test('beam can end gravity when a wide origin points to a horizontal stack', () => {
+  const { nodes, topBar, tile6, bottomBar } = createWideBarAndHorizontalStack()
+
+  NearestNeighbor.assignNeigbors(
+    nodes,
+    PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
+    { beamStackGravity: BeamStackGravity.END }
+  )
+
+  assert.equal(topBar.neighbors.bottom, tile6)
+  assert.equal(bottomBar.neighbors.top, tile6)
+})
+
+test('beam chooses the topmost candidate when a tall origin points to a vertical stack', () => {
+  const { nodes, leftBar, tile1, rightBar } = createTallBarAndVerticalStack()
+
+  NearestNeighbor.assignNeigbors(
+    nodes,
+    PrototypeAlgorithm.BEAM_ALIGNED_FIRST
+  )
+
+  assert.equal(leftBar.neighbors.right, tile1)
+  assert.equal(rightBar.neighbors.left, tile1)
+})
+
+test('beam can center gravity when a tall origin points to a vertical stack', () => {
+  const { nodes, leftBar, tile4, rightBar } = createTallBarAndVerticalStack()
+
+  NearestNeighbor.assignNeigbors(
+    nodes,
+    PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
+    { beamStackGravity: BeamStackGravity.CENTER }
+  )
+
+  assert.equal(leftBar.neighbors.right, tile4)
+  assert.equal(rightBar.neighbors.left, tile4)
+})
+
+test('beam can end gravity when a tall origin points to a vertical stack', () => {
+  const { nodes, leftBar, tile6, rightBar } = createTallBarAndVerticalStack()
+
+  NearestNeighbor.assignNeigbors(
+    nodes,
+    PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
+    { beamStackGravity: BeamStackGravity.END }
+  )
+
+  assert.equal(leftBar.neighbors.right, tile6)
+  assert.equal(rightBar.neighbors.left, tile6)
 })
 
 test('weighted scoring uses beam-overlap candidates only', () => {

@@ -33,9 +33,23 @@ export interface NeighborStrategy {
 
   readonly id: NeighborStrategyId
 
-  assignNeighbors(navigables: Array<Navigable>): void
+  assignNeighbors(navigables: Array<Navigable>, options?: NeighborSearchOptions): void
 
 }
+
+export enum BeamStackGravity {
+  START = 'start',
+  CENTER = 'center',
+  END = 'end'
+}
+
+export interface NeighborSearchOptions {
+
+  beamStackGravity?: BeamStackGravity
+
+}
+
+export const DEFAULT_BEAM_STACK_GRAVITY = BeamStackGravity.START
 
 export const NeighborStrategyIds: Record<string, NeighborStrategyId> = {
   EDGE_ANCHOR_CURRENT: PrototypeAlgorithm.EDGE_ANCHOR_CURRENT,
@@ -63,10 +77,20 @@ enum Direction {
 interface CandidateMetrics {
 
   readonly anchor: AnchorPoints
+  readonly direction: Direction
   readonly primaryDistance: number
   readonly perpendicularCenterDistance: number
   readonly diagonalDistance: number
   readonly hasPerpendicularOverlap: boolean
+
+}
+
+interface MetricScore {
+
+  readonly primary: number
+  readonly secondary: number
+  readonly tertiary: number
+  readonly quaternary?: number
 
 }
 
@@ -76,12 +100,20 @@ const WEIGHTED_SCORE_DIAGONAL_PENALTY_WEIGHT = 0.25
 
 export class NearestNeighbor {
 
-  static assignNeighbors(navigables: Array<Navigable>, strategyId: NeighborStrategyId = DEFAULT_PROTOTYPE_ALGORITHM): void {
-    NearestNeighbor.assignNeigbors(navigables, strategyId);
+  static assignNeighbors(
+    navigables: Array<Navigable>,
+    strategyId: NeighborStrategyId = DEFAULT_PROTOTYPE_ALGORITHM,
+    options: NeighborSearchOptions = {}
+  ): void {
+    NearestNeighbor.assignNeigbors(navigables, strategyId, options);
   }
 
-  static assignNeigbors(navigables: Array<Navigable>, strategyId: NeighborStrategyId = DEFAULT_PROTOTYPE_ALGORITHM): void {
-    NearestNeighbor.getStrategy(strategyId).assignNeighbors(navigables);
+  static assignNeigbors(
+    navigables: Array<Navigable>,
+    strategyId: NeighborStrategyId = DEFAULT_PROTOTYPE_ALGORITHM,
+    options: NeighborSearchOptions = {}
+  ): void {
+    NearestNeighbor.getStrategy(strategyId).assignNeighbors(navigables, options);
   }
 
   static getStrategy(strategyId: NeighborStrategyId): NeighborStrategy {
@@ -134,8 +166,8 @@ export class NearestNeighbor {
     },
     [PrototypeAlgorithm.BEAM_ALIGNED_FIRST]: {
       id: PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
-      assignNeighbors(navigables: Array<Navigable>): void {
-        NearestNeighbor._assignNeighborsWithBeamAlignedFirst(navigables);
+      assignNeighbors(navigables: Array<Navigable>, options: NeighborSearchOptions = {}): void {
+        NearestNeighbor._assignNeighborsWithBeamAlignedFirst(navigables, options);
       }
     },
     [PrototypeAlgorithm.WEIGHTED_SCORE]: {
@@ -268,7 +300,11 @@ export class NearestNeighbor {
     }
   }
 
-  static _assignNeighborsWithBeamAlignedFirst(navigables: Array<Navigable>): void {
+  static _assignNeighborsWithBeamAlignedFirst(
+    navigables: Array<Navigable>,
+    options: NeighborSearchOptions = {}
+  ): void {
+    const stackGravity = options.beamStackGravity || DEFAULT_BEAM_STACK_GRAVITY
     NearestNeighbor._assignNeighborsWithMetrics(navigables, function (metrics) {
       const alignedMetrics = metrics.filter(metric => metric.hasPerpendicularOverlap)
       if (alignedMetrics.length === 0) {
@@ -284,8 +320,9 @@ export class NearestNeighbor {
       return NearestNeighbor.getLowestMetric(alignedMetrics, function (metric) {
         return {
           primary: metric.primaryDistance,
-          secondary: metric.perpendicularCenterDistance,
-          tertiary: metric.diagonalDistance
+          secondary: NearestNeighbor.getStackGravityScore(metric, stackGravity),
+          tertiary: metric.perpendicularCenterDistance,
+          quaternary: metric.diagonalDistance
         }
       })
     })
@@ -438,6 +475,7 @@ export class NearestNeighbor {
       if (anchor.navigable !== candidate.navigable && NearestNeighbor.isDirectionalCandidate(anchor, candidate, direction)) {
         metrics.push({
           anchor: candidate,
+          direction: direction,
           primaryDistance: NearestNeighbor.getPrimaryDistance(anchor, candidate, direction),
           perpendicularCenterDistance: NearestNeighbor.getPerpendicularCenterDistance(anchor, candidate, direction),
           diagonalDistance: NearestNeighbor.getDirectionalDistance(anchor, candidate, direction),
@@ -450,23 +488,61 @@ export class NearestNeighbor {
 
   private static getLowestMetric(
     metrics: Array<CandidateMetrics>,
-    getScore: (metric: CandidateMetrics) => { primary: number, secondary: number, tertiary: number }
+    getScore: (metric: CandidateMetrics) => MetricScore
   ): AnchorPoints {
     let lowestMetric: CandidateMetrics
-    let lowestScore: { primary: number, secondary: number, tertiary: number }
+    let lowestScore: MetricScore
     for (const metric of metrics) {
       const score = getScore(metric)
-      if (
-        lowestMetric === undefined ||
-        score.primary < lowestScore.primary ||
-        (score.primary === lowestScore.primary && score.secondary < lowestScore.secondary) ||
-        (score.primary === lowestScore.primary && score.secondary === lowestScore.secondary && score.tertiary < lowestScore.tertiary)
-      ) {
+      if (lowestMetric === undefined || NearestNeighbor.isLowerMetricScore(score, lowestScore)) {
         lowestMetric = metric
         lowestScore = score
       }
     }
     return lowestMetric?.anchor
+  }
+
+  private static isLowerMetricScore(score: MetricScore, currentLowest: MetricScore): boolean {
+    const values = [score.primary, score.secondary, score.tertiary, score.quaternary ?? 0]
+    const lowestValues = [currentLowest.primary, currentLowest.secondary, currentLowest.tertiary, currentLowest.quaternary ?? 0]
+    for (let i = 0; i < values.length; i++) {
+      if (values[i] < lowestValues[i]) return true
+      if (values[i] > lowestValues[i]) return false
+    }
+    return false
+  }
+
+  private static getStackGravityScore(metric: CandidateMetrics, gravity: BeamStackGravity): number {
+    switch (gravity) {
+      case BeamStackGravity.START:
+        return NearestNeighbor.getStackStart(metric)
+      case BeamStackGravity.CENTER:
+        return metric.perpendicularCenterDistance
+      case BeamStackGravity.END:
+        return -NearestNeighbor.getStackEnd(metric)
+    }
+  }
+
+  private static getStackStart(metric: CandidateMetrics): number {
+    switch (metric.direction) {
+      case Direction.LEFT:
+      case Direction.RIGHT:
+        return metric.anchor.top.y
+      case Direction.TOP:
+      case Direction.BOTTOM:
+        return metric.anchor.left.x
+    }
+  }
+
+  private static getStackEnd(metric: CandidateMetrics): number {
+    switch (metric.direction) {
+      case Direction.LEFT:
+      case Direction.RIGHT:
+        return metric.anchor.bottom.y
+      case Direction.TOP:
+      case Direction.BOTTOM:
+        return metric.anchor.right.x
+    }
   }
 
   private static getPrimaryDistance(anchor1: AnchorPoints, anchor2: AnchorPoints, direction: Direction): number {
