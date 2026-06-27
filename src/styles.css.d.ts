@@ -7,6 +7,7 @@ declare const styles: {
   readonly "animationSecondaryRow": string;
   readonly "animationTransitionControl": string;
   readonly "componentMapping": string;
+  readonly "componentMappingAction": string;
   readonly "componentMappingError": string;
   readonly "componentMappingHeader": string;
   readonly "componentMappingHeaderError": string;

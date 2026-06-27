@@ -445,9 +445,11 @@ export class NavigationFocusOptions extends Component<
       <div class={styles.variantFocusControls}>
         <div class={styles.componentMappingHeader}>
           <div class={styles.helperText}>{COMPONENT_HELPER_TEXT}</div>
-          <IconButton onClick={() => this.addMapping()} title="Add mapping">
-            <IconPlusSmall24 />
-          </IconButton>
+          <div class={styles.componentMappingAction}>
+            <IconButton onClick={() => this.addMapping()} title="Add mapping">
+              <IconPlusSmall24 />
+            </IconButton>
+          </div>
         </div>
 
         {showEmptyMappingsError && (
@@ -498,12 +500,14 @@ export class NavigationFocusOptions extends Component<
             value={mapping.property}
           />
 
-          <IconButton
-            onClick={() => this.removeMapping(index)}
-            title="Remove mapping"
-          >
-            <IconMinusSmall24 />
-          </IconButton>
+          <div class={styles.componentMappingAction}>
+            <IconButton
+              onClick={() => this.removeMapping(index)}
+              title="Remove mapping"
+            >
+              <IconMinusSmall24 />
+            </IconButton>
+          </div>
         </div>
 
         {showPropertyError && (

@@ -236,6 +236,8 @@
 }
 
 .variantFocusControls {
+    --componentMappingActionWidth: 28px;
+    --componentMappingRowOffset: 9px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -243,9 +245,10 @@
 
 .componentMappingHeader {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 28px;
+    grid-template-columns: minmax(0, 1fr) var(--componentMappingActionWidth);
     column-gap: 8px;
     align-items: center;
+    margin-right: calc(-1 * var(--componentMappingRowOffset));
 }
 
 .componentMappings {
@@ -259,8 +262,12 @@
     margin-left: 0;
 }
 
+.componentMappingAction {
+    justify-self: start;
+    width: 24px;
+}
+
 .componentMapping {
-    --componentMappingActionWidth: 28px;
     --componentMappingArrowWidth: 11px;
     --componentMappingColumnGap: 8px;
     --componentMappingFieldWidth: calc(50% - 31.5px);
@@ -278,6 +285,7 @@
         var(--componentMappingActionWidth);
     column-gap: var(--componentMappingColumnGap);
     align-items: center;
+    margin-right: calc(-1 * var(--componentMappingRowOffset));
 }
 
 .componentMappingRow > :nth-child(2) {
@@ -293,6 +301,7 @@
         var(--componentMappingActionWidth);
     column-gap: var(--componentMappingColumnGap);
     align-items: center;
+    margin-right: calc(-1 * var(--componentMappingRowOffset));
 }
 
 .componentMappingValueFields {
