@@ -233,7 +233,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) 28px;
     column-gap: 8px;
-    align-items: start;
+    align-items: center;
 }
 
 .componentMappings {
