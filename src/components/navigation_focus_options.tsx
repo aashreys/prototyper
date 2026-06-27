@@ -57,12 +57,8 @@ const STROKE_ALIGN_OPTIONS: Array<DropdownOption> = [
   { value: "OUTSIDE", text: "Outside" },
 ];
 
-const HELPER_TEXT = {
-  stroke: "Add a stroke to show focus. Works with any layer.",
-  fill: "Add a fill to show focus. Best for layers with no or unobscured fills.",
-  scale: "Change scale to show focus e.g. tvOS. Works with any layer.",
-  component: "Modify component properties to show focus.",
-};
+const COMPONENT_HELPER_TEXT =
+  "Add component properties to default and focus states";
 
 function FocusNumberInput(props: FocusNumberInputProps) {
   const [value, setValue] = useState(formatNumericInputValue(props));
@@ -393,7 +389,7 @@ export class NavigationFocusOptions extends Component<
     return (
       <div class={styles.variantFocusControls}>
         <div class={styles.componentMappingHeader}>
-          <div class={styles.helperText}>{HELPER_TEXT.component}</div>
+          <div class={styles.helperText}>{COMPONENT_HELPER_TEXT}</div>
           <IconButton onClick={() => this.addMapping()} title="Add mapping">
             <IconPlusSmall24 />
           </IconButton>
@@ -493,8 +489,6 @@ export class NavigationFocusOptions extends Component<
   renderStrokeControls(props: NavigationFocusOptionsProps) {
     return (
       <div class={styles.strokeControls}>
-        <div class={styles.helperText}>{HELPER_TEXT.stroke}</div>
-
         <div>
           <TextboxColor
             fullWidth
@@ -560,8 +554,6 @@ export class NavigationFocusOptions extends Component<
   renderFillControls(props: NavigationFocusOptionsProps) {
     return (
       <div class={styles.variantFocusControls}>
-        <div class={styles.helperText}>{HELPER_TEXT.fill}</div>
-
         <TextboxColor
           fullWidth
           hexColor={this.toTextboxHexColor(props.focus.fill.color)}
@@ -578,8 +570,6 @@ export class NavigationFocusOptions extends Component<
   renderScaleShadowControls(props: NavigationFocusOptionsProps) {
     return (
       <div class={styles.variantFocusControls}>
-        <div class={styles.helperText}>{HELPER_TEXT.scale}</div>
-
         <div class={styles.scaleControls}>
           <div class={styles.scaleControl}>
             <FocusNumberInput
@@ -623,7 +613,7 @@ export class NavigationFocusOptions extends Component<
     return (
       <div class={styles.focusModeRow}>
         <div class={styles.focusModeLabel}>
-          <Text>Display focus with:</Text>
+          <Text>Show focus with</Text>
         </div>
         <div class={styles.focusModeSelect}>
           <Dropdown
