@@ -1,5 +1,6 @@
 import {
   Bold,
+  Checkbox,
   Dropdown,
   DropdownOption,
   Text,
@@ -92,6 +93,13 @@ export class NavigationFocusOptions extends Component<
     this.updateStroke({
       ...this.props.focus.stroke,
       [key]: this.toFocusNumber(value, this.props.focus.stroke[key]),
+    });
+  }
+
+  onStrokeAutoCornerRadiusChange(useAutoCornerRadius: boolean) {
+    this.updateStroke({
+      ...this.props.focus.stroke,
+      useAutoCornerRadius: useAutoCornerRadius,
     });
   }
 
@@ -209,11 +217,22 @@ export class NavigationFocusOptions extends Component<
           props.focus.stroke.padding,
           (value) => this.onStrokeNumberChange("padding", value),
         )}
-        {this.renderNumericControl(
-          "Corner radius",
-          props.focus.stroke.cornerRadius,
-          (value) => this.onStrokeNumberChange("cornerRadius", value),
-        )}
+        <div style="grid-column: 1 / -1;">
+          <Checkbox
+            onChange={(e) =>
+              this.onStrokeAutoCornerRadiusChange(e.currentTarget.checked)
+            }
+            value={props.focus.stroke.useAutoCornerRadius}
+          >
+            <Text>Auto corner radius</Text>
+          </Checkbox>
+        </div>
+        {!props.focus.stroke.useAutoCornerRadius &&
+          this.renderNumericControl(
+            "Corner radius",
+            props.focus.stroke.cornerRadius,
+            (value) => this.onStrokeNumberChange("cornerRadius", value),
+          )}
       </div>
     );
   }

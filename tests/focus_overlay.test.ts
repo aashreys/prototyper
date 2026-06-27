@@ -5,6 +5,7 @@ import { NavigationFocusMode } from '../src/navigation_focus'
 
 function setFigmaForOverlay() {
   ;(globalThis as any).figma = {
+    mixed: Symbol.for('figma.mixed'),
     createRectangle: () => createRectangle()
   }
 }
@@ -26,6 +27,10 @@ function createRectangle() {
     strokeWeight: undefined,
     strokeAlign: undefined,
     cornerRadius: undefined,
+    topLeftRadius: undefined,
+    topRightRadius: undefined,
+    bottomLeftRadius: undefined,
+    bottomRightRadius: undefined,
     layoutPositioning: 'AUTO',
     pluginData: {},
     removed: false,
@@ -72,13 +77,14 @@ function createFrame(id: string, bounds: Rect) {
   } as any
 }
 
-function createLayer(id: string, parent: any, bounds: Rect) {
+function createLayer(id: string, parent: any, bounds: Rect, properties = {}) {
   let layer = {
     id: id,
     name: id,
     type: 'RECTANGLE',
     parent: parent,
-    absoluteBoundingBox: bounds
+    absoluteBoundingBox: bounds,
+    ...properties
   } as any
   parent.children.push(layer)
   return layer
@@ -99,6 +105,7 @@ function createFocus(mode: NavigationFocusMode) {
       color: '#FF00AA',
       weight: 6,
       padding: 5,
+      useAutoCornerRadius: false,
       cornerRadius: 3
     },
     shadow: {
@@ -132,6 +139,51 @@ test('creates stroke overlay from target bounds relative to top-level frame', ()
   assert.equal(overlay.strokes[0].color.b, 170 / 255)
   assert.equal(overlay.strokeWeight, 6)
   assert.equal(overlay.strokeAlign, 'OUTSIDE')
+  assert.equal(overlay.cornerRadius, 3)
+})
+
+test('creates stroke overlay with inferred uniform corner radius when auto radius is enabled', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 }, { cornerRadius: 12 })
+  let focus = createFocus(NavigationFocusMode.STROKE)
+  focus.stroke.useAutoCornerRadius = true
+
+  let overlay = FocusOverlay.create(frame, target, focus as any) as any
+
+  assert.equal(overlay.cornerRadius, 17)
+})
+
+test('creates stroke overlay with inferred mixed corner radii when auto radius is enabled', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 }, {
+    cornerRadius: (globalThis as any).figma.mixed,
+    topLeftRadius: 2,
+    topRightRadius: 4,
+    bottomRightRadius: 6,
+    bottomLeftRadius: 8
+  })
+  let focus = createFocus(NavigationFocusMode.STROKE)
+  focus.stroke.useAutoCornerRadius = true
+
+  let overlay = FocusOverlay.create(frame, target, focus as any) as any
+
+  assert.equal(overlay.topLeftRadius, 7)
+  assert.equal(overlay.topRightRadius, 9)
+  assert.equal(overlay.bottomRightRadius, 11)
+  assert.equal(overlay.bottomLeftRadius, 13)
+})
+
+test('falls back to configured corner radius when auto radius has no target radius', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
+  let focus = createFocus(NavigationFocusMode.STROKE)
+  focus.stroke.useAutoCornerRadius = true
+
+  let overlay = FocusOverlay.create(frame, target, focus as any) as any
+
   assert.equal(overlay.cornerRadius, 3)
 })
 

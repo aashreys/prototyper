@@ -10,6 +10,7 @@ export interface StrokeFocusConfig {
   readonly color: string
   readonly weight: number
   readonly padding: number
+  readonly useAutoCornerRadius: boolean
   readonly cornerRadius: number
 }
 
@@ -38,6 +39,7 @@ export const DEFAULT_STROKE_FOCUS: StrokeFocusConfig = {
   color: '#0C8CE9',
   weight: 4,
   padding: 4,
+  useAutoCornerRadius: false,
   cornerRadius: 8
 }
 
@@ -70,6 +72,7 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
       color: normalizeColor(value.stroke?.color, DEFAULT_STROKE_FOCUS.color),
       weight: normalizeNumber(value.stroke?.weight, DEFAULT_STROKE_FOCUS.weight),
       padding: normalizeNumber(value.stroke?.padding, DEFAULT_STROKE_FOCUS.padding),
+      useAutoCornerRadius: normalizeBoolean(value.stroke?.useAutoCornerRadius, DEFAULT_STROKE_FOCUS.useAutoCornerRadius),
       cornerRadius: normalizeNumber(value.stroke?.cornerRadius, DEFAULT_STROKE_FOCUS.cornerRadius)
     },
     shadow: {
@@ -111,4 +114,8 @@ function normalizeNumber(value, fallback: number): number {
 
 function normalizeColor(value, fallback: string): string {
   return typeof value === 'string' && value.length > 0 ? value : fallback
+}
+
+function normalizeBoolean(value, fallback: boolean): boolean {
+  return typeof value === 'boolean' ? value : fallback
 }

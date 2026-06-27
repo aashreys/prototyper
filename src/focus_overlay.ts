@@ -35,7 +35,7 @@ export class FocusOverlay {
     overlay.resize(focusBounds.width, focusBounds.height)
     overlay.x = focusBounds.x
     overlay.y = focusBounds.y
-    overlay.cornerRadius = FocusOverlay.getCornerRadius(focus)
+    FocusOverlay.applyCornerRadius(overlay, target, focus, focusBounds)
 
     if (focus.mode === NavigationFocusMode.STROKE) {
       FocusOverlay.applyStroke(overlay, focus)
@@ -131,9 +131,60 @@ export class FocusOverlay {
     return focus.stroke.padding
   }
 
+  private static applyCornerRadius(overlay: RectangleNode, target: SceneNode, focus: NavigationFocusConfig, focusBounds: Rect) {
+    const padding = FocusOverlay.getPadding(focus)
+    const maxRadius = FocusOverlay.getMaxRadius(focusBounds)
+    if (focus.mode === NavigationFocusMode.STROKE && focus.stroke.useAutoCornerRadius) {
+      const radii = FocusOverlay.getTargetCornerRadii(target)
+      if (radii) {
+        FocusOverlay.setOverlayCornerRadii(overlay, radii, padding, maxRadius)
+        return
+      }
+    }
+    overlay.cornerRadius = FocusOverlay.clampRadius(FocusOverlay.getCornerRadius(focus), maxRadius)
+  }
+
   private static getCornerRadius(focus: NavigationFocusConfig): number {
     if (focus.mode === NavigationFocusMode.SHADOW) return focus.shadow.cornerRadius
     return focus.stroke.cornerRadius
+  }
+
+  private static getTargetCornerRadii(target: SceneNode): [number, number, number, number] | null {
+    const node: any = target
+    if (!('cornerRadius' in node)) return null
+    if (typeof node.cornerRadius === 'number' && Number.isFinite(node.cornerRadius)) {
+      return [node.cornerRadius, node.cornerRadius, node.cornerRadius, node.cornerRadius]
+    }
+    const mixed = typeof figma !== 'undefined' ? (figma as any).mixed : undefined
+    if (node.cornerRadius !== mixed) return null
+    const radii = [
+      node.topLeftRadius,
+      node.topRightRadius,
+      node.bottomRightRadius,
+      node.bottomLeftRadius
+    ]
+    if (!radii.every(radius => typeof radius === 'number' && Number.isFinite(radius))) return null
+    return radii as [number, number, number, number]
+  }
+
+  private static setOverlayCornerRadii(overlay: RectangleNode, radii: [number, number, number, number], padding: number, maxRadius: number) {
+    const [topLeft, topRight, bottomRight, bottomLeft] = radii.map(radius => FocusOverlay.clampRadius(radius + padding, maxRadius))
+    if (topLeft === topRight && topRight === bottomRight && bottomRight === bottomLeft) {
+      overlay.cornerRadius = topLeft
+      return
+    }
+    overlay.topLeftRadius = topLeft
+    overlay.topRightRadius = topRight
+    overlay.bottomRightRadius = bottomRight
+    overlay.bottomLeftRadius = bottomLeft
+  }
+
+  private static getMaxRadius(bounds: Rect): number {
+    return Math.max(0, Math.min(bounds.width, bounds.height) / 2)
+  }
+
+  private static clampRadius(radius: number, maxRadius: number): number {
+    return Math.min(Math.max(0, radius), maxRadius)
   }
 
   private static createSolidPaint(color: string): SolidPaint {

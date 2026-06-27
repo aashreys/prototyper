@@ -52,6 +52,7 @@ test('defaults new configs to stroke focus', () => {
   let config = Config.getDefaultConfig()
 
   assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
+  assert.equal(config.focus.stroke.useAutoCornerRadius, false)
   assert.deepEqual(config.swapVariant, {
     property: '',
     from: '',
@@ -142,6 +143,27 @@ test('normalizes saved swapVariant into focus variant for transition compatibili
     to: 'Focused'
   })
   assert.deepEqual(config.focus.variant, config.swapVariant)
+})
+
+test('preserves saved auto stroke corner radius setting', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      stroke: {
+        ...Config.getDefaultConfig().focus.stroke,
+        useAutoCornerRadius: true
+      }
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.stroke.useAutoCornerRadius, true)
 })
 
 test('preserves saved focus variant when compatibility swapVariant is empty', () => {
