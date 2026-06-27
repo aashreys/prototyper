@@ -4,7 +4,6 @@ import { Utils } from "./utils";
 const OVERLAY_NAME = "__Prototyper Focus Overlay";
 const OVERLAY_PLUGIN_DATA_KEY = "prototyper_focus_overlay";
 const DIRECT_FOCUS_PLUGIN_DATA_KEY = "prototyper_focus_direct_state";
-const APPLE_TV_SCALE = 1.2;
 const APPLE_TV_SHADOWS = [
   { color: "#000000", opacity: 0.24, blur: 10, spread: 0, offsetY: 4 },
   { color: "#000000", opacity: 0.22, blur: 24, spread: 0, offsetY: 14 },
@@ -17,6 +16,10 @@ interface DirectFocusState {
   readonly width: number;
   readonly height: number;
   readonly effects?: ReadonlyArray<Effect>;
+  readonly strokes?: ReadonlyArray<Paint>;
+  readonly strokeStyleId?: string;
+  readonly strokeWeight?: number;
+  readonly strokeAlign?: string;
   readonly layoutPositioning?: string;
 }
 
@@ -43,44 +46,17 @@ export class FocusOverlay {
     target: SceneNode,
     focus: NavigationFocusConfig,
   ): SceneNode {
-    if (focus.mode === NavigationFocusMode.APPLE_TV) {
-      return FocusOverlay.createAppleTv(target);
-    }
     if (focus.mode === NavigationFocusMode.SCALE_SHADOW) {
       return FocusOverlay.createScaleShadow(target, focus);
+    }
+    if (focus.mode === NavigationFocusMode.STROKE) {
+      return FocusOverlay.createDirectStroke(target, focus);
     }
     if (focus.mode === NavigationFocusMode.SHADOW) {
       return FocusOverlay.createDirectShadow(topLevelFrame, target, focus);
     }
 
-    const overlay = FocusOverlay.createManagedRectangle(
-      OVERLAY_NAME,
-      topLevelFrame,
-    );
-    FocusOverlay.insertOverlay(topLevelFrame, target, overlay, focus.mode);
-
-    if (FocusOverlay.canUseAbsoluteLayout(overlay, topLevelFrame)) {
-      overlay.layoutPositioning = "ABSOLUTE";
-    }
-
-    const targetBounds = Utils.getAbsoluteBounds(target);
-    const frameBounds = Utils.getAbsoluteBounds(topLevelFrame);
-    const focusBounds = FocusOverlay.getFocusBounds(
-      targetBounds,
-      frameBounds,
-      FocusOverlay.getPadding(focus),
-    );
-
-    overlay.resize(focusBounds.width, focusBounds.height);
-    overlay.x = focusBounds.x;
-    overlay.y = focusBounds.y;
-    FocusOverlay.applyCornerRadius(overlay, target, focus, focusBounds);
-
-    if (focus.mode === NavigationFocusMode.STROKE) {
-      FocusOverlay.applyStroke(overlay, focus);
-    }
-
-    return overlay;
+    return target;
   }
 
   private static createScaleShadow(
@@ -93,39 +69,29 @@ export class FocusOverlay {
     FocusOverlay.saveDirectFocusState(target);
     FocusOverlay.scaleNodeCentered(target, scaledBounds, scale);
     if (
-      !FocusOverlay.applyDirectDropShadow(
-        target,
-        focus.scaleShadow.color,
-        focus.scaleShadow.opacity / 100,
-        focus.scaleShadow.blur,
-        focus.scaleShadow.spread,
-        focus.scaleShadow.offsetY,
-      )
+      focus.scaleShadow.showShadow &&
+      !FocusOverlay.applyDirectDropShadows(target, APPLE_TV_SHADOWS)
     ) {
       FocusOverlay.logDirectFocusFailure(
-        "Unable to apply scale shadow focus effect",
+        "Unable to apply Scale up shadow focus effect",
         target,
       );
     }
     return target;
   }
 
-  private static createAppleTv(target: SceneNode): SceneNode {
+  private static createDirectStroke(
+    target: SceneNode,
+    focus: NavigationFocusConfig,
+  ): SceneNode {
     FocusOverlay.saveDirectFocusState(target);
-    FocusOverlay.scaleNodeCentered(
-      target,
-      FocusOverlay.getScaledBounds(
-        Utils.getAbsoluteBounds(target),
-        APPLE_TV_SCALE,
-      ),
-      APPLE_TV_SCALE,
-    );
-    if (!FocusOverlay.applyDirectDropShadows(target, APPLE_TV_SHADOWS)) {
-      FocusOverlay.logDirectFocusFailure(
-        "Unable to apply Apple TV focus effect",
-        target,
-      );
+    if (FocusOverlay.applyDirectStroke(target, focus)) {
+      return target;
     }
+    FocusOverlay.logDirectFocusFailure(
+      "Unable to apply direct stroke focus effect",
+      target,
+    );
     return target;
   }
 
@@ -253,6 +219,19 @@ export class FocusOverlay {
       width: typeof node.width === "number" ? node.width : 0,
       height: typeof node.height === "number" ? node.height : 0,
       effects: "effects" in node ? node.effects : undefined,
+      strokes: "strokes" in node ? node.strokes : undefined,
+      strokeStyleId:
+        "strokeStyleId" in node && typeof node.strokeStyleId === "string"
+          ? node.strokeStyleId
+          : undefined,
+      strokeWeight:
+        "strokeWeight" in node && typeof node.strokeWeight === "number"
+          ? node.strokeWeight
+          : undefined,
+      strokeAlign:
+        "strokeAlign" in node && typeof node.strokeAlign === "string"
+          ? node.strokeAlign
+          : undefined,
       layoutPositioning:
         "layoutPositioning" in node ? node.layoutPositioning : undefined,
     };
@@ -268,6 +247,26 @@ export class FocusOverlay {
       const state = JSON.parse(stateString) as DirectFocusState;
       const node: any = target;
       if ("effects" in node && state.effects) node.effects = state.effects;
+      if ("strokes" in node && state.strokes) node.strokes = state.strokes;
+      if (
+        "strokeStyleId" in node &&
+        typeof state.strokeStyleId === "string" &&
+        state.strokeStyleId.length > 0
+      ) {
+        try {
+          node.strokeStyleId = state.strokeStyleId;
+        } catch (error) {
+          FocusOverlay.logDirectFocusFailure(
+            "Unable to restore direct focus stroke style",
+            target,
+            error,
+          );
+        }
+      }
+      if ("strokeAlign" in node && state.strokeAlign)
+        node.strokeAlign = state.strokeAlign;
+      if ("strokeWeight" in node && typeof state.strokeWeight === "number")
+        node.strokeWeight = state.strokeWeight;
       if ("layoutPositioning" in node && state.layoutPositioning)
         node.layoutPositioning = state.layoutPositioning;
       FocusOverlay.resizeNodeTo(target, state.width, state.height);
@@ -350,14 +349,17 @@ export class FocusOverlay {
     };
   }
 
-  private static applyStroke(
-    overlay: RectangleNode,
+  private static applyDirectStroke(
+    target: SceneNode,
     focus: NavigationFocusConfig,
-  ) {
-    overlay.fills = [];
-    overlay.strokes = [FocusOverlay.createSolidPaint(focus.stroke.color)];
-    overlay.strokeWeight = focus.stroke.weight;
-    overlay.strokeAlign = "OUTSIDE";
+  ): boolean {
+    const node: any = target;
+    if (!("strokes" in node) || !("strokeWeight" in node)) return false;
+
+    node.strokes = [FocusOverlay.createSolidPaint(focus.stroke.color)];
+    if ("strokeAlign" in node) node.strokeAlign = focus.stroke.align;
+    node.strokeWeight = focus.stroke.weight;
+    return true;
   }
 
   private static applyDropShadow(
@@ -464,103 +466,6 @@ export class FocusOverlay {
       blendMode: "NORMAL",
       showShadowBehindNode: true,
     };
-  }
-
-  private static getPadding(focus: NavigationFocusConfig): number {
-    if (focus.mode === NavigationFocusMode.SCALE_SHADOW)
-      return focus.scaleShadow.padding;
-    if (focus.mode === NavigationFocusMode.SHADOW) return focus.shadow.padding;
-    return focus.stroke.padding;
-  }
-
-  private static applyCornerRadius(
-    overlay: RectangleNode,
-    target: SceneNode,
-    focus: NavigationFocusConfig,
-    focusBounds: Rect,
-  ) {
-    const padding = FocusOverlay.getPadding(focus);
-    const maxRadius = FocusOverlay.getMaxRadius(focusBounds);
-    if (
-      focus.mode === NavigationFocusMode.STROKE &&
-      focus.stroke.useAutoCornerRadius
-    ) {
-      const radii = FocusOverlay.getTargetCornerRadii(target);
-      if (radii) {
-        FocusOverlay.setOverlayCornerRadii(overlay, radii, padding, maxRadius);
-        return;
-      }
-    }
-    overlay.cornerRadius = FocusOverlay.clampRadius(
-      FocusOverlay.getCornerRadius(focus),
-      maxRadius,
-    );
-  }
-
-  private static getCornerRadius(focus: NavigationFocusConfig): number {
-    if (focus.mode === NavigationFocusMode.SCALE_SHADOW)
-      return focus.scaleShadow.cornerRadius;
-    if (focus.mode === NavigationFocusMode.SHADOW)
-      return focus.shadow.cornerRadius;
-    return focus.stroke.cornerRadius;
-  }
-
-  private static getTargetCornerRadii(
-    target: SceneNode,
-  ): [number, number, number, number] | null {
-    const node: any = target;
-    if (!("cornerRadius" in node)) return null;
-    if (
-      typeof node.cornerRadius === "number" &&
-      Number.isFinite(node.cornerRadius)
-    ) {
-      return [
-        node.cornerRadius,
-        node.cornerRadius,
-        node.cornerRadius,
-        node.cornerRadius,
-      ];
-    }
-    const mixed =
-      typeof figma !== "undefined" ? (figma as any).mixed : undefined;
-    if (node.cornerRadius !== mixed) return null;
-    const radii = [
-      node.topLeftRadius,
-      node.topRightRadius,
-      node.bottomRightRadius,
-      node.bottomLeftRadius,
-    ];
-    if (
-      !radii.every(
-        (radius) => typeof radius === "number" && Number.isFinite(radius),
-      )
-    )
-      return null;
-    return radii as [number, number, number, number];
-  }
-
-  private static setOverlayCornerRadii(
-    overlay: RectangleNode,
-    radii: [number, number, number, number],
-    padding: number,
-    maxRadius: number,
-    scale = 1,
-  ) {
-    const [topLeft, topRight, bottomRight, bottomLeft] = radii.map((radius) =>
-      FocusOverlay.clampRadius(radius * scale + padding, maxRadius),
-    );
-    if (
-      topLeft === topRight &&
-      topRight === bottomRight &&
-      bottomRight === bottomLeft
-    ) {
-      overlay.cornerRadius = topLeft;
-      return;
-    }
-    overlay.topLeftRadius = topLeft;
-    overlay.topRightRadius = topRight;
-    overlay.bottomRightRadius = bottomRight;
-    overlay.bottomLeftRadius = bottomLeft;
   }
 
   private static getMaxRadius(bounds: Rect): number {

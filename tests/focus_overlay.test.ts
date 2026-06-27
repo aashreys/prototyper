@@ -89,6 +89,10 @@ function createLayer(id: string, parent: any, bounds: Rect, properties = {}) {
     height: bounds.height,
     absoluteBoundingBox: bounds,
     effects: [],
+    strokes: [],
+    strokeStyleId: '',
+    strokeWeight: 0,
+    strokeAlign: 'CENTER',
     pluginData: {},
     ...properties,
     rescale(scale: number) {
@@ -131,6 +135,10 @@ function createLayerNode(id: string, bounds: Rect, properties = {}) {
     height: bounds.height,
     absoluteBoundingBox: { ...bounds },
     effects: [],
+    strokes: [],
+    strokeStyleId: '',
+    strokeWeight: 0,
+    strokeAlign: 'CENTER',
     pluginData: {},
     ...properties,
     rescale(scale: number) {
@@ -173,9 +181,7 @@ function createFocus(mode: NavigationFocusMode) {
     stroke: {
       color: '#FF00AA',
       weight: 6,
-      padding: 5,
-      useAutoCornerRadius: false,
-      cornerRadius: 3
+      align: 'OUTSIDE'
     },
     shadow: {
       color: '#00AAFF',
@@ -186,11 +192,7 @@ function createFocus(mode: NavigationFocusMode) {
     },
     scaleShadow: {
       scale: 1.08,
-      color: '#000000',
-      opacity: 35,
-      blur: 24,
-      spread: 0,
-      offsetY: 8,
+      showShadow: true,
       padding: 6,
       useAutoCornerRadius: true,
       cornerRadius: 12
@@ -198,84 +200,20 @@ function createFocus(mode: NavigationFocusMode) {
   }
 }
 
-test('creates stroke overlay from target bounds relative to top-level frame', () => {
+test('applies stroke focus directly to the target layer', () => {
   setFigmaForOverlay()
   let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
   let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
 
-  let overlay = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.STROKE) as any) as any
+  let result = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.STROKE) as any) as any
 
-  assert.equal(frame.children.includes(overlay), true)
-  assert.equal(overlay.name, '__Prototyper Focus Overlay Frame')
-  assert.equal(overlay.getPluginData('prototyper_focus_overlay'), 'true')
-  assert.equal(overlay.layoutPositioning, 'AUTO')
-  assert.equal(overlay.x, 45)
-  assert.equal(overlay.y, 55)
-  assert.equal(overlay.width, 90)
-  assert.equal(overlay.height, 50)
-  assert.deepEqual(overlay.fills, [])
-  assert.equal(overlay.strokes[0].color.r, 1)
-  assert.equal(overlay.strokes[0].color.g, 0)
-  assert.equal(overlay.strokes[0].color.b, 170 / 255)
-  assert.equal(overlay.strokeWeight, 6)
-  assert.equal(overlay.strokeAlign, 'OUTSIDE')
-  assert.equal(overlay.cornerRadius, 3)
-})
-
-test('creates stroke overlay with inferred uniform corner radius when auto radius is enabled', () => {
-  setFigmaForOverlay()
-  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
-  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 }, { cornerRadius: 12 })
-  let focus = createFocus(NavigationFocusMode.STROKE)
-  focus.stroke.useAutoCornerRadius = true
-
-  let overlay = FocusOverlay.create(frame, target, focus as any) as any
-
-  assert.equal(overlay.cornerRadius, 17)
-})
-
-test('creates stroke overlay with inferred mixed corner radii when auto radius is enabled', () => {
-  setFigmaForOverlay()
-  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
-  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 }, {
-    cornerRadius: (globalThis as any).figma.mixed,
-    topLeftRadius: 2,
-    topRightRadius: 4,
-    bottomRightRadius: 6,
-    bottomLeftRadius: 8
-  })
-  let focus = createFocus(NavigationFocusMode.STROKE)
-  focus.stroke.useAutoCornerRadius = true
-
-  let overlay = FocusOverlay.create(frame, target, focus as any) as any
-
-  assert.equal(overlay.topLeftRadius, 7)
-  assert.equal(overlay.topRightRadius, 9)
-  assert.equal(overlay.bottomRightRadius, 11)
-  assert.equal(overlay.bottomLeftRadius, 13)
-})
-
-test('falls back to configured corner radius when auto radius has no target radius', () => {
-  setFigmaForOverlay()
-  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
-  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
-  let focus = createFocus(NavigationFocusMode.STROKE)
-  focus.stroke.useAutoCornerRadius = true
-
-  let overlay = FocusOverlay.create(frame, target, focus as any) as any
-
-  assert.equal(overlay.cornerRadius, 3)
-})
-
-test('uses absolute positioning only inside auto-layout frames', () => {
-  setFigmaForOverlay()
-  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
-  frame.layoutMode = 'VERTICAL'
-  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
-
-  let overlay = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.STROKE) as any) as any
-
-  assert.equal(overlay.layoutPositioning, 'ABSOLUTE')
+  assert.equal(result, target)
+  assert.deepEqual(frame.children, [target])
+  assert.equal(target.strokes[0].color.r, 1)
+  assert.equal(target.strokes[0].color.g, 0)
+  assert.equal(target.strokes[0].color.b, 170 / 255)
+  assert.equal(target.strokeWeight, 6)
+  assert.equal(target.strokeAlign, 'OUTSIDE')
 })
 
 test('applies shadow focus directly to the target layer', () => {
@@ -296,7 +234,7 @@ test('applies shadow focus directly to the target layer', () => {
   assert.equal(target.effects[0].color.b, 1)
 })
 
-test('applies scale shadow focus directly to the target layer', () => {
+test('applies Scale up directly with Apple TV shadows when enabled', () => {
   setFigmaForOverlay()
   let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
   let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, { cornerRadius: 10 })
@@ -309,26 +247,8 @@ test('applies scale shadow focus directly to the target layer', () => {
   assert.equal(target.y, 48)
   assert.equal(target.width, 108)
   assert.equal(target.height, 54)
-  assert.equal(target.effects[0].type, 'DROP_SHADOW')
-  assert.equal(target.effects[0].radius, 24)
-  assert.equal(target.effects[0].offset.y, 8)
-  assert.equal(target.effects[0].color.a, 0.35)
-})
-
-test('applies Apple TV focus directly with fixed scale and layered shadows', () => {
-  setFigmaForOverlay()
-  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
-  let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 })
-
-  let result = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.APPLE_TV) as any) as any
-
-  assert.equal(result, target)
-  assert.deepEqual(frame.children, [target])
-  assert.equal(target.x, 20)
-  assert.equal(target.y, 45)
-  assert.equal(target.width, 120)
-  assert.equal(target.height, 60)
   assert.equal(target.effects.length, 3)
+  assert.equal(target.effects[0].type, 'DROP_SHADOW')
   assert.equal(target.effects[0].radius, 10)
   assert.equal(target.effects[0].offset.y, 4)
   assert.equal(target.effects[0].color.a, 0.24)
@@ -338,6 +258,22 @@ test('applies Apple TV focus directly with fixed scale and layered shadows', () 
   assert.equal(target.effects[2].radius, 48)
   assert.equal(target.effects[2].offset.y, 30)
   assert.equal(target.effects[2].color.a, 0.16)
+})
+
+test('applies Scale up without shadows when disabled', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
+  let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, { cornerRadius: 10 })
+  let focus = createFocus(NavigationFocusMode.SCALE_SHADOW)
+  focus.scaleShadow.showShadow = false
+
+  FocusOverlay.create(frame, target, focus as any)
+
+  assert.equal(target.x, 26)
+  assert.equal(target.y, 48)
+  assert.equal(target.width, 108)
+  assert.equal(target.height, 54)
+  assert.equal(target.effects.length, 0)
 })
 
 test('removes only plugin-managed overlays', () => {
@@ -380,17 +316,20 @@ test('restores managed direct focus state', () => {
   assert.equal(target.getPluginData('prototyper_focus_direct_state'), '')
 })
 
-test('creates different focus artifact names for different frames', () => {
+test('restores direct stroke focus state', () => {
   setFigmaForOverlay()
-  let firstFrame = createFrame('Frame 1', { x: 0, y: 0, width: 300, height: 200 })
-  let secondFrame = createFrame('Frame 2', { x: 400, y: 0, width: 300, height: 200 })
-  let firstTarget = createLayer('Target 1', firstFrame, { x: 30, y: 50, width: 40, height: 60 })
-  let secondTarget = createLayer('Target 2', secondFrame, { x: 430, y: 50, width: 40, height: 60 })
+  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
+  let originalStroke = { type: 'SOLID', color: { r: 0, g: 1, b: 0 }, opacity: 1 }
+  let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, {
+    strokes: [originalStroke],
+    strokeWeight: 2,
+    strokeAlign: 'CENTER'
+  })
 
-  let firstOverlay = FocusOverlay.create(firstFrame, firstTarget, createFocus(NavigationFocusMode.STROKE) as any) as any
-  let secondOverlay = FocusOverlay.create(secondFrame, secondTarget, createFocus(NavigationFocusMode.STROKE) as any) as any
+  FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.STROKE) as any)
+  FocusOverlay.resetManagedFocus(frame)
 
-  assert.notEqual(firstOverlay.name, secondOverlay.name)
-  assert.equal(firstOverlay.name, '__Prototyper Focus Overlay Frame 1')
-  assert.equal(secondOverlay.name, '__Prototyper Focus Overlay Frame 2')
+  assert.deepEqual(target.strokes, [originalStroke])
+  assert.equal(target.strokeWeight, 2)
+  assert.equal(target.strokeAlign, 'CENTER')
 })

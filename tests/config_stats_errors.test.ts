@@ -52,9 +52,9 @@ test('defaults new configs to stroke focus', () => {
   let config = Config.getDefaultConfig()
 
   assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
-  assert.equal(config.focus.stroke.useAutoCornerRadius, false)
+  assert.equal(config.focus.stroke.align, 'OUTSIDE')
   assert.equal(config.focus.scaleShadow.scale, 1.08)
-  assert.equal(config.focus.scaleShadow.opacity, 35)
+  assert.equal(config.focus.scaleShadow.showShadow, true)
   assert.deepEqual(config.swapVariant, {
     property: '',
     from: '',
@@ -123,6 +123,24 @@ test('migrates stale config without legacy variant settings to stroke focus', ()
   })
 })
 
+test('normalizes saved shadow focus mode to stroke focus', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: NavigationFocusMode.SHADOW
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
+})
+
 test('normalizes saved swapVariant into focus variant for transition compatibility', () => {
   let savedConfig = {
     ...Config.getDefaultConfig(),
@@ -147,14 +165,14 @@ test('normalizes saved swapVariant into focus variant for transition compatibili
   assert.deepEqual(config.focus.variant, config.swapVariant)
 })
 
-test('preserves saved auto stroke corner radius setting', () => {
+test('preserves saved stroke align setting', () => {
   let savedConfig = {
     ...Config.getDefaultConfig(),
     focus: {
       ...Config.getDefaultConfig().focus,
       stroke: {
         ...Config.getDefaultConfig().focus.stroke,
-        useAutoCornerRadius: true
+        align: 'INSIDE'
       }
     }
   }
@@ -165,7 +183,7 @@ test('preserves saved auto stroke corner radius setting', () => {
 
   let config = Config.getSavedConfig()
 
-  assert.equal(config.focus.stroke.useAutoCornerRadius, true)
+  assert.equal(config.focus.stroke.align, 'INSIDE')
 })
 
 test('preserves saved scale shadow settings', () => {
@@ -177,8 +195,7 @@ test('preserves saved scale shadow settings', () => {
       scaleShadow: {
         ...Config.getDefaultConfig().focus.scaleShadow,
         scale: 1.12,
-        opacity: 42,
-        offsetY: 10
+        showShadow: false
       }
     }
   }
@@ -191,8 +208,7 @@ test('preserves saved scale shadow settings', () => {
 
   assert.equal(config.focus.mode, NavigationFocusMode.SCALE_SHADOW)
   assert.equal(config.focus.scaleShadow.scale, 1.12)
-  assert.equal(config.focus.scaleShadow.opacity, 42)
-  assert.equal(config.focus.scaleShadow.offsetY, 10)
+  assert.equal(config.focus.scaleShadow.showShadow, false)
 })
 
 test('migrates legacy scale shadow percent to multiplier scale', () => {
@@ -216,24 +232,6 @@ test('migrates legacy scale shadow percent to multiplier scale', () => {
   let config = Config.getSavedConfig()
 
   assert.equal(config.focus.scaleShadow.scale, 1.16)
-})
-
-test('preserves saved Apple TV focus mode', () => {
-  let savedConfig = {
-    ...Config.getDefaultConfig(),
-    focus: {
-      ...Config.getDefaultConfig().focus,
-      mode: NavigationFocusMode.APPLE_TV
-    }
-  }
-  let data = new Map<string, string>([
-    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
-  ])
-  setFigma({ root: createRoot(data) })
-
-  let config = Config.getSavedConfig()
-
-  assert.equal(config.focus.mode, NavigationFocusMode.APPLE_TV)
 })
 
 test('preserves saved focus variant when compatibility swapVariant is empty', () => {

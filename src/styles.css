@@ -146,6 +146,33 @@
   color: var(--figma-color-text-tertiary);
 }
 
+.strokeControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px 8px;
+}
+
+.strokeWeightControl {
+  position: relative;
+  min-width: 0;
+}
+
+.focusModeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focusModeSelect {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.focusModeInlineControl {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .animationPrimaryRow {
   display: flex;
   flex-wrap: wrap;

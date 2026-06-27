@@ -3,6 +3,8 @@ import {
   Checkbox,
   Dropdown,
   DropdownOption,
+  IconScaleSmall24,
+  IconStrokeWeight24,
   Text,
   Textbox,
   TextboxColor,
@@ -14,28 +16,26 @@ import {
   NavigationFocusConfig,
   NavigationFocusMode,
   ScaleShadowFocusConfig,
-  ShadowFocusConfig,
+  StrokeAlign,
   StrokeFocusConfig,
 } from "../navigation_focus";
 import { SwapVariant } from "../swap_variant";
 import { ArrowRightIcon } from "../icons/arrow_right";
 import styles from "../styles.css";
 
-type StrokeNumberKey = "weight" | "padding" | "cornerRadius";
-type ShadowNumberKey = "blur" | "spread";
-type ScaleShadowNumberKey =
-  | "scale"
-  | "opacity"
-  | "blur"
-  | "spread"
-  | "offsetY";
+type StrokeNumberKey = "weight";
+type ScaleShadowNumberKey = "scale";
 
 const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
-  { value: NavigationFocusMode.SHADOW, text: "Shadow" },
-  { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale + Shadow" },
-  { value: NavigationFocusMode.APPLE_TV, text: "Apple TV" },
-  { value: NavigationFocusMode.VARIANT, text: "Swap Variant" },
+  { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale up" },
+  { value: NavigationFocusMode.VARIANT, text: "Custom" },
+];
+
+const STROKE_ALIGN_OPTIONS: Array<DropdownOption> = [
+  { value: "CENTER", text: "Center" },
+  { value: "INSIDE", text: "Inside" },
+  { value: "OUTSIDE", text: "Outside" },
 ];
 
 export class NavigationFocusOptions extends Component<
@@ -53,8 +53,6 @@ export class NavigationFocusOptions extends Component<
     this.onVariantFromChange = this.onVariantFromChange.bind(this);
     this.onVariantToChange = this.onVariantToChange.bind(this);
     this.onStrokeColorChange = this.onStrokeColorChange.bind(this);
-    this.onShadowColorChange = this.onShadowColorChange.bind(this);
-    this.onScaleShadowColorChange = this.onScaleShadowColorChange.bind(this);
   }
 
   onModeChange(mode: NavigationFocusMode) {
@@ -106,10 +104,10 @@ export class NavigationFocusOptions extends Component<
     });
   }
 
-  onStrokeAutoCornerRadiusChange(useAutoCornerRadius: boolean) {
+  onStrokeAlignChange(align: StrokeAlign) {
     this.updateStroke({
       ...this.props.focus.stroke,
-      useAutoCornerRadius: useAutoCornerRadius,
+      align: align,
     });
   }
 
@@ -120,43 +118,21 @@ export class NavigationFocusOptions extends Component<
     });
   }
 
-  onShadowColorChange(color: string) {
-    this.updateShadow({
-      ...this.props.focus.shadow,
-      color: this.toStoredHexColor(color),
-    });
-  }
-
-  onShadowNumberChange(key: ShadowNumberKey, value: null | number) {
-    this.updateShadow({
-      ...this.props.focus.shadow,
-      [key]: this.toFocusNumber(value, this.props.focus.shadow[key]),
-    });
-  }
-
-  updateShadow(shadow: ShadowFocusConfig) {
-    this.props.onNavigationFocusChange({
-      ...this.props.focus,
-      shadow: shadow,
-    });
-  }
-
-  onScaleShadowColorChange(color: string) {
-    this.updateScaleShadow({
-      ...this.props.focus.scaleShadow,
-      color: this.toStoredHexColor(color),
-    });
-  }
-
   onScaleShadowNumberChange(key: ScaleShadowNumberKey, value: null | number) {
     this.updateScaleShadow({
       ...this.props.focus.scaleShadow,
       [key]: this.toFocusNumber(
         value,
         this.props.focus.scaleShadow[key],
-        key === "scale" ? 0.01 : 0,
-        key === "opacity" ? 100 : undefined,
+        0.01,
       ),
+    });
+  }
+
+  onScaleShadowShowShadowChange(showShadow: boolean) {
+    this.updateScaleShadow({
+      ...this.props.focus.scaleShadow,
+      showShadow: showShadow,
     });
   }
 
@@ -193,6 +169,13 @@ export class NavigationFocusOptions extends Component<
   renderVariantControls(props: NavigationFocusOptionsProps) {
     return (
       <div>
+        <Text>
+          Create component variants for the unfocused and focused states, then
+          enter the component property and values to swap.
+        </Text>
+
+        <div style="height: 6px" />
+
         <Textbox
           onInput={(e) => this.onVariantPropertyChange(e.currentTarget.value)}
           placeholder="Focus component property name"
@@ -238,9 +221,60 @@ export class NavigationFocusOptions extends Component<
 
   renderStrokeControls(props: NavigationFocusOptionsProps) {
     return (
-      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">
-        <div style="grid-column: 1 / -1;">
-          <Text>Color</Text>
+      <div class={styles.strokeControls}>
+        <div>
+          <Dropdown
+            onChange={(e) =>
+              this.onStrokeAlignChange(e.currentTarget.value as StrokeAlign)
+            }
+            options={STROKE_ALIGN_OPTIONS}
+            value={props.focus.stroke.align}
+          />
+        </div>
+
+        <div class={styles.strokeWeightControl}>
+          <TextboxNumeric
+            icon={<IconStrokeWeight24 />}
+            minimum={0}
+            onNumericValueInput={(value) =>
+              this.onStrokeNumberChange("weight", value)
+            }
+            value={props.focus.stroke.weight.toString()}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  renderScaleShadowControls(props: NavigationFocusOptionsProps) {
+    return (
+      <div>
+        <div>
+          <Checkbox
+            onChange={(e) =>
+              this.onScaleShadowShowShadowChange(e.currentTarget.checked)
+            }
+            value={props.focus.scaleShadow.showShadow}
+          >
+            <Text>Add shadow</Text>
+          </Checkbox>
+        </div>
+      </div>
+    );
+  }
+
+  renderFocusModeControls(props: NavigationFocusOptionsProps) {
+    if (props.focus.mode === NavigationFocusMode.VARIANT)
+      return this.renderVariantControls(props);
+    if (props.focus.mode === NavigationFocusMode.SCALE_SHADOW)
+      return this.renderScaleShadowControls(props);
+    return this.renderStrokeControls(props);
+  }
+
+  renderFocusModeInlineControl(props: NavigationFocusOptionsProps) {
+    if (props.focus.mode === NavigationFocusMode.STROKE) {
+      return (
+        <div class={styles.focusModeInlineControl}>
           <TextboxColor
             fullWidth
             hexColor={this.toTextboxHexColor(props.focus.stroke.color)}
@@ -250,140 +284,43 @@ export class NavigationFocusOptions extends Component<
             opacity="100"
           />
         </div>
+      );
+    }
+    if (props.focus.mode === NavigationFocusMode.SCALE_SHADOW) {
+      return (
+        <div class={styles.focusModeInlineControl}>
+          <TextboxNumeric
+            icon={<IconScaleSmall24 />}
+            integer={false}
+            minimum={0.01}
+            onNumericValueInput={(value) =>
+              this.onScaleShadowNumberChange("scale", value)
+            }
+            suffix="x"
+            value={props.focus.scaleShadow.scale.toString()}
+          />
+        </div>
+      );
+    }
+    return null;
+  }
 
-        {this.renderNumericControl(
-          "Weight",
-          props.focus.stroke.weight,
-          (value) => this.onStrokeNumberChange("weight", value),
-        )}
-        {this.renderNumericControl(
-          "Padding",
-          props.focus.stroke.padding,
-          (value) => this.onStrokeNumberChange("padding", value),
-        )}
-        <div style="grid-column: 1 / -1;">
-          <Checkbox
+  renderFocusModeRow(props: NavigationFocusOptionsProps) {
+    const inlineControl = this.renderFocusModeInlineControl(props);
+    return (
+      <div class={inlineControl ? styles.focusModeRow : ""}>
+        <div class={inlineControl ? styles.focusModeSelect : ""}>
+          <Dropdown
             onChange={(e) =>
-              this.onStrokeAutoCornerRadiusChange(e.currentTarget.checked)
+              this.onModeChange(e.currentTarget.value as NavigationFocusMode)
             }
-            value={props.focus.stroke.useAutoCornerRadius}
-          >
-            <Text>Auto corner radius</Text>
-          </Checkbox>
-        </div>
-        {!props.focus.stroke.useAutoCornerRadius &&
-          this.renderNumericControl(
-            "Corner radius",
-            props.focus.stroke.cornerRadius,
-            (value) => this.onStrokeNumberChange("cornerRadius", value),
-          )}
-      </div>
-    );
-  }
-
-  renderShadowControls(props: NavigationFocusOptionsProps) {
-    return (
-      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">
-        <div style="grid-column: 1 / -1;">
-          <Text>Color</Text>
-          <TextboxColor
-            fullWidth
-            hexColor={this.toTextboxHexColor(props.focus.shadow.color)}
-            onHexColorInput={(e) =>
-              this.onShadowColorChange(e.currentTarget.value)
-            }
-            opacity="100"
+            options={MODE_OPTIONS}
+            value={props.focus.mode}
           />
         </div>
-
-        {this.renderNumericControl("Blur", props.focus.shadow.blur, (value) =>
-          this.onShadowNumberChange("blur", value),
-        )}
-        {this.renderNumericControl(
-          "Spread",
-          props.focus.shadow.spread,
-          (value) => this.onShadowNumberChange("spread", value),
-        )}
+        {inlineControl}
       </div>
     );
-  }
-
-  renderScaleShadowControls(props: NavigationFocusOptionsProps) {
-    return (
-      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">
-        <div style="grid-column: 1 / -1;">
-          <Text>Shadow color</Text>
-          <TextboxColor
-            fullWidth
-            hexColor={this.toTextboxHexColor(props.focus.scaleShadow.color)}
-            onHexColorInput={(e) =>
-              this.onScaleShadowColorChange(e.currentTarget.value)
-            }
-            onOpacityNumericValueInput={(value) =>
-              this.onScaleShadowNumberChange("opacity", value)
-            }
-            opacity={props.focus.scaleShadow.opacity.toString()}
-          />
-        </div>
-
-        {this.renderNumericControl(
-          "Scale",
-          props.focus.scaleShadow.scale,
-          (value) => this.onScaleShadowNumberChange("scale", value),
-          { integer: false, minimum: 0.01 },
-        )}
-        {this.renderNumericControl("Blur", props.focus.scaleShadow.blur, (value) =>
-          this.onScaleShadowNumberChange("blur", value),
-        )}
-        {this.renderNumericControl(
-          "Spread",
-          props.focus.scaleShadow.spread,
-          (value) => this.onScaleShadowNumberChange("spread", value),
-        )}
-        {this.renderNumericControl(
-          "Offset Y",
-          props.focus.scaleShadow.offsetY,
-          (value) => this.onScaleShadowNumberChange("offsetY", value),
-        )}
-      </div>
-    );
-  }
-
-  renderNumericControl(
-    label: string,
-    value: number,
-    onChange: (value: null | number) => void,
-    options: {
-      integer?: boolean;
-      minimum?: number;
-      maximum?: number;
-      suffix?: string;
-    } = {},
-  ) {
-    return (
-      <div>
-        <Text>{label}</Text>
-        <TextboxNumeric
-          integer={options.integer ?? true}
-          minimum={options.minimum ?? 0}
-          maximum={options.maximum}
-          onNumericValueInput={onChange}
-          suffix={options.suffix}
-          value={value.toString()}
-        />
-      </div>
-    );
-  }
-
-  renderFocusModeControls(props: NavigationFocusOptionsProps) {
-    if (props.focus.mode === NavigationFocusMode.VARIANT)
-      return this.renderVariantControls(props);
-    if (props.focus.mode === NavigationFocusMode.SHADOW)
-      return this.renderShadowControls(props);
-    if (props.focus.mode === NavigationFocusMode.SCALE_SHADOW)
-      return this.renderScaleShadowControls(props);
-    if (props.focus.mode === NavigationFocusMode.APPLE_TV) return null;
-    return this.renderStrokeControls(props);
   }
 
   render(props: NavigationFocusOptionsProps, _state) {
@@ -395,13 +332,7 @@ export class NavigationFocusOptions extends Component<
 
         <VerticalSpace space="small" />
 
-        <Dropdown
-          onChange={(e) =>
-            this.onModeChange(e.currentTarget.value as NavigationFocusMode)
-          }
-          options={MODE_OPTIONS}
-          value={props.focus.mode}
-        />
+        {this.renderFocusModeRow(props)}
 
         <div style="height: 8px" />
 

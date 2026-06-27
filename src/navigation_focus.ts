@@ -4,16 +4,15 @@ export enum NavigationFocusMode {
   VARIANT = 'variant',
   STROKE = 'stroke',
   SHADOW = 'shadow',
-  SCALE_SHADOW = 'scale-shadow',
-  APPLE_TV = 'apple-tv'
+  SCALE_SHADOW = 'scale-shadow'
 }
+
+export type StrokeAlign = 'INSIDE' | 'CENTER' | 'OUTSIDE'
 
 export interface StrokeFocusConfig {
   readonly color: string
   readonly weight: number
-  readonly padding: number
-  readonly useAutoCornerRadius: boolean
-  readonly cornerRadius: number
+  readonly align: StrokeAlign
 }
 
 export interface ShadowFocusConfig {
@@ -26,11 +25,7 @@ export interface ShadowFocusConfig {
 
 export interface ScaleShadowFocusConfig {
   readonly scale: number
-  readonly color: string
-  readonly opacity: number
-  readonly blur: number
-  readonly spread: number
-  readonly offsetY: number
+  readonly showShadow: boolean
   readonly padding: number
   readonly useAutoCornerRadius: boolean
   readonly cornerRadius: number
@@ -53,9 +48,7 @@ export const DEFAULT_VARIANT_FOCUS: SwapVariant = {
 export const DEFAULT_STROKE_FOCUS: StrokeFocusConfig = {
   color: '#0C8CE9',
   weight: 4,
-  padding: 4,
-  useAutoCornerRadius: false,
-  cornerRadius: 8
+  align: 'OUTSIDE'
 }
 
 export const DEFAULT_SHADOW_FOCUS: ShadowFocusConfig = {
@@ -68,11 +61,7 @@ export const DEFAULT_SHADOW_FOCUS: ShadowFocusConfig = {
 
 export const DEFAULT_SCALE_SHADOW_FOCUS: ScaleShadowFocusConfig = {
   scale: 1.08,
-  color: '#000000',
-  opacity: 35,
-  blur: 24,
-  spread: 0,
-  offsetY: 8,
+  showShadow: true,
   padding: 6,
   useAutoCornerRadius: true,
   cornerRadius: 12
@@ -99,9 +88,7 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
     stroke: {
       color: normalizeColor(value.stroke?.color, DEFAULT_STROKE_FOCUS.color),
       weight: normalizeNumber(value.stroke?.weight, DEFAULT_STROKE_FOCUS.weight),
-      padding: normalizeNumber(value.stroke?.padding, DEFAULT_STROKE_FOCUS.padding),
-      useAutoCornerRadius: normalizeBoolean(value.stroke?.useAutoCornerRadius, DEFAULT_STROKE_FOCUS.useAutoCornerRadius),
-      cornerRadius: normalizeNumber(value.stroke?.cornerRadius, DEFAULT_STROKE_FOCUS.cornerRadius)
+      align: normalizeStrokeAlign(value.stroke?.align, DEFAULT_STROKE_FOCUS.align)
     },
     shadow: {
       color: normalizeColor(value.shadow?.color, DEFAULT_SHADOW_FOCUS.color),
@@ -112,11 +99,7 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
     },
     scaleShadow: {
       scale: normalizeScale(value.scaleShadow, DEFAULT_SCALE_SHADOW_FOCUS.scale),
-      color: normalizeColor(value.scaleShadow?.color, DEFAULT_SCALE_SHADOW_FOCUS.color),
-      opacity: normalizeNumber(value.scaleShadow?.opacity, DEFAULT_SCALE_SHADOW_FOCUS.opacity),
-      blur: normalizeNumber(value.scaleShadow?.blur, DEFAULT_SCALE_SHADOW_FOCUS.blur),
-      spread: normalizeNumber(value.scaleShadow?.spread, DEFAULT_SCALE_SHADOW_FOCUS.spread),
-      offsetY: normalizeNumber(value.scaleShadow?.offsetY, DEFAULT_SCALE_SHADOW_FOCUS.offsetY),
+      showShadow: normalizeBoolean(value.scaleShadow?.showShadow, DEFAULT_SCALE_SHADOW_FOCUS.showShadow),
       padding: normalizeNumber(value.scaleShadow?.padding, DEFAULT_SCALE_SHADOW_FOCUS.padding),
       useAutoCornerRadius: normalizeBoolean(value.scaleShadow?.useAutoCornerRadius, DEFAULT_SCALE_SHADOW_FOCUS.useAutoCornerRadius),
       cornerRadius: normalizeNumber(value.scaleShadow?.cornerRadius, DEFAULT_SCALE_SHADOW_FOCUS.cornerRadius)
@@ -143,9 +126,7 @@ function normalizeVariantFocus(value): SwapVariant {
 function normalizeFocusMode(value, fallback: NavigationFocusMode): NavigationFocusMode {
   if (value === NavigationFocusMode.VARIANT) return NavigationFocusMode.VARIANT
   if (value === NavigationFocusMode.STROKE) return NavigationFocusMode.STROKE
-  if (value === NavigationFocusMode.SHADOW) return NavigationFocusMode.SHADOW
   if (value === NavigationFocusMode.SCALE_SHADOW) return NavigationFocusMode.SCALE_SHADOW
-  if (value === NavigationFocusMode.APPLE_TV) return NavigationFocusMode.APPLE_TV
   return fallback
 }
 
@@ -155,6 +136,11 @@ function normalizeNumber(value, fallback: number): number {
 
 function normalizeColor(value, fallback: string): string {
   return typeof value === 'string' && value.length > 0 ? value : fallback
+}
+
+function normalizeStrokeAlign(value, fallback: StrokeAlign): StrokeAlign {
+  if (value === 'INSIDE' || value === 'CENTER' || value === 'OUTSIDE') return value
+  return fallback
 }
 
 function normalizeBoolean(value, fallback: boolean): boolean {

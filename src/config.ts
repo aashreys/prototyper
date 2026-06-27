@@ -7,7 +7,7 @@ import { getDefaultNavigationFocusConfig, isVariantFocusConfigured, NavigationFo
 export class Config {
 
   static CONFIG_VERSION_KEY = 'config_version';
-  static CONFIG_VERSION = 9;
+  static CONFIG_VERSION = 11;
 
   static CONFIG_KEY = 'config';
   static GAP = 100;
