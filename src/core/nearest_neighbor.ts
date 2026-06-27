@@ -25,6 +25,10 @@ export interface Neighbors<T> {
 
 export type NeighborStrategyId = PrototypeAlgorithm
 
+type NavigableWithNeighbors<T> = Navigable & {
+  neighbors: Neighbors<T>
+}
+
 export interface NeighborStrategy {
 
   readonly id: NeighborStrategyId
@@ -87,6 +91,38 @@ export class NearestNeighbor {
       return NearestNeighbor.STRATEGIES[DEFAULT_PROTOTYPE_ALGORITHM]
     }
     return strategy
+  }
+
+  static findStart<T extends NavigableWithNeighbors<T>>(navigables: Array<T>): T {
+    const cornerCandidates = navigables.filter(nav =>
+      !nav.neighbors?.top &&
+      !nav.neighbors?.left &&
+      (nav.neighbors?.bottom || nav.neighbors?.right)
+    )
+    if (cornerCandidates.length > 0) return NearestNeighbor.getTopLeftNavigable(cornerCandidates)
+
+    const verticalEdges = navigables.filter(nav => nav.neighbors?.top).length +
+      navigables.filter(nav => nav.neighbors?.bottom).length
+    const horizontalEdges = navigables.filter(nav => nav.neighbors?.left).length +
+      navigables.filter(nav => nav.neighbors?.right).length
+
+    if (horizontalEdges > verticalEdges) {
+      const horizontalStarts = navigables.filter(nav => !nav.neighbors?.left && nav.neighbors?.right)
+      if (horizontalStarts.length > 0) return NearestNeighbor.getLeftTopNavigable(horizontalStarts)
+
+      const noLeftCandidates = navigables.filter(nav => !nav.neighbors?.left)
+      if (noLeftCandidates.length > 0) return NearestNeighbor.getLeftTopNavigable(noLeftCandidates)
+
+      return NearestNeighbor.getLeftTopNavigable(navigables)
+    }
+
+    const verticalStarts = navigables.filter(nav => !nav.neighbors?.top && nav.neighbors?.bottom)
+    if (verticalStarts.length > 0) return NearestNeighbor.getTopLeftNavigable(verticalStarts)
+
+    const noTopCandidates = navigables.filter(nav => !nav.neighbors?.top)
+    if (noTopCandidates.length > 0) return NearestNeighbor.getTopLeftNavigable(noTopCandidates)
+
+    return NearestNeighbor.getTopLeftNavigable(navigables)
   }
 
   static readonly STRATEGIES: Record<NeighborStrategyId, NeighborStrategy> = {
@@ -399,7 +435,7 @@ export class NearestNeighbor {
   private static getCandidateMetrics(anchor: AnchorPoints, anchors: Array<AnchorPoints>, direction: Direction): Array<CandidateMetrics> {
     const metrics = new Array<CandidateMetrics>()
     for (const candidate of anchors) {
-      if (anchor.navigable !== candidate.navigable && NearestNeighbor.isInDirection(anchor, candidate, direction)) {
+      if (anchor.navigable !== candidate.navigable && NearestNeighbor.isDirectionalCandidate(anchor, candidate, direction)) {
         metrics.push({
           anchor: candidate,
           primaryDistance: NearestNeighbor.getPrimaryDistance(anchor, candidate, direction),
@@ -436,13 +472,33 @@ export class NearestNeighbor {
   private static getPrimaryDistance(anchor1: AnchorPoints, anchor2: AnchorPoints, direction: Direction): number {
     switch (direction) {
       case Direction.LEFT:
-        return anchor1.left.x - anchor2.right.x
+        return Math.max(0, anchor1.left.x - anchor2.right.x)
       case Direction.RIGHT:
-        return anchor2.left.x - anchor1.right.x
+        return Math.max(0, anchor2.left.x - anchor1.right.x)
       case Direction.TOP:
-        return anchor1.top.y - anchor2.bottom.y
+        return Math.max(0, anchor1.top.y - anchor2.bottom.y)
       case Direction.BOTTOM:
-        return anchor2.top.y - anchor1.bottom.y
+        return Math.max(0, anchor2.top.y - anchor1.bottom.y)
+    }
+  }
+
+  private static isDirectionalCandidate(anchor1: AnchorPoints, anchor2: AnchorPoints, direction: Direction): boolean {
+    if (!NearestNeighbor.isCenterInDirection(anchor1, anchor2, direction)) return false
+    return NearestNeighbor.hasPerpendicularOverlap(anchor1, anchor2, direction)
+  }
+
+  private static isCenterInDirection(anchor1: AnchorPoints, anchor2: AnchorPoints, direction: Direction): boolean {
+    const center1 = NearestNeighbor.getCenter(anchor1.navigable)
+    const center2 = NearestNeighbor.getCenter(anchor2.navigable)
+    switch (direction) {
+      case Direction.LEFT:
+        return center2.x < center1.x
+      case Direction.RIGHT:
+        return center2.x > center1.x
+      case Direction.TOP:
+        return center2.y < center1.y
+      case Direction.BOTTOM:
+        return center2.y > center1.y
     }
   }
 
@@ -518,6 +574,22 @@ export class NearestNeighbor {
       x: nav.getX() + (nav.getWidth() / 2),
       y: nav.getY() + (nav.getHeight() / 2)
     }
+  }
+
+  private static getTopLeftNavigable<T extends Navigable>(navigables: Array<T>): T {
+    return navigables.reduce((best, nav) => {
+      if (nav.getY() < best.getY()) return nav
+      if (nav.getY() === best.getY() && nav.getX() < best.getX()) return nav
+      return best
+    })
+  }
+
+  private static getLeftTopNavigable<T extends Navigable>(navigables: Array<T>): T {
+    return navigables.reduce((best, nav) => {
+      if (nav.getX() < best.getX()) return nav
+      if (nav.getX() === best.getX() && nav.getY() < best.getY()) return nav
+      return best
+    })
   }
 
 }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { AnimationDirection, AnimationEasing, AnimationType } from '../src/animation'
-import { Device } from '../src/device'
+import { Device, Keycode } from '../src/device'
 import { NavScheme, NavigationKeycodes } from '../src/navigation'
 import { Utils } from '../src/utils'
 
@@ -46,6 +46,23 @@ function createUnrelatedReaction() {
       type: 'ON_KEY_DOWN',
       device: Device.PS4,
       keyCodes: [999]
+    }
+  }
+}
+
+function createNavigationReaction(destinationId: string, keyCodes: Array<number>) {
+  return {
+    actions: [{
+      type: 'NODE',
+      destinationId: destinationId,
+      navigation: 'NAVIGATE',
+      transition: null,
+      preserveScrollPosition: false
+    }],
+    trigger: {
+      type: 'ON_KEY_DOWN',
+      device: Device.PS4,
+      keyCodes: keyCodes
     }
   }
 }
@@ -122,4 +139,58 @@ test('skips exact duplicate generated reactions and preserves unrelated reaction
   assert.equal(firstRun, 2)
   assert.equal(source.reactions.length, 3)
   assert.deepEqual(source.reactions[0], unrelatedReaction)
+})
+
+test('replaces stale generated reactions for managed keys', async () => {
+  let unrelatedReaction = createUnrelatedReaction()
+  let staleReaction = createNavigationReaction('old-right', [Keycode.PS4_DPAD_RIGHT])
+  let source = createFrame('source', [unrelatedReaction, staleReaction])
+  let destination = createFrame('new-right')
+
+  await withMutedConsole('log', async () => {
+    let interactions = await Utils.addInteractions(
+      source,
+      undefined as any,
+      destination,
+      undefined as any,
+      undefined as any,
+      createConfig() as any
+    )
+
+    assert.equal(interactions, 2)
+  })
+
+  let destinations = source.reactions.map(reaction => reaction.actions[0].destinationId)
+  assert.equal(destinations.includes('old-right'), false)
+  assert.equal(destinations.includes('external'), true)
+  assert.equal(destinations.filter(destination => destination === 'new-right').length, 2)
+})
+
+test('replaces any conflicting same-device reaction for managed keys', async () => {
+  let conflictingReaction = {
+    actions: [{
+      type: 'BACK'
+    }],
+    trigger: {
+      type: 'ON_KEY_DOWN',
+      device: Device.PS4,
+      keyCodes: [Keycode.PS4_DPAD_RIGHT]
+    }
+  }
+  let source = createFrame('source', [conflictingReaction])
+  let destination = createFrame('new-right')
+
+  await withMutedConsole('log', async () => {
+    await Utils.addInteractions(
+      source,
+      undefined as any,
+      destination,
+      undefined as any,
+      undefined as any,
+      createConfig() as any
+    )
+  })
+
+  assert.equal(source.reactions.some(reaction => reaction.actions[0].type === 'BACK'), false)
+  assert.equal(source.reactions.filter(reaction => reaction.actions[0].destinationId === 'new-right').length, 2)
 })

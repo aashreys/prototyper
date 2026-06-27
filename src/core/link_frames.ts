@@ -5,6 +5,7 @@ import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from "../prototype_al
 import { Stats } from "../stats";
 import { Utils } from "../utils";
 import { Navigable, NearestNeighbor, Neighbors } from "./nearest_neighbor";
+import { DebugReport } from "../debug_report";
 
 export async function doLinkFrames(config: Config, algorithm: PrototypeAlgorithm = DEFAULT_PROTOTYPE_ALGORITHM) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
@@ -13,12 +14,17 @@ export async function doLinkFrames(config: Config, algorithm: PrototypeAlgorithm
 
   let linkableFrames = selection.map(frame => new LinkableFrame(frame))
 
-  sortFrames(linkableFrames)
-
   let isLinked = isLinkedToPrototype(linkableFrames)
 
   assignNeighbors(linkableFrames, algorithm)
+  linkableFrames = orderLinkableFramesFromStart(linkableFrames, NearestNeighbor.findStart(linkableFrames))
+  saveLinkDebugReport(algorithm, linkableFrames, isLinked)
   let interactionsCreated = await createInteractions(linkableFrames, config)
+  DebugReport.update({
+    phase: 'complete',
+    interactionsCreated: interactionsCreated,
+    frames: getLinkableFrameDebug(linkableFrames)
+  })
 
   if (!isLinked) addStartingPoint(linkableFrames)
   
@@ -53,12 +59,6 @@ export function validateTopLevelFrames(selection: readonly SceneNode[]) {
   }
 }
 
-function sortFrames(linkableFrames: Array<LinkableFrame>) {
-  linkableFrames.sort(function (frame1, frame2) {
-    return Utils.sortCoordinates(frame1.frame.x, frame1.frame.y, frame2.frame.x, frame2.frame.y)
-  });
-}
-
 export class LinkableFrame implements Navigable {
 
   readonly frame: FrameNode
@@ -70,19 +70,19 @@ export class LinkableFrame implements Navigable {
   }
 
   getX(): number {
-    return Utils.getAbsoluteX(this.frame)
+    return Utils.getAbsoluteBounds(this.frame).x
   }
 
   getY(): number {
-    return Utils.getAbsoluteY(this.frame)
+    return Utils.getAbsoluteBounds(this.frame).y
   }
 
   getWidth(): number {
-    return this.frame.width
+    return Utils.getAbsoluteBounds(this.frame).width
   }
 
   getHeight(): number {
-    return this.frame.height
+    return Utils.getAbsoluteBounds(this.frame).height
   }
 
   setNeighbors(neighbors: Neighbors<any>) {
@@ -93,6 +93,13 @@ export class LinkableFrame implements Navigable {
 
 function assignNeighbors(linkableFrames: LinkableFrame[], algorithm: PrototypeAlgorithm) {
   NearestNeighbor.assignNeigbors(linkableFrames, algorithm)
+}
+
+function orderLinkableFramesFromStart(linkableFrames: Array<LinkableFrame>, startFrame: LinkableFrame): Array<LinkableFrame> {
+  return [
+    startFrame,
+    ...linkableFrames.filter(frame => frame !== startFrame)
+  ]
 }
 
 async function createInteractions(linkableFrames: Array<LinkableFrame>, config: Config): Promise<number> {
@@ -116,4 +123,28 @@ function addStartingPoint(linkableFrames: Array<LinkableFrame>) {
     let numFlows = figma.currentPage.flowStartingPoints.length
     Utils.addFlowStartingPoint(linkableFrames[0].frame, 'Flow ' + (numFlows + 1));
   }
+}
+
+function saveLinkDebugReport(
+  algorithm: PrototypeAlgorithm,
+  linkableFrames: Array<LinkableFrame>,
+  isLinked: boolean
+) {
+  DebugReport.start({
+    mode: 'LINK',
+    phase: 'before-reactions',
+    algorithm: algorithm,
+    wasLinkedBeforeRun: isLinked,
+    selection: figma.currentPage.selection.map(node => DebugReport.getNodeRef(node)),
+    startFrame: DebugReport.getNodeRef(linkableFrames[0].frame),
+    frames: getLinkableFrameDebug(linkableFrames)
+  })
+}
+
+function getLinkableFrameDebug(linkableFrames: Array<LinkableFrame>): Array<Record<string, any>> {
+  return linkableFrames.map(linkableFrame => ({
+    frame: DebugReport.getNodeRef(linkableFrame.frame),
+    bounds: DebugReport.getNavigableBounds(linkableFrame),
+    neighbors: DebugReport.getNeighborRefs(linkableFrame.neighbors, neighbor => DebugReport.getNodeRef(neighbor.frame))
+  }))
 }

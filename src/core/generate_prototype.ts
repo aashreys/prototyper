@@ -8,6 +8,7 @@ import { SwapVariant } from "../swap_variant";
 import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
 import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from "../prototype_algorithm";
+import { DebugReport } from "../debug_report";
 
 export async function doGeneratePrototype(config: Config, algorithm: PrototypeAlgorithm = DEFAULT_PROTOTYPE_ALGORITHM) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
@@ -28,14 +29,21 @@ export async function doGeneratePrototype(config: Config, algorithm: PrototypeAl
   let isLinked: boolean = topLevelFrame.reactions.length > 0
   
   let protoNodes: Array<PrototypeNode> = instances.map(node => PrototypeNode.fromInstance(node));
-  sortProtoNodes(protoNodes);
   assignNodeNeighbors(protoNodes, algorithm);
+  protoNodes = orderProtoNodesFromStart(protoNodes, NearestNeighbor.findStart(protoNodes))
 
   let protoFrames = createProtoFrames(protoNodes, parent);
   assignFrameNeighors(protoFrames, protoNodes);
   positionFrames(protoFrames);
   let statesChanged = setInstanceFocus(protoFrames, config);
+  saveGenerateDebugReport(algorithm, protoNodes, protoFrames, isLinked);
   let interactionsCreated = await createInteractions(protoFrames, config);
+  DebugReport.update({
+    phase: 'complete',
+    interactionsCreated: interactionsCreated,
+    framesDuplicated: protoFrames.length - 1,
+    frames: getPrototypeFrameDebug(protoFrames)
+  })
 
   if (!isLinked) addFlowStartingPoint(protoFrames);
 
@@ -148,14 +156,15 @@ function resetInstanceFocus(instances: Array<InstanceNode>, config: Config) {
   }
 }
 
-function sortProtoNodes(protoNodes: Array<PrototypeNode>) {
-  protoNodes.sort(function (node1, node2) {
-    return Utils.sortCoordinates(node1.x, node1.y, node2.x, node2.y)
-  });
-}
-
 function assignNodeNeighbors(protoNodes: Array<PrototypeNode>, algorithm: PrototypeAlgorithm) {
   NearestNeighbor.assignNeigbors(protoNodes, algorithm);
+}
+
+function orderProtoNodesFromStart(protoNodes: Array<PrototypeNode>, startNode: PrototypeNode): Array<PrototypeNode> {
+  return [
+    startNode,
+    ...protoNodes.filter(node => node !== startNode)
+  ]
 }
 
 function createProtoFrames(protoNodes: Array<PrototypeNode>, page: PageNode | SectionNode): Array<PrototypeFrame> {
@@ -198,33 +207,41 @@ function positionFrames(frames: Array<PrototypeFrame>) {
   let height = frames[0].topLevelFrame.height;
   let gap = Config.GAP;
 
-  // Create a duplicate array to track what frames need to be laid out
-  let framesToLayout: Array<PrototypeFrame> = frames.map(frame => frame);
-  // Remove the first frame since it was already laid out on the canvas
-  framesToLayout.splice(0, 1);
+  let framesToLayout: Array<PrototypeFrame> = frames.filter(frame => frame !== frames[0]);
+  let framesToVisit: Array<PrototypeFrame> = [frames[0]];
 
-  // Use relative position of frames to arrange them on the canvas
-  for (let frame of frames) {
+  while (framesToVisit.length > 0) {
+    let frame = framesToVisit.shift()
     let neighbors = frame.neighbors;
     if (neighbors.left && framesToLayout.indexOf(neighbors.left) !== -1) {
       neighbors.left.moveTo(frame.topLevelFrame.x - width - gap, frame.topLevelFrame.y);
       framesToLayout.splice(framesToLayout.indexOf(neighbors.left), 1);
+      framesToVisit.push(neighbors.left)
     }
 
     if (neighbors.right && framesToLayout.indexOf(neighbors.right) !== -1) {
       neighbors.right.moveTo(frame.topLevelFrame.x + width + gap, frame.topLevelFrame.y);
       framesToLayout.splice(framesToLayout.indexOf(neighbors.right), 1);
+      framesToVisit.push(neighbors.right)
     }
 
     if (neighbors.top && framesToLayout.indexOf(neighbors.top) !== -1) {
       neighbors.top.moveTo(frame.topLevelFrame.x, frame.topLevelFrame.y - height - gap);
       framesToLayout.splice(framesToLayout.indexOf(neighbors.top), 1);
+      framesToVisit.push(neighbors.top)
     }
 
     if (neighbors.bottom && framesToLayout.indexOf(neighbors.bottom) !== -1) {
       neighbors.bottom.moveTo(frame.topLevelFrame.x, frame.topLevelFrame.y + height + gap);
       framesToLayout.splice(framesToLayout.indexOf(neighbors.bottom), 1);
+      framesToVisit.push(neighbors.bottom)
     }
+  }
+
+  if (framesToLayout.length > 0) {
+    console.warn('Prototype layout contains disconnected frames', {
+      disconnectedFrames: framesToLayout.length
+    })
   }
 }
 
@@ -260,4 +277,54 @@ function addFlowStartingPoint(protoFrames: Array<PrototypeFrame>) {
     let numFlows = figma.currentPage.flowStartingPoints.length
     Utils.addFlowStartingPoint(protoFrames[0].topLevelFrame, 'Flow ' + (numFlows + 1));
   }
+}
+
+function saveGenerateDebugReport(
+  algorithm: PrototypeAlgorithm,
+  protoNodes: Array<PrototypeNode>,
+  protoFrames: Array<PrototypeFrame>,
+  isLinked: boolean
+) {
+  DebugReport.start({
+    mode: 'GENERATE',
+    phase: 'before-reactions',
+    algorithm: algorithm,
+    topLevelFrame: DebugReport.getNodeRef(protoFrames[0].topLevelFrame),
+    wasLinkedBeforeRun: isLinked,
+    selection: figma.currentPage.selection.map(node => DebugReport.getNodeRef(node)),
+    startNode: getPrototypeNodeRef(protoNodes[0]),
+    nodes: protoNodes.map(node => getPrototypeNodeDebug(node)),
+    frames: getPrototypeFrameDebug(protoFrames)
+  })
+}
+
+function getPrototypeNodeDebug(node: PrototypeNode): Record<string, any> {
+  return {
+    ...getPrototypeNodeRef(node),
+    nodePath: node.nodePath,
+    bounds: DebugReport.getNavigableBounds(node),
+    neighbors: DebugReport.getNeighborRefs(node.neighbors, neighbor => getPrototypeNodeRef(neighbor))
+  }
+}
+
+function getPrototypeNodeRef(node: PrototypeNode): Record<string, any> {
+  return {
+    id: node.id(),
+    name: node.instance.name,
+    type: node.instance.type
+  }
+}
+
+function getPrototypeFrameDebug(protoFrames: Array<PrototypeFrame>): Array<Record<string, any>> {
+  return protoFrames.map(protoFrame => ({
+    frame: DebugReport.getNodeRef(protoFrame.topLevelFrame),
+    frameBounds: {
+      x: protoFrame.topLevelFrame.x,
+      y: protoFrame.topLevelFrame.y,
+      width: protoFrame.topLevelFrame.width,
+      height: protoFrame.topLevelFrame.height
+    },
+    instance: DebugReport.getNodeRef(protoFrame.instance),
+    neighbors: DebugReport.getNeighborRefs(protoFrame.neighbors, neighbor => DebugReport.getNodeRef(neighbor.topLevelFrame))
+  }))
 }

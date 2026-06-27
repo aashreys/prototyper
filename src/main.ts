@@ -8,6 +8,7 @@ import { setRelaunchButton } from '@create-figma-plugin/utilities';
 import { Stats } from './stats.js';
 import { DEFAULT_PROTOTYPE_ALGORITHM, parsePrototypeAlgorithm, PrototypeAlgorithm } from './prototype_algorithm.js';
 import { DEFAULT_ERROR_MESSAGE, getErrorType, normalizeErrorMessage } from './errors.js';
+import { DebugReport } from './debug_report.js';
 
 const WIDTH = 240;
 const HEIGHT = 460;
@@ -66,6 +67,10 @@ export default function () {
     Stats.getStats().then(
       (stats) => emit(Constants.EVENT_RECEIVE_STATS, stats)
     )
+  })
+
+  on(Constants.EVENT_REQUEST_DEBUG_REPORT, () => {
+    emit(Constants.EVENT_RECEIVE_DEBUG_REPORT, DebugReport.getLatestReport())
   })
 
   async function runPlugin(config: Config, mode: Mode, algorithm: PrototypeAlgorithm) {

@@ -54,7 +54,8 @@ export class PrototypeNode implements Navigable {
   }
 
   static fromInstance(node: InstanceNode) {
-    return new PrototypeNode(node, node.absoluteTransform[0][2], node.absoluteTransform[1][2], node.width, node.height);
+    const bounds = Utils.getAbsoluteBounds(node);
+    return new PrototypeNode(node, bounds.x, bounds.y, bounds.width, bounds.height);
   }
 
 }

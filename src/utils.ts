@@ -1,5 +1,6 @@
 import { Animation, AnimationDirection, AnimationType } from "./animation";
 import { Config } from "./config";
+import { DebugReport } from "./debug_report";
 import { Device } from "./device";
 import { NavigationKeycodes } from "./navigation";
 
@@ -185,10 +186,22 @@ export class Utils {
     return node.absoluteTransform[1][2]
   }
 
+  static getAbsoluteBounds(node: SceneNode): Rect {
+    const bounds = node.absoluteBoundingBox || (node as any).absoluteRenderBounds
+    if (bounds) return bounds
+    return {
+      x: Utils.getAbsoluteX(node),
+      y: Utils.getAbsoluteY(node),
+      width: (node as any).width,
+      height: (node as any).height
+    }
+  }
+
   static async addInteractions(frame: FrameNode, left: FrameNode, right: FrameNode, top: FrameNode, bottom: FrameNode, config: Config): Promise<number>
   {
     let numInteractionsAdded = 0
     let numDuplicateInteractionsSkipped = 0
+    let numStaleInteractionsRemoved = 0
     let device = config.activeNavigation.device
     let animation: Animation = config.animation
     let keycodesList = NavigationKeycodes.fromConfig(config);
@@ -197,69 +210,78 @@ export class Utils {
     let autoDirectionAnimations = Utils.createAutoDirectionAnimation(animation)
 
     let reactions: Array<Reaction> = Utils.clone(frame.reactions);
+    let intendedReactions: Array<Reaction> = []
     for (let keycodes of keycodesList) {
       if (left && keycodes.left.length > 0) {
-        let reaction = Utils.createReaction(
+        intendedReactions.push(Utils.createReaction(
           left,
           device,
           isAutoDirection ? autoDirectionAnimations.left : animation,
           keycodes.left
-        )
-        if (Utils.hasReaction(reactions, reaction)) {
-          numDuplicateInteractionsSkipped++
-        } else {
-          reactions.push(reaction)
-          numInteractionsAdded++
-        }
+        ))
       }
 
       if (right && keycodes.right.length > 0) {
-        let reaction = Utils.createReaction(
+        intendedReactions.push(Utils.createReaction(
           right,
           device,
           isAutoDirection ? autoDirectionAnimations.right : animation,
           keycodes.right
-        )
-        if (Utils.hasReaction(reactions, reaction)) {
-          numDuplicateInteractionsSkipped++
-        } else {
-          reactions.push(reaction)
-          numInteractionsAdded++
-        }
+        ))
       }
 
       if (top && keycodes.up.length > 0) {
-        let reaction = Utils.createReaction(
+        intendedReactions.push(Utils.createReaction(
           top,
           device,
           isAutoDirection ? autoDirectionAnimations.top : animation,
           keycodes.up
-        )
-        if (Utils.hasReaction(reactions, reaction)) {
-          numDuplicateInteractionsSkipped++
-        } else {
-          reactions.push(reaction)
-          numInteractionsAdded++
-        }
+        ))
       }
 
       if (bottom && keycodes.down.length > 0) {
-        let reaction = Utils.createReaction(
+        intendedReactions.push(Utils.createReaction(
           bottom,
           device,
           isAutoDirection ? autoDirectionAnimations.bottom : animation,
           keycodes.down
-        )
+        ))
+      }
+    }
+
+    reactions = reactions.filter(reaction => {
+      if (!Utils.isManagedKeyReaction(reaction, device, keycodesList)) return true
+      if (intendedReactions.some(intendedReaction => Utils.getReactionSignature(intendedReaction) === Utils.getReactionSignature(reaction))) return true
+      numStaleInteractionsRemoved++
+      return false
+    })
+
+    for (let reaction of intendedReactions) {
         if (Utils.hasReaction(reactions, reaction)) {
           numDuplicateInteractionsSkipped++
         } else {
           reactions.push(reaction)
           numInteractionsAdded++
         }
-      }
     }
 
-    if (numInteractionsAdded === 0) {
+    if (numInteractionsAdded === 0 && numStaleInteractionsRemoved === 0) {
+      DebugReport.addEvent(Utils.getReactionWriteDebugEvent(
+        'unchanged',
+        false,
+        frame,
+        left,
+        right,
+        top,
+        bottom,
+        device,
+        keycodesList,
+        intendedReactions,
+        reactions,
+        numInteractionsAdded,
+        numStaleInteractionsRemoved,
+        numDuplicateInteractionsSkipped
+      ))
       if (numDuplicateInteractionsSkipped > 0) {
         console.log('Skipped duplicate prototype reactions', {
           frameId: frame.id,
@@ -272,23 +294,109 @@ export class Utils {
     try {
       await frame.setReactionsAsync(reactions)
     } catch (e) {
+      DebugReport.addEvent(Utils.getReactionWriteDebugEvent(
+        'failed',
+        false,
+        frame,
+        left,
+        right,
+        top,
+        bottom,
+        device,
+        keycodesList,
+        intendedReactions,
+        reactions,
+        numInteractionsAdded,
+        numStaleInteractionsRemoved,
+        numDuplicateInteractionsSkipped,
+        e
+      ))
       console.error('Failed to write prototype reactions', {
         frameId: frame.id,
         existingReactions: frame.reactions.length,
         nextReactions: reactions.length,
         interactionsAdded: numInteractionsAdded,
+        staleInteractionsRemoved: numStaleInteractionsRemoved,
         duplicateInteractionsSkipped: numDuplicateInteractionsSkipped
       })
       console.error(e)
       throw e
     }
+    DebugReport.addEvent(Utils.getReactionWriteDebugEvent(
+      'written',
+      true,
+      frame,
+      left,
+      right,
+      top,
+      bottom,
+      device,
+      keycodesList,
+      intendedReactions,
+      reactions,
+      numInteractionsAdded,
+      numStaleInteractionsRemoved,
+      numDuplicateInteractionsSkipped
+    ))
     if (numDuplicateInteractionsSkipped > 0) {
       console.log('Skipped duplicate prototype reactions', {
         frameId: frame.id,
         duplicateInteractionsSkipped: numDuplicateInteractionsSkipped
       })
     }
+    if (numStaleInteractionsRemoved > 0) {
+      console.log('Removed stale prototype reactions', {
+        frameId: frame.id,
+        staleInteractionsRemoved: numStaleInteractionsRemoved
+      })
+    }
     return numInteractionsAdded
+  }
+
+  private static getReactionWriteDebugEvent(
+    status: string,
+    didWrite: boolean,
+    frame: FrameNode,
+    left: FrameNode,
+    right: FrameNode,
+    top: FrameNode,
+    bottom: FrameNode,
+    device: Device,
+    keycodesList: Array<NavigationKeycodes>,
+    intendedReactions: Array<Reaction>,
+    nextReactions: Array<Reaction>,
+    numInteractionsAdded: number,
+    numStaleInteractionsRemoved: number,
+    numDuplicateInteractionsSkipped: number,
+    error?
+  ): Record<string, any> {
+    return {
+      type: 'reaction-write',
+      status: status,
+      didWrite: didWrite,
+      frame: DebugReport.getNodeRef(frame),
+      targets: {
+        left: DebugReport.getNodeRef(left),
+        right: DebugReport.getNodeRef(right),
+        top: DebugReport.getNodeRef(top),
+        bottom: DebugReport.getNodeRef(bottom)
+      },
+      device: device,
+      keycodes: keycodesList.map(keycodes => ({
+        left: keycodes.left,
+        right: keycodes.right,
+        up: keycodes.up,
+        down: keycodes.down
+      })),
+      existingReactionCount: frame.reactions.length,
+      intendedReactionCount: intendedReactions.length,
+      intendedReactions: intendedReactions.map(reaction => DebugReport.summarizeReaction(reaction)),
+      nextReactionCount: nextReactions.length,
+      interactionsAdded: numInteractionsAdded,
+      staleInteractionsRemoved: numStaleInteractionsRemoved,
+      duplicateInteractionsSkipped: numDuplicateInteractionsSkipped,
+      error: error ? DebugReport.summarizeError(error) : undefined
+    }
   }
 
   static hasReaction(reactions: Array<Reaction>, reaction: Reaction): boolean {
@@ -407,6 +515,41 @@ export class Utils {
     }
   }
 
+  private static isManagedKeyReaction(
+    reaction: Reaction,
+    device: Device,
+    keycodesList: Array<NavigationKeycodes>
+  ): boolean {
+    const trigger = (reaction as any).trigger
+    if (!trigger || trigger.type !== 'ON_KEY_DOWN' || trigger.device !== device) return false
+    return Utils.getManagedKeycodes(keycodesList).some(keycodes => Utils.areKeycodesEqual(trigger.keyCodes, keycodes))
+  }
+
+  private static getManagedKeycodes(keycodesList: Array<NavigationKeycodes>): Array<Array<number>> {
+    const managedKeycodes: Array<Array<number>> = []
+    for (const keycodes of keycodesList) {
+      Utils.addManagedKeycodes(managedKeycodes, keycodes.left)
+      Utils.addManagedKeycodes(managedKeycodes, keycodes.right)
+      Utils.addManagedKeycodes(managedKeycodes, keycodes.up)
+      Utils.addManagedKeycodes(managedKeycodes, keycodes.down)
+    }
+    return managedKeycodes
+  }
+
+  private static addManagedKeycodes(managedKeycodes: Array<Array<number>>, keycodes: Array<number>) {
+    if (keycodes.length === 0) return
+    if (managedKeycodes.some(existingKeycodes => Utils.areKeycodesEqual(existingKeycodes, keycodes))) return
+    managedKeycodes.push(keycodes)
+  }
+
+  private static areKeycodesEqual(first: Array<number>, second: Array<number>): boolean {
+    if (!first || !second || first.length !== second.length) return false
+    for (let i = 0; i < first.length; i++) {
+      if (first[i] !== second[i]) return false
+    }
+    return true
+  }
+
   private static stableStringify(value): string {
     let type = typeof value
     if (value === null || type === 'number' || type === 'string' || type === 'boolean') {
@@ -473,12 +616,4 @@ export class Utils {
     else return OS.OTHER
   }
 
-  /*
-  * Sorts cooridnates from left top to bottom right. For use in array.sort() style functions.
-  */ 
-  static sortCoordinates(x1, y1, x2, y2) {
-    if (x1 - x2 !== 0) return x1 - x2
-    else return y1 - y2
-  }
- 
 }
