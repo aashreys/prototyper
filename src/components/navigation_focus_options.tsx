@@ -3,6 +3,9 @@ import {
   Checkbox,
   Dropdown,
   DropdownOption,
+  IconButton,
+  IconMinusSmall24,
+  IconPlusSmall24,
   IconScaleSmall24,
   IconStrokeWeight24,
   Text,
@@ -13,6 +16,11 @@ import {
 } from "@create-figma-plugin/ui";
 import { Component, h } from "preact";
 import {
+  ComponentFocusMapping,
+  ComponentFocusPropertyType,
+  DEFAULT_COMPONENT_FOCUS_MAPPING,
+  DEFAULT_VARIANT_FOCUS,
+  getComponentFocusMappings,
   NavigationFocusConfig,
   NavigationFocusMode,
   ScaleShadowFocusConfig,
@@ -29,7 +37,12 @@ type ScaleShadowNumberKey = "scale";
 const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
   { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
-  { value: NavigationFocusMode.VARIANT, text: "Custom" },
+  { value: NavigationFocusMode.VARIANT, text: "Components" },
+];
+
+const COMPONENT_MAPPING_TYPE_OPTIONS: Array<DropdownOption> = [
+  { value: "variant", text: "Variant" },
+  { value: "boolean", text: "Boolean" },
 ];
 
 const STROKE_ALIGN_OPTIONS: Array<DropdownOption> = [
@@ -49,9 +62,6 @@ export class NavigationFocusOptions extends Component<
 
   bindMethods() {
     this.onModeChange = this.onModeChange.bind(this);
-    this.onVariantPropertyChange = this.onVariantPropertyChange.bind(this);
-    this.onVariantFromChange = this.onVariantFromChange.bind(this);
-    this.onVariantToChange = this.onVariantToChange.bind(this);
     this.onStrokeColorChange = this.onStrokeColorChange.bind(this);
   }
 
@@ -59,34 +69,6 @@ export class NavigationFocusOptions extends Component<
     this.props.onNavigationFocusChange({
       ...this.props.focus,
       mode: mode,
-    });
-  }
-
-  onVariantPropertyChange(property: string) {
-    this.updateVariant({
-      ...this.props.focus.variant,
-      property: property,
-    });
-  }
-
-  onVariantFromChange(from: string) {
-    this.updateVariant({
-      ...this.props.focus.variant,
-      from: from,
-    });
-  }
-
-  onVariantToChange(to: string) {
-    this.updateVariant({
-      ...this.props.focus.variant,
-      to: to,
-    });
-  }
-
-  updateVariant(variant: SwapVariant) {
-    this.props.onNavigationFocusChange({
-      ...this.props.focus,
-      variant: variant,
     });
   }
 
@@ -162,47 +144,227 @@ export class NavigationFocusOptions extends Component<
       : lowerBounded;
   }
 
+  getComponentMappings(
+    props: NavigationFocusOptionsProps,
+  ): Array<ComponentFocusMapping> {
+    return getComponentFocusMappings(props.focus);
+  }
+
+  addMapping() {
+    const mappings = getComponentFocusMappings(this.props.focus);
+    this.setComponentMappings([
+      ...mappings,
+      { ...DEFAULT_COMPONENT_FOCUS_MAPPING },
+    ]);
+  }
+
+  removeMapping(index: number) {
+    this.setComponentMappings(
+      getComponentFocusMappings(this.props.focus).filter(
+        (_mapping, i) => i !== index,
+      ),
+    );
+  }
+
+  updateMappingType(index: number, type: ComponentFocusPropertyType) {
+    const mappings = this.getComponentMappings(this.props).map((mapping, i) => {
+      if (i !== index) return mapping;
+      return {
+        ...mapping,
+        type: type,
+        from: type === "boolean" ? "false" : "",
+        to: type === "boolean" ? "true" : "",
+      };
+    });
+    this.setComponentMappings(mappings);
+  }
+
+  updateMappingProperty(index: number, property: string) {
+    const mappings = this.getComponentMappings(this.props).map((mapping, i) =>
+      i === index ? { ...mapping, property: property } : mapping,
+    );
+    this.setComponentMappings(mappings);
+  }
+
+  updateMappingFrom(index: number, from: string) {
+    const mappings = this.getComponentMappings(this.props).map((mapping, i) =>
+      i === index ? { ...mapping, from: from } : mapping,
+    );
+    this.setComponentMappings(mappings);
+  }
+
+  updateMappingTo(index: number, to: string) {
+    const mappings = this.getComponentMappings(this.props).map((mapping, i) =>
+      i === index ? { ...mapping, to: to } : mapping,
+    );
+    this.setComponentMappings(mappings);
+  }
+
+  setComponentMappings(mappings: Array<ComponentFocusMapping>) {
+    const normalizedMappings = mappings.map((mapping) =>
+      this.normalizeComponentMapping(mapping),
+    );
+    this.props.onNavigationFocusChange({
+      ...this.props.focus,
+      components: normalizedMappings,
+      variant: this.toVariantCompatibility(normalizedMappings),
+    });
+  }
+
+  normalizeComponentMapping(
+    mapping: ComponentFocusMapping,
+  ): ComponentFocusMapping {
+    if (mapping.type === "boolean") {
+      return {
+        type: "boolean",
+        property: mapping.property,
+        from: "false",
+        to: "true",
+      };
+    }
+    return {
+      type: "variant",
+      property: mapping.property,
+      from: mapping.from,
+      to: mapping.to,
+    };
+  }
+
+  toVariantCompatibility(mappings: Array<ComponentFocusMapping>): SwapVariant {
+    const missingProperty = mappings.find((mapping) => {
+      return mapping.property.length === 0;
+    });
+    if (missingProperty) return this.toSwapVariant(missingProperty);
+
+    const incompleteVariant = mappings.find((mapping) => {
+      return (
+        mapping.type === "variant" &&
+        (mapping.from.length === 0 || mapping.to.length === 0)
+      );
+    });
+    if (incompleteVariant) {
+      return {
+        ...this.toSwapVariant(incompleteVariant),
+        to: "",
+      };
+    }
+
+    const mapping = mappings[0];
+    if (!mapping) return { ...DEFAULT_VARIANT_FOCUS };
+    return this.toSwapVariant(mapping);
+  }
+
+  toSwapVariant(mapping: ComponentFocusMapping): SwapVariant {
+    if (mapping.type === "boolean") {
+      return {
+        property: mapping.property,
+        from: "false",
+        to: "true",
+      };
+    }
+    return {
+      property: mapping.property,
+      from: mapping.from,
+      to: mapping.to,
+    };
+  }
+
   renderVariantControls(props: NavigationFocusOptionsProps) {
     return (
       <div class={styles.variantFocusControls}>
-        <div class={styles.helperText}>
-          Use your own UI components to display navigation focus.
+        <div class={styles.componentMappingHeader}>
+          <div class={styles.helperText}>
+            {"Add properties to show the focused state of your components"}
+          </div>
+          <IconButton onClick={() => this.addMapping()} title="Add mapping">
+            <IconPlusSmall24 />
+          </IconButton>
         </div>
 
-        <Textbox
-          onInput={(e) => this.onVariantPropertyChange(e.currentTarget.value)}
-          placeholder="Component property e.g. State"
-          value={props.focus.variant.property}
-        />
+        <div class={styles.componentMappings}>
+          {this.getComponentMappings(props).map((mapping, index) =>
+            this.renderMappingControl(mapping, index, props),
+          )}
+        </div>
+      </div>
+    );
+  }
 
-        {props.showPropertyError && (
-          <div style="margin-top: 2px; margin-bottom: 8px; margin-left: 8px">
+  renderMappingControl(
+    mapping: ComponentFocusMapping,
+    index: number,
+    props: NavigationFocusOptionsProps,
+  ) {
+    const showPropertyError =
+      props.showPropertyError && mapping.property.length === 0;
+    const showValueError =
+      props.showToVariantError &&
+      mapping.type === "variant" &&
+      (mapping.from.length === 0 || mapping.to.length === 0);
+    return (
+      <div class={styles.componentMapping}>
+        <div class={styles.componentMappingRow}>
+          <Dropdown
+            onChange={(e) =>
+              this.updateMappingType(
+                index,
+                e.currentTarget.value as ComponentFocusPropertyType,
+              )
+            }
+            options={COMPONENT_MAPPING_TYPE_OPTIONS}
+            value={mapping.type}
+          />
+
+          <Textbox
+            onInput={(e) =>
+              this.updateMappingProperty(index, e.currentTarget.value)
+            }
+            placeholder="Property name"
+            value={mapping.property}
+          />
+
+          <IconButton
+            onClick={() => this.removeMapping(index)}
+            title="Remove mapping"
+          >
+            <IconMinusSmall24 />
+          </IconButton>
+        </div>
+
+        {showPropertyError && (
+          <div class={styles.componentMappingError}>
             <text class={styles.errorText}>Property name required</text>
           </div>
         )}
 
-        <div class={styles.variantValueRow}>
-          <Textbox
-            style={"flex-grow: 1; min-width: 0;"}
-            onInput={(e) => this.onVariantFromChange(e.currentTarget.value)}
-            placeholder="Default value"
-            value={props.focus.variant.from}
-          />
+        {mapping.type === "variant" && (
+          <div class={styles.componentMappingValueRow}>
+            <div class={styles.componentMappingValueFields}>
+              <Textbox
+                onInput={(e) =>
+                  this.updateMappingFrom(index, e.currentTarget.value)
+                }
+                placeholder="Default"
+                value={mapping.from}
+              />
 
-          <div class={styles.variantValueArrow}>
-            <ArrowRightIcon class={styles.greyIcon} />
+              <div class={styles.variantValueArrow}>
+                <ArrowRightIcon class={styles.greyIcon} />
+              </div>
+
+              <Textbox
+                onInput={(e) =>
+                  this.updateMappingTo(index, e.currentTarget.value)
+                }
+                placeholder="Focused"
+                value={mapping.to}
+              />
+            </div>
           </div>
+        )}
 
-          <Textbox
-            style={"flex-grow: 1; min-width: 0;"}
-            onInput={(e) => this.onVariantToChange(e.currentTarget.value)}
-            placeholder="Focused value"
-            value={props.focus.variant.to}
-          />
-        </div>
-
-        {props.showToVariantError && (
-          <div style="margin-top: 2px; margin-bottom: 8px; margin-left: 8px">
+        {showValueError && (
+          <div class={styles.componentMappingError}>
             <text class={styles.errorText}>Property values required</text>
           </div>
         )}
@@ -214,24 +376,37 @@ export class NavigationFocusOptions extends Component<
     return (
       <div class={styles.strokeControls}>
         <div>
-          <Dropdown
-            onChange={(e) =>
-              this.onStrokeAlignChange(e.currentTarget.value as StrokeAlign)
+          <TextboxColor
+            fullWidth
+            hexColor={this.toTextboxHexColor(props.focus.stroke.color)}
+            onHexColorInput={(e) =>
+              this.onStrokeColorChange(e.currentTarget.value)
             }
-            options={STROKE_ALIGN_OPTIONS}
-            value={props.focus.stroke.align}
+            opacity="100"
           />
         </div>
 
-        <div class={styles.strokeWeightControl}>
-          <TextboxNumeric
-            icon={<IconStrokeWeight24 />}
-            minimum={0}
-            onNumericValueInput={(value) =>
-              this.onStrokeNumberChange("weight", value)
-            }
-            value={props.focus.stroke.weight.toString()}
-          />
+        <div class={styles.strokeSecondaryControls}>
+          <div>
+            <Dropdown
+              onChange={(e) =>
+                this.onStrokeAlignChange(e.currentTarget.value as StrokeAlign)
+              }
+              options={STROKE_ALIGN_OPTIONS}
+              value={props.focus.stroke.align}
+            />
+          </div>
+
+          <div class={styles.strokeWeightControl}>
+            <TextboxNumeric
+              icon={<IconStrokeWeight24 />}
+              minimum={0}
+              onNumericValueInput={(value) =>
+                this.onStrokeNumberChange("weight", value)
+              }
+              value={props.focus.stroke.weight.toString()}
+            />
+          </div>
         </div>
       </div>
     );
@@ -239,8 +414,21 @@ export class NavigationFocusOptions extends Component<
 
   renderScaleShadowControls(props: NavigationFocusOptionsProps) {
     return (
-      <div>
-        <div>
+      <div class={styles.scaleControls}>
+        <div class={styles.scaleControl}>
+          <TextboxNumeric
+            icon={<IconScaleSmall24 />}
+            integer={false}
+            minimum={0.01}
+            onNumericValueInput={(value) =>
+              this.onScaleShadowNumberChange("scale", value)
+            }
+            suffix="x"
+            value={props.focus.scaleShadow.scale.toString()}
+          />
+        </div>
+
+        <div class={styles.scaleShadowToggle}>
           <Checkbox
             onChange={(e) =>
               this.onScaleShadowShowShadowChange(e.currentTarget.checked)
@@ -262,45 +450,13 @@ export class NavigationFocusOptions extends Component<
     return this.renderStrokeControls(props);
   }
 
-  renderFocusModeInlineControl(props: NavigationFocusOptionsProps) {
-    if (props.focus.mode === NavigationFocusMode.STROKE) {
-      return (
-        <div class={styles.focusModeInlineControl}>
-          <TextboxColor
-            fullWidth
-            hexColor={this.toTextboxHexColor(props.focus.stroke.color)}
-            onHexColorInput={(e) =>
-              this.onStrokeColorChange(e.currentTarget.value)
-            }
-            opacity="100"
-          />
-        </div>
-      );
-    }
-    if (props.focus.mode === NavigationFocusMode.SCALE_SHADOW) {
-      return (
-        <div class={styles.focusModeInlineControl}>
-          <TextboxNumeric
-            icon={<IconScaleSmall24 />}
-            integer={false}
-            minimum={0.01}
-            onNumericValueInput={(value) =>
-              this.onScaleShadowNumberChange("scale", value)
-            }
-            suffix="x"
-            value={props.focus.scaleShadow.scale.toString()}
-          />
-        </div>
-      );
-    }
-    return null;
-  }
-
   renderFocusModeRow(props: NavigationFocusOptionsProps) {
-    const inlineControl = this.renderFocusModeInlineControl(props);
     return (
-      <div class={inlineControl ? styles.focusModeRow : ""}>
-        <div class={inlineControl ? styles.focusModeSelect : ""}>
+      <div class={styles.focusModeRow}>
+        <div class={styles.focusModeLabel}>
+          <Text>Display focus with:</Text>
+        </div>
+        <div class={styles.focusModeSelect}>
           <Dropdown
             onChange={(e) =>
               this.onModeChange(e.currentTarget.value as NavigationFocusMode)
@@ -309,7 +465,6 @@ export class NavigationFocusOptions extends Component<
             value={props.focus.mode}
           />
         </div>
-        {inlineControl}
       </div>
     );
   }

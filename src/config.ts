@@ -7,7 +7,7 @@ import { getDefaultNavigationFocusConfig, isVariantFocusConfigured, NavigationFo
 export class Config {
 
   static CONFIG_VERSION_KEY = 'config_version';
-  static CONFIG_VERSION = 11;
+  static CONFIG_VERSION = 12;
 
   static CONFIG_KEY = 'config';
   static GAP = 100;
@@ -150,17 +150,21 @@ export class Config {
   private static normalizeConfig(config, savedConfig?) {
     const savedSwapVariant = savedConfig?.swapVariant
     const focusVariant = config.focus?.variant
+    const hasSavedComponentFocus = Array.isArray(savedConfig?.focus?.components)
     const legacyVariant = isVariantFocusConfigured(savedSwapVariant)
       ? savedSwapVariant
       : isVariantFocusConfigured(focusVariant)
         ? focusVariant
         : savedSwapVariant || config.swapVariant || focusVariant || { property: '', from: '', to: '' }
-    const focusSource = savedConfig && !savedConfig.focus
+    let focusSource = savedConfig && !savedConfig.focus
       ? undefined
       : {
-        ...config.focus,
-        variant: legacyVariant
-      }
+          ...config.focus,
+          variant: legacyVariant
+        }
+    if (focusSource && !hasSavedComponentFocus) {
+      delete focusSource.components
+    }
     const focus = normalizeNavigationFocusConfig(focusSource, legacyVariant)
     return {
       ...config,

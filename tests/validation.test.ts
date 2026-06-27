@@ -42,6 +42,7 @@ function createInstance(options: {
   let definitions = options.definitions ?? {
     'State#1': { type: 'VARIANT', variantOptions: ['Default', 'Focus'] }
   }
+  let setPropertiesCalls = []
 
   return {
     id: options.name ?? 'Button',
@@ -49,12 +50,23 @@ function createInstance(options: {
     type: 'INSTANCE',
     parent: options.parent,
     componentProperties: componentProperties,
+    setPropertiesCalls: setPropertiesCalls,
     getMainComponentAsync: async () => ({
       parent: {
         type: 'COMPONENT_SET',
         componentPropertyDefinitions: definitions
       }
-    })
+    }),
+    setProperties(properties) {
+      setPropertiesCalls.push(properties)
+      for (let propertyName of Object.keys(properties)) {
+        if (!this.componentProperties[propertyName]) continue
+        this.componentProperties[propertyName] = {
+          ...this.componentProperties[propertyName],
+          value: properties[propertyName]
+        }
+      }
+    }
   } as any
 }
 
@@ -209,7 +221,7 @@ test('accepts variant properties that can receive the configured values', async 
 
   await assert.doesNotReject(() => validateInstanceProperties(
     [createInstance()],
-    { property: 'State', from: 'Default', to: 'Focus' }
+    [{ type: 'variant', property: 'State', from: 'Default', to: 'Focus' }]
   ))
 })
 
@@ -219,9 +231,9 @@ test('rejects missing, duplicate, unsupported, and invalid variant properties', 
   await assert.rejects(
     () => validateInstanceProperties(
       [createInstance({ componentProperties: {} })],
-      { property: 'State', from: '', to: 'Focus' }
+      [{ type: 'variant', property: 'State', from: 'Default', to: 'Focus' }]
     ),
-    /Cannot find component property "State"/
+    /Cannot find any configured focus component properties/
   )
 
   await assert.rejects(
@@ -232,7 +244,7 @@ test('rejects missing, duplicate, unsupported, and invalid variant properties', 
           'State#2': { type: 'VARIANT' }
         }
       })],
-      { property: 'State', from: '', to: 'Focus' }
+      [{ type: 'variant', property: 'State', from: 'Default', to: 'Focus' }]
     ),
     /Found 2 component properties/
   )
@@ -247,9 +259,9 @@ test('rejects missing, duplicate, unsupported, and invalid variant properties', 
           'Target#1': { type: 'INSTANCE_SWAP' }
         }
       })],
-      { property: 'Target', from: '', to: 'Focus' }
+      [{ type: 'variant', property: 'Target', from: 'Default', to: 'Focus' }]
     ),
-    /Cannot set focus on an INSTANCE_SWAP property/
+    /Cannot set variant focus on a INSTANCE_SWAP property/
   )
 
   await assert.rejects(
@@ -259,10 +271,146 @@ test('rejects missing, duplicate, unsupported, and invalid variant properties', 
           'State#1': { type: 'VARIANT', variantOptions: ['Default'] }
         }
       })],
-      { property: 'State', from: '', to: 'Focus' }
+      [{ type: 'variant', property: 'State', from: 'Default', to: 'Focus' }]
     ),
     /Cannot find value "Focus"/
   )
+})
+
+test('validates each instance matches at least one configured component mapping', async () => {
+  let { validateInstanceProperties } = await loadGenerateValidation()
+  let mappings = [
+    { type: 'variant', property: 'State', from: 'Default', to: 'Focus' },
+    { type: 'boolean', property: 'Focused', from: 'false', to: 'true' }
+  ]
+  let variantInstance = createInstance({ name: 'Variant' })
+  let booleanInstance = createInstance({
+    name: 'Boolean',
+    componentProperties: {
+      'Focused#1': { type: 'BOOLEAN' }
+    },
+    definitions: {
+      'Focused#1': { type: 'BOOLEAN' }
+    }
+  })
+
+  await assert.doesNotReject(() => validateInstanceProperties(
+    [variantInstance, booleanInstance],
+    mappings as any
+  ))
+
+  await assert.rejects(
+    () => validateInstanceProperties(
+      [createInstance({
+        name: 'Unmatched',
+        componentProperties: {
+          'Other#1': { type: 'VARIANT' }
+        },
+        definitions: {
+          'Other#1': { type: 'VARIANT', variantOptions: ['Default', 'Focus'] }
+        }
+      })],
+      mappings as any
+    ),
+    /Cannot find any configured focus component properties/
+  )
+})
+
+test('requires supported component mapping types and values', async () => {
+  let { validateInstanceProperties } = await loadGenerateValidation()
+
+  await assert.rejects(
+    () => validateInstanceProperties(
+      [createInstance()],
+      [{ type: 'variant', property: 'State', from: '', to: 'Focus' }] as any
+    ),
+    /default and focused values/
+  )
+
+  await assert.rejects(
+    () => validateInstanceProperties(
+      [createInstance()],
+      [{ type: 'boolean', property: 'State', from: 'false', to: 'true' }] as any
+    ),
+    /Cannot set boolean focus on a VARIANT property/
+  )
+
+  await assert.rejects(
+    () => validateInstanceProperties(
+      [createInstance({
+        componentProperties: {
+          'Label#1': { type: 'TEXT' }
+        },
+        definitions: {
+          'Label#1': { type: 'TEXT' }
+        }
+      })],
+      [{ type: 'variant', property: 'Label', from: 'Default', to: 'Focus' }] as any
+    ),
+    /Cannot set variant focus on a TEXT property/
+  )
+})
+
+test('resets and focuses all matched component mappings', async () => {
+  let { resetInstanceFocus, setInstanceFocus } = await loadGenerateValidation()
+  let mappings = [
+    { type: 'variant', property: 'State', from: 'Default', to: 'Focus' },
+    { type: 'boolean', property: 'Focused', from: 'false', to: 'true' }
+  ]
+  let config = {
+    focus: {
+      mode: 'variant',
+      variant: { property: 'State', from: 'Default', to: 'Focus' },
+      components: mappings
+    }
+  }
+  let fullInstance = createInstance({
+    name: 'Full',
+    componentProperties: {
+      'State#1': { type: 'VARIANT' },
+      'Focused#1': { type: 'BOOLEAN' }
+    },
+    definitions: {
+      'State#1': { type: 'VARIANT', variantOptions: ['Default', 'Focus'] },
+      'Focused#1': { type: 'BOOLEAN' }
+    }
+  })
+  let booleanOnlyInstance = createInstance({
+    name: 'Boolean Only',
+    componentProperties: {
+      'Focused#1': { type: 'BOOLEAN' }
+    },
+    definitions: {
+      'Focused#1': { type: 'BOOLEAN' }
+    }
+  })
+
+  resetInstanceFocus([fullInstance, booleanOnlyInstance], config as any)
+
+  assert.deepEqual(fullInstance.setPropertiesCalls, [
+    { 'State#1': 'Default' },
+    { 'Focused#1': false }
+  ])
+  assert.deepEqual(booleanOnlyInstance.setPropertiesCalls, [
+    { 'Focused#1': false }
+  ])
+
+  fullInstance.setPropertiesCalls.length = 0
+  booleanOnlyInstance.setPropertiesCalls.length = 0
+
+  let statesChanged = setInstanceFocus([
+    { instance: fullInstance },
+    { instance: booleanOnlyInstance }
+  ] as any, config as any)
+
+  assert.equal(statesChanged, 3)
+  assert.deepEqual(fullInstance.setPropertiesCalls, [
+    { 'State#1': 'Focus' },
+    { 'Focused#1': true }
+  ])
+  assert.deepEqual(booleanOnlyInstance.setPropertiesCalls, [
+    { 'Focused#1': true }
+  ])
 })
 
 test('validates link selections as top-level frames', async () => {

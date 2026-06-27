@@ -2,11 +2,15 @@ import { emit } from "@create-figma-plugin/utilities";
 import { Config } from "../config";
 import { Constants } from "../constants";
 import { FocusOverlay } from "../focus_overlay";
-import { isVariantFocusMode, NavigationFocusConfig } from "../navigation_focus";
+import {
+  ComponentFocusMapping,
+  getComponentFocusMappings,
+  isVariantFocusMode,
+  NavigationFocusConfig
+} from "../navigation_focus";
 import { PrototypeFrame } from "../prototype_frame";
 import { PrototypeNode } from "../prototype_node";
 import { Stats } from "../stats";
-import { SwapVariant } from "../swap_variant";
 import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
 import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from "../prototype_algorithm";
@@ -21,7 +25,7 @@ export async function doGeneratePrototype(config: Config, algorithm: PrototypeAl
   if (isVariantFocusMode(focus)) {
     validateInstancesLength(focusTargets as Array<InstanceNode>)
     validateInstancesInSameTopLevelFrame(focusTargets)
-    await validateInstanceProperties(focusTargets as Array<InstanceNode>, focus.variant)
+    await validateInstanceProperties(focusTargets as Array<InstanceNode>, getComponentFocusMappings(focus))
   } else {
     validateFocusTargetsAreNotTopLevelFrames(focusTargets)
     validateFocusTargetsLength(focusTargets)
@@ -171,10 +175,8 @@ function getUniqueTopLevelFrameIds(instances: Array<SceneNode>): Array<string> {
   return topLevelFrameIds
 }
 
-export async function validateInstanceProperties(instances: Array<InstanceNode>, swapVariant: SwapVariant) {
-  let property = swapVariant.property;
-  let from = swapVariant.from;
-  let to = swapVariant.to;
+export async function validateInstanceProperties(instances: Array<InstanceNode>, mappings: Array<ComponentFocusMapping>) {
+  validateComponentFocusMappings(mappings)
   for (let instance of instances) {
 
     /* Check for general component property errors */
@@ -182,29 +184,52 @@ export async function validateInstanceProperties(instances: Array<InstanceNode>,
       throw new Error(`Found errors in the component set for layer "${instance.name}". Please resolve the errors and try again.`)
     }
 
-    /* Check if a unique component property exists on this instance */
-    let properties = Utils.getMatchingComponentPropertyNames(instance, property)
-    if (properties.length === 0) {
-      throw new Error(`Cannot find component property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
-    }
-    else if (properties.length > 1) {
-      throw new Error(`Found ${properties.length} component properties with the name "${property}" on layer "${instance.name}". Please rename them to be unique.`);
+    let matchedMappings = 0
+    for (let mapping of mappings) {
+      let properties = Utils.getMatchingComponentPropertyNames(instance, mapping.property)
+      if (properties.length === 0) continue
+      if (properties.length > 1) {
+        throw new Error(`Found ${properties.length} component properties with the name "${mapping.property}" on layer "${instance.name}". Please rename them to be unique.`);
+      }
+
+      let propertyType = instance.componentProperties[properties[0]].type
+      let expectedType = mapping.type === 'boolean' ? 'BOOLEAN' : 'VARIANT'
+      if (propertyType !== expectedType) {
+        throw new Error(`Cannot set ${mapping.type} focus on a ${propertyType} property like "${mapping.property}". Please select a different property.`);
+      }
+
+      if (mapping.type === 'variant') {
+        if (mapping.from.length > 0 && !await Utils.canAcceptComponentPropertyValue(instance, mapping.property, mapping.from)) {
+          throw new Error(`Cannot find value "${mapping.from}" for component property "${mapping.property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
+        }
+        if (!await Utils.canAcceptComponentPropertyValue(instance, mapping.property, mapping.to)) {
+          throw new Error(`Cannot find value "${mapping.to}" for component property "${mapping.property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
+        }
+      }
+      matchedMappings++
     }
 
-    /* Check if the component property type is supported */
-    let propertyType = instance.componentProperties[properties[0]].type
-    if (propertyType !== 'BOOLEAN' && propertyType !== 'TEXT' && propertyType !== 'VARIANT') {
-      throw new Error(`Cannot set focus on an ${propertyType} property like "${property}". Please select a different property.`);
-    }
-    
-    /* Check if the unique component property can accept the values supplied by the user */
-    if (from.length > 0 && !await Utils.canAcceptComponentPropertyValue(instance, property, from)) {
-      throw new Error(`Cannot find value "${from}" for component property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
-    }
-    if (!await Utils.canAcceptComponentPropertyValue(instance, property, to)) {
-      throw new Error(`Cannot find value "${to}" for component property "${property}" on layer "${instance.name}". Please type it exactly as it appears in the Properties Panel.`);
+    if (matchedMappings === 0) {
+      throw new Error(`Cannot find any configured focus component properties on layer "${instance.name}". Please add a matching property for this component.`);
     }
 
+  }
+}
+
+function validateComponentFocusMappings(mappings: Array<ComponentFocusMapping>) {
+  if (!Array.isArray(mappings) || mappings.length === 0) {
+    throw new Error('Please add at least one component property for Components focus.')
+  }
+  for (let mapping of mappings) {
+    if (!mapping.property || mapping.property.length === 0) {
+      throw new Error('Please add a component property name for each Components focus row.')
+    }
+    if (mapping.type !== 'variant' && mapping.type !== 'boolean') {
+      throw new Error('Components focus only supports Variant and Boolean properties.')
+    }
+    if (mapping.type === 'variant' && (!mapping.from || mapping.from.length === 0 || !mapping.to || mapping.to.length === 0)) {
+      throw new Error('Please add default and focused values for each Variant focus row.')
+    }
   }
 }
 
@@ -221,13 +246,12 @@ function resetFocus(focusTargets: Array<SceneNode>, config: Config) {
   resetInstanceFocus(focusTargets as Array<InstanceNode>, config)
 }
 
-function resetInstanceFocus(instances: Array<InstanceNode>, config: Config) {
-  // If variant from value is defined, reset all variants to their from value
-  let fromVariant = config.focus.variant.from
-  let property = config.focus.variant.property
-  if (fromVariant.length > 0) {
-    for (let instance of instances) {
-      Utils.setComponentProperty(instance, property, fromVariant);
+export function resetInstanceFocus(instances: Array<InstanceNode>, config: Config) {
+  let mappings = getComponentFocusMappings(config.focus)
+  for (let instance of instances) {
+    for (let mapping of mappings) {
+      if (!hasComponentFocusMapping(instance, mapping)) continue
+      Utils.setComponentProperty(instance, mapping.property, mapping.from);
     }
   }
 }
@@ -327,15 +351,24 @@ function setFocus(protoFrames: Array<PrototypeFrame>, config: Config): number {
   return setInstanceFocus(protoFrames, config)
 }
 
-function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config): number {
-  let property = config.focus.variant.property
-  let toVariant = config.focus.variant.to
+export function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config): number {
+  let mappings = getComponentFocusMappings(config.focus)
   let numStatesChanged = 0
   for (let protoFrame of protoFrames) {
-    Utils.setComponentProperty(protoFrame.instance as InstanceNode, property, toVariant)
-    numStatesChanged++
+    for (let mapping of mappings) {
+      if (!hasComponentFocusMapping(protoFrame.instance as InstanceNode, mapping)) continue
+      Utils.setComponentProperty(protoFrame.instance as InstanceNode, mapping.property, mapping.to)
+      numStatesChanged++
+    }
   }
   return numStatesChanged
+}
+
+function hasComponentFocusMapping(instance: InstanceNode, mapping: ComponentFocusMapping): boolean {
+  const properties = Utils.getMatchingComponentPropertyNames(instance, mapping.property)
+  if (properties.length !== 1) return false
+  const expectedType = mapping.type === 'boolean' ? 'BOOLEAN' : 'VARIANT'
+  return instance.componentProperties[properties[0]].type === expectedType
 }
 
 function setOverlayFocus(protoFrames: Array<PrototypeFrame>, focus: NavigationFocusConfig): number {

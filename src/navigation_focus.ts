@@ -1,4 +1,5 @@
-import { SwapVariant } from "./swap_variant";
+import { ComponentFocusMapping, ComponentFocusMappingType, SwapVariant } from "./swap_variant";
+export type { ComponentFocusMapping, ComponentFocusMappingType } from "./swap_variant";
 
 export enum NavigationFocusMode {
   VARIANT = 'variant',
@@ -6,6 +7,8 @@ export enum NavigationFocusMode {
   SHADOW = 'shadow',
   SCALE_SHADOW = 'scale-shadow'
 }
+
+export type ComponentFocusPropertyType = ComponentFocusMappingType
 
 export type StrokeAlign = 'INSIDE' | 'CENTER' | 'OUTSIDE'
 
@@ -34,12 +37,20 @@ export interface ScaleShadowFocusConfig {
 export interface NavigationFocusConfig {
   readonly mode: NavigationFocusMode
   readonly variant: SwapVariant
+  readonly components: Array<ComponentFocusMapping>
   readonly stroke: StrokeFocusConfig
   readonly shadow: ShadowFocusConfig
   readonly scaleShadow: ScaleShadowFocusConfig
 }
 
 export const DEFAULT_VARIANT_FOCUS: SwapVariant = {
+  property: '',
+  from: '',
+  to: ''
+}
+
+export const DEFAULT_COMPONENT_FOCUS_MAPPING: ComponentFocusMapping = {
+  type: 'variant',
   property: '',
   from: '',
   to: ''
@@ -68,9 +79,12 @@ export const DEFAULT_SCALE_SHADOW_FOCUS: ScaleShadowFocusConfig = {
 }
 
 export function getDefaultNavigationFocusConfig(variant: SwapVariant = DEFAULT_VARIANT_FOCUS): NavigationFocusConfig {
+  const normalizedVariant = normalizeVariantFocus(variant)
+  const components = normalizeComponentFocusMappings(undefined, normalizedVariant)
   return {
-    mode: isVariantFocusConfigured(variant) ? NavigationFocusMode.VARIANT : NavigationFocusMode.STROKE,
-    variant: normalizeVariantFocus(variant),
+    mode: isComponentFocusConfigured(components) ? NavigationFocusMode.VARIANT : NavigationFocusMode.STROKE,
+    variant: getVariantCompatibilityMapping(components, normalizedVariant),
+    components: components,
     stroke: { ...DEFAULT_STROKE_FOCUS },
     shadow: { ...DEFAULT_SHADOW_FOCUS },
     scaleShadow: { ...DEFAULT_SCALE_SHADOW_FOCUS }
@@ -81,10 +95,16 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
   const defaultFocus = getDefaultNavigationFocusConfig(legacyVariant)
   if (!value || typeof value !== 'object') return defaultFocus
 
+  const hasComponentSource = Array.isArray(value.components)
   const variant = normalizeVariantFocus(value.variant || legacyVariant)
+  const components = normalizeComponentFocusMappings(
+    hasComponentSource ? value.components : undefined,
+    variant
+  )
   return {
-    mode: normalizeFocusMode(value.mode, isVariantFocusConfigured(variant) ? NavigationFocusMode.VARIANT : NavigationFocusMode.STROKE),
-    variant: variant,
+    mode: normalizeFocusMode(value.mode, isComponentFocusConfigured(components) ? NavigationFocusMode.VARIANT : NavigationFocusMode.STROKE),
+    variant: getVariantCompatibilityMapping(components, hasComponentSource ? DEFAULT_VARIANT_FOCUS : variant),
+    components: components,
     stroke: {
       color: normalizeColor(value.stroke?.color, DEFAULT_STROKE_FOCUS.color),
       weight: normalizeNumber(value.stroke?.weight, DEFAULT_STROKE_FOCUS.weight),
@@ -111,8 +131,26 @@ export function isVariantFocusConfigured(variant?: Partial<SwapVariant>): boolea
   return Boolean(variant?.property && variant.property.length > 0 && variant?.to && variant.to.length > 0)
 }
 
+export function isComponentFocusMappingConfigured(mapping?: Partial<ComponentFocusMapping>): boolean {
+  if (!mapping || !mapping.property || mapping.property.length === 0) return false
+  if (mapping.type === 'boolean') return true
+  return Boolean(mapping.to && mapping.to.length > 0)
+}
+
+export function isComponentFocusConfigured(mappings?: ReadonlyArray<Partial<ComponentFocusMapping>>): boolean {
+  return Array.isArray(mappings) && mappings.some(mapping => isComponentFocusMappingConfigured(mapping))
+}
+
 export function isVariantFocusMode(focus: NavigationFocusConfig): boolean {
   return focus.mode === NavigationFocusMode.VARIANT
+}
+
+export function getComponentFocusMappings(focus: NavigationFocusConfig): Array<ComponentFocusMapping> {
+  if (Array.isArray(focus.components)) return focus.components
+  const variant = normalizeVariantFocus(focus.variant)
+  return hasAnyVariantFocusValue(variant)
+    ? [componentMappingFromVariant(variant)]
+    : []
 }
 
 function normalizeVariantFocus(value): SwapVariant {
@@ -121,6 +159,61 @@ function normalizeVariantFocus(value): SwapVariant {
     from: typeof value?.from === 'string' ? value.from : '',
     to: typeof value?.to === 'string' ? value.to : ''
   }
+}
+
+function normalizeComponentFocusMappings(value, legacyVariant: SwapVariant): Array<ComponentFocusMapping> {
+  if (Array.isArray(value)) return value.map(normalizeComponentFocusMapping)
+  return hasAnyVariantFocusValue(legacyVariant)
+    ? [componentMappingFromVariant(legacyVariant)]
+    : []
+}
+
+function normalizeComponentFocusMapping(value): ComponentFocusMapping {
+  const type = normalizeComponentFocusPropertyType(value?.type)
+  if (type === 'boolean') {
+    return {
+      type: 'boolean',
+      property: typeof value?.property === 'string' ? value.property : '',
+      from: 'false',
+      to: 'true'
+    }
+  }
+  return {
+    type: 'variant',
+    property: typeof value?.property === 'string' ? value.property : '',
+    from: typeof value?.from === 'string' ? value.from : '',
+    to: typeof value?.to === 'string' ? value.to : ''
+  }
+}
+
+function normalizeComponentFocusPropertyType(value): ComponentFocusMappingType {
+  return value === 'boolean' ? 'boolean' : 'variant'
+}
+
+function componentMappingFromVariant(variant: SwapVariant): ComponentFocusMapping {
+  return {
+    type: 'variant',
+    property: typeof variant?.property === 'string' ? variant.property : '',
+    from: typeof variant?.from === 'string' ? variant.from : '',
+    to: typeof variant?.to === 'string' ? variant.to : ''
+  }
+}
+
+function getVariantCompatibilityMapping(
+  components: Array<ComponentFocusMapping>,
+  fallback: SwapVariant
+): SwapVariant {
+  const mapping = components[0]
+  if (!mapping) return normalizeVariantFocus(fallback)
+  return {
+    property: mapping.property,
+    from: mapping.from,
+    to: mapping.to
+  }
+}
+
+function hasAnyVariantFocusValue(variant: SwapVariant): boolean {
+  return variant.property.length > 0 || variant.from.length > 0 || variant.to.length > 0
 }
 
 function normalizeFocusMode(value, fallback: NavigationFocusMode): NavigationFocusMode {

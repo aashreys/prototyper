@@ -140,8 +140,11 @@ export class PrototypeForm extends Component<any, any>  {
     let keyCodes = config.activeNavigation.customKeycodes;
 
     let shouldValidateVariant = this.props.mode === Mode.GENERATE && isVariantFocusMode(config.focus)
-    let isVariantPropertyValid = !shouldValidateVariant || config.focus.variant.property.length > 0
-    let isVariantToValueValid = !shouldValidateVariant || config.focus.variant.to.length > 0
+    let componentMappings = config.focus.components || []
+    let isVariantPropertyValid = !shouldValidateVariant ||
+      (componentMappings.length > 0 && componentMappings.every(mapping => mapping.property.length > 0))
+    let isVariantToValueValid = !shouldValidateVariant ||
+      componentMappings.every(mapping => mapping.type !== 'variant' || (mapping.from.length > 0 && mapping.to.length > 0))
     let isCustonInputValid = (scheme !== NavScheme.CUSTOM || 
       (scheme === NavScheme.CUSTOM && 
         keyCodes.left.length > 0 || keyCodes.right.length > 0 || keyCodes.up.length > 0 || keyCodes.down.length > 0))

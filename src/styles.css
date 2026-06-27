@@ -175,14 +175,36 @@
 }
 
 .strokeControls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.strokeSecondaryControls {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 8px 8px;
+    gap: 8px;
+    align-items: center;
 }
 
 .strokeWeightControl {
     position: relative;
     min-width: 0;
+}
+
+.scaleControls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.scaleControl {
+    min-width: 0;
+}
+
+.scaleShadowToggle {
+    white-space: nowrap;
 }
 
 .focusModeRow {
@@ -191,13 +213,13 @@
     gap: 8px;
 }
 
-.focusModeSelect {
-    flex: 0 0 40%;
-    min-width: 0;
+.focusModeLabel {
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
-.focusModeInlineControl {
-    flex: 1 1 60%;
+.focusModeSelect {
+    flex: 1 1 auto;
     min-width: 0;
 }
 
@@ -205,6 +227,63 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.componentMappingHeader {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 28px;
+    column-gap: 8px;
+    align-items: start;
+}
+
+.componentMappings {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.componentMapping {
+    --componentMappingActionWidth: 28px;
+    --componentMappingArrowWidth: 11px;
+    --componentMappingColumnGap: 8px;
+    --componentMappingFieldWidth: calc(50% - 31.5px);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.componentMappingRow {
+    display: grid;
+    grid-template-columns:
+        var(--componentMappingFieldWidth)
+        var(--componentMappingArrowWidth)
+        var(--componentMappingFieldWidth)
+        var(--componentMappingActionWidth);
+    column-gap: var(--componentMappingColumnGap);
+    align-items: center;
+}
+
+.componentMappingRow > :nth-child(2) {
+    grid-column: 2 / 4;
+}
+
+.componentMappingValueRow {
+    display: grid;
+    grid-template-columns:
+        var(--componentMappingFieldWidth)
+        var(--componentMappingArrowWidth)
+        var(--componentMappingFieldWidth)
+        var(--componentMappingActionWidth);
+    column-gap: var(--componentMappingColumnGap);
+    align-items: center;
+}
+
+.componentMappingValueFields {
+    display: contents;
+}
+
+.componentMappingError {
+    margin-left: 8px;
 }
 
 .variantValueRow {
@@ -216,6 +295,8 @@
 
 .variantValueArrow {
     flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
 }
 
 .animationPrimaryRow {

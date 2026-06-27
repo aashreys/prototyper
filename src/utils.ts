@@ -83,19 +83,30 @@ export class Utils {
 
   static async canAcceptComponentPropertyValue(instance: InstanceNode, propertyName: string, value: string) {
     let property = this.getMatchingComponentPropertyNames(instance, propertyName)[0]
+    if (!property) return false
+
     let tempMainComponent = await instance.getMainComponentAsync()
-    
+
     let component: ComponentNode | ComponentSetNode = Utils.isComponentSet
       (tempMainComponent.parent) ? tempMainComponent.parent as ComponentSetNode : tempMainComponent
-    if (component.componentPropertyDefinitions[property].type === 'VARIANT') {
-      return component.componentPropertyDefinitions[property].variantOptions.includes(value.toString())
+    const definition = component.componentPropertyDefinitions[property]
+    if (!definition) {
+      console.error('Missing component property definition', {
+        layerName: instance.name,
+        propertyName: propertyName
+      })
+      return false
     }
-    else if (component.componentPropertyDefinitions[property].type === 'BOOLEAN') {
+
+    if (definition.type === 'VARIANT') {
+      return Array.isArray(definition.variantOptions) && definition.variantOptions.includes(value.toString())
+    }
+    else if (definition.type === 'BOOLEAN') {
       value = value.toLowerCase()
       return value === 'true' || value === 'false'
     }
     else {
-      return true
+      return false
     }
   }
 
@@ -169,6 +180,13 @@ export class Utils {
     value: string) 
   {
     let property = this.getMatchingComponentPropertyNames(node, propertyName)[0]
+    if (!property) {
+      console.error('Cannot set missing component property', {
+        layerName: node.name,
+        propertyName: propertyName
+      })
+      return
+    }
     if (node.componentProperties[property].type === 'BOOLEAN') {
       value = value.toLowerCase()
       if (value === 'true') node.setProperties({ [property]: true })

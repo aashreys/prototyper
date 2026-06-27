@@ -60,6 +60,7 @@ test('defaults new configs to stroke focus', () => {
     from: '',
     to: ''
   })
+  assert.deepEqual(config.focus.components, [])
 })
 
 test('migrates stale config by merging saved settings with defaults', () => {
@@ -94,6 +95,14 @@ test('migrates stale config by merging saved settings with defaults', () => {
     from: 'Default',
     to: 'Focus'
   })
+  assert.deepEqual(migratedConfig.focus.components, [
+    {
+      type: 'variant',
+      property: 'State',
+      from: 'Default',
+      to: 'Focus'
+    }
+  ])
   assert.equal(migratedConfig.storedNavigation.keyboard.device, Device.KEYBOARD)
   assert.equal(migratedConfig.storedNavigation.controller.device, Device.PS4)
 })
@@ -121,6 +130,7 @@ test('migrates stale config without legacy variant settings to stroke focus', ()
     from: '',
     to: ''
   })
+  assert.deepEqual(migratedConfig.focus.components, [])
 })
 
 test('normalizes saved shadow focus mode to stroke focus', () => {
@@ -142,7 +152,7 @@ test('normalizes saved shadow focus mode to stroke focus', () => {
 })
 
 test('normalizes saved swapVariant into focus variant for transition compatibility', () => {
-  let savedConfig = {
+  let savedConfig: any = {
     ...Config.getDefaultConfig(),
     swapVariant: {
       property: 'State',
@@ -150,6 +160,7 @@ test('normalizes saved swapVariant into focus variant for transition compatibili
       to: 'Focused'
     }
   }
+  delete savedConfig.focus.components
   let data = new Map<string, string>([
     [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
   ])
@@ -163,6 +174,118 @@ test('normalizes saved swapVariant into focus variant for transition compatibili
     to: 'Focused'
   })
   assert.deepEqual(config.focus.variant, config.swapVariant)
+  assert.deepEqual(config.focus.components, [
+    {
+      type: 'variant',
+      property: 'State',
+      from: 'Rest',
+      to: 'Focused'
+    }
+  ])
+})
+
+test('uses saved component focus mappings as source of truth', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: 'unknown',
+      variant: {
+        property: 'Stale',
+        from: 'Off',
+        to: 'On'
+      },
+      components: [
+        {
+          type: 'variant',
+          property: 'State',
+          from: 'Rest',
+          to: 'Focused'
+        },
+        {
+          type: 'boolean',
+          property: 'Selected',
+          from: 'ignored',
+          to: 'ignored'
+        }
+      ]
+    },
+    swapVariant: {
+      property: 'Stale',
+      from: 'Off',
+      to: 'On'
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.VARIANT)
+  assert.deepEqual(config.focus.components, [
+    {
+      type: 'variant',
+      property: 'State',
+      from: 'Rest',
+      to: 'Focused'
+    },
+    {
+      type: 'boolean',
+      property: 'Selected',
+      from: 'false',
+      to: 'true'
+    }
+  ])
+  assert.deepEqual(config.focus.variant, {
+    property: 'State',
+    from: 'Rest',
+    to: 'Focused'
+  })
+  assert.deepEqual(config.swapVariant, config.focus.variant)
+})
+
+test('falls back from Components mode when saved mappings are not configured', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: 'unknown',
+      variant: {
+        property: 'Stale',
+        from: 'Off',
+        to: 'On'
+      },
+      components: [
+        {
+          type: 'variant',
+          property: '',
+          from: 'Rest',
+          to: ''
+        }
+      ]
+    },
+    swapVariant: {
+      property: 'Stale',
+      from: 'Off',
+      to: 'On'
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
+  assert.deepEqual(config.focus.variant, {
+    property: '',
+    from: 'Rest',
+    to: ''
+  })
+  assert.deepEqual(config.swapVariant, config.focus.variant)
 })
 
 test('preserves saved stroke align setting', () => {
@@ -235,7 +358,7 @@ test('migrates legacy scale shadow percent to multiplier scale', () => {
 })
 
 test('preserves saved focus variant when compatibility swapVariant is empty', () => {
-  let savedConfig = {
+  let savedConfig: any = {
     ...Config.getDefaultConfig(),
     focus: {
       ...Config.getDefaultConfig().focus,
@@ -252,6 +375,7 @@ test('preserves saved focus variant when compatibility swapVariant is empty', ()
       to: ''
     }
   }
+  delete savedConfig.focus.components
   let data = new Map<string, string>([
     [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
   ])
@@ -266,6 +390,14 @@ test('preserves saved focus variant when compatibility swapVariant is empty', ()
     to: 'Focused'
   })
   assert.deepEqual(config.swapVariant, config.focus.variant)
+  assert.deepEqual(config.focus.components, [
+    {
+      type: 'variant',
+      property: 'State',
+      from: 'Rest',
+      to: 'Focused'
+    }
+  ])
 })
 
 test('keeps current config when the stored version matches', () => {
