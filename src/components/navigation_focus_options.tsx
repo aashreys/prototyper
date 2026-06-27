@@ -20,6 +20,7 @@ import {
   ComponentFocusPropertyType,
   DEFAULT_COMPONENT_FOCUS_MAPPING,
   DEFAULT_VARIANT_FOCUS,
+  FillFocusConfig,
   getComponentFocusMappings,
   NavigationFocusConfig,
   NavigationFocusMode,
@@ -39,6 +40,7 @@ const DECIMAL_WITH_X_PATTERN = /^(?:\d+|\d+\.\d+|\.\d+)x$/i;
 
 const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
+  { value: NavigationFocusMode.FILL, text: "Fill" },
   { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
   { value: NavigationFocusMode.VARIANT, text: "Components" },
 ];
@@ -145,6 +147,7 @@ export class NavigationFocusOptions extends Component<
   bindMethods() {
     this.onModeChange = this.onModeChange.bind(this);
     this.onStrokeColorChange = this.onStrokeColorChange.bind(this);
+    this.onFillColorChange = this.onFillColorChange.bind(this);
   }
 
   onModeChange(mode: NavigationFocusMode) {
@@ -179,6 +182,33 @@ export class NavigationFocusOptions extends Component<
     this.props.onNavigationFocusChange({
       ...this.props.focus,
       stroke: stroke,
+    });
+  }
+
+  onFillColorChange(color: string) {
+    this.updateFill({
+      ...this.props.focus.fill,
+      color: this.toStoredHexColor(color),
+    });
+  }
+
+  onFillOpacityChange(opacity: null | number) {
+    if (opacity === null) return;
+    this.updateFill({
+      ...this.props.focus.fill,
+      opacity: this.toFocusNumber(
+        opacity * 100,
+        this.props.focus.fill.opacity,
+        0,
+        100,
+      ),
+    });
+  }
+
+  updateFill(fill: FillFocusConfig) {
+    this.props.onNavigationFocusChange({
+      ...this.props.focus,
+      fill: fill,
     });
   }
 
@@ -495,6 +525,18 @@ export class NavigationFocusOptions extends Component<
     );
   }
 
+  renderFillControls(props: NavigationFocusOptionsProps) {
+    return (
+      <TextboxColor
+        fullWidth
+        hexColor={this.toTextboxHexColor(props.focus.fill.color)}
+        onHexColorInput={(e) => this.onFillColorChange(e.currentTarget.value)}
+        onOpacityNumericValueInput={(value) => this.onFillOpacityChange(value)}
+        opacity={props.focus.fill.opacity.toString()}
+      />
+    );
+  }
+
   renderScaleShadowControls(props: NavigationFocusOptionsProps) {
     return (
       <div class={styles.scaleControls}>
@@ -530,6 +572,8 @@ export class NavigationFocusOptions extends Component<
       return this.renderVariantControls(props);
     if (props.focus.mode === NavigationFocusMode.SCALE_SHADOW)
       return this.renderScaleShadowControls(props);
+    if (props.focus.mode === NavigationFocusMode.FILL)
+      return this.renderFillControls(props);
     return this.renderStrokeControls(props);
   }
 

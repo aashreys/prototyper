@@ -54,6 +54,8 @@ test('defaults new configs to stroke focus', () => {
   assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
   assert.equal(config.focus.stroke.align, 'OUTSIDE')
   assert.equal(config.focus.stroke.weight, 8)
+  assert.equal(config.focus.fill.color, '#FFFFFF')
+  assert.equal(config.focus.fill.opacity, 50)
   assert.equal(config.focus.scaleShadow.scale, 1.2)
   assert.equal(config.focus.scaleShadow.showShadow, true)
   assert.deepEqual(config.swapVariant, {
@@ -308,6 +310,30 @@ test('preserves saved stroke align setting', () => {
   let config = Config.getSavedConfig()
 
   assert.equal(config.focus.stroke.align, 'INSIDE')
+})
+
+test('preserves saved fill settings', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: NavigationFocusMode.FILL,
+      fill: {
+        color: '#FF00AA',
+        opacity: 42
+      }
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.FILL)
+  assert.equal(config.focus.fill.color, '#FF00AA')
+  assert.equal(config.focus.fill.opacity, 42)
 })
 
 test('preserves saved scale shadow settings', () => {

@@ -16,6 +16,8 @@ interface DirectFocusState {
   readonly width: number;
   readonly height: number;
   readonly effects?: ReadonlyArray<Effect>;
+  readonly fills?: ReadonlyArray<Paint>;
+  readonly fillStyleId?: string;
   readonly strokes?: ReadonlyArray<Paint>;
   readonly strokeStyleId?: string;
   readonly strokeWeight?: number;
@@ -52,6 +54,9 @@ export class FocusOverlay {
     if (focus.mode === NavigationFocusMode.STROKE) {
       return FocusOverlay.createDirectStroke(target, focus);
     }
+    if (focus.mode === NavigationFocusMode.FILL) {
+      return FocusOverlay.createDirectFill(target, focus);
+    }
     if (focus.mode === NavigationFocusMode.SHADOW) {
       return FocusOverlay.createDirectShadow(topLevelFrame, target, focus);
     }
@@ -77,6 +82,21 @@ export class FocusOverlay {
         target,
       );
     }
+    return target;
+  }
+
+  private static createDirectFill(
+    target: SceneNode,
+    focus: NavigationFocusConfig,
+  ): SceneNode {
+    FocusOverlay.saveDirectFocusState(target);
+    if (FocusOverlay.applyDirectFill(target, focus)) {
+      return target;
+    }
+    FocusOverlay.logDirectFocusFailure(
+      "Unable to apply direct fill focus effect",
+      target,
+    );
     return target;
   }
 
@@ -219,6 +239,11 @@ export class FocusOverlay {
       width: typeof node.width === "number" ? node.width : 0,
       height: typeof node.height === "number" ? node.height : 0,
       effects: "effects" in node ? node.effects : undefined,
+      fills: "fills" in node ? node.fills : undefined,
+      fillStyleId:
+        "fillStyleId" in node && typeof node.fillStyleId === "string"
+          ? node.fillStyleId
+          : undefined,
       strokes: "strokes" in node ? node.strokes : undefined,
       strokeStyleId:
         "strokeStyleId" in node && typeof node.strokeStyleId === "string"
@@ -247,6 +272,22 @@ export class FocusOverlay {
       const state = JSON.parse(stateString) as DirectFocusState;
       const node: any = target;
       if ("effects" in node && state.effects) node.effects = state.effects;
+      if ("fills" in node && state.fills) node.fills = state.fills;
+      if (
+        "fillStyleId" in node &&
+        typeof state.fillStyleId === "string" &&
+        state.fillStyleId.length > 0
+      ) {
+        try {
+          node.fillStyleId = state.fillStyleId;
+        } catch (error) {
+          FocusOverlay.logDirectFocusFailure(
+            "Unable to restore direct focus fill style",
+            target,
+            error,
+          );
+        }
+      }
       if ("strokes" in node && state.strokes) node.strokes = state.strokes;
       if (
         "strokeStyleId" in node &&
@@ -359,6 +400,24 @@ export class FocusOverlay {
     node.strokes = [FocusOverlay.createSolidPaint(focus.stroke.color)];
     if ("strokeAlign" in node) node.strokeAlign = focus.stroke.align;
     node.strokeWeight = focus.stroke.weight;
+    return true;
+  }
+
+  private static applyDirectFill(
+    target: SceneNode,
+    focus: NavigationFocusConfig,
+  ): boolean {
+    const node: any = target;
+    if (!("fills" in node)) return false;
+
+    const fills = Array.isArray(node.fills) ? node.fills.slice() : [];
+    node.fills = [
+      ...fills,
+      FocusOverlay.createSolidPaint(
+        focus.fill.color,
+        Math.min(Math.max(0, focus.fill.opacity / 100), 1),
+      ),
+    ];
     return true;
   }
 
@@ -555,11 +614,11 @@ export class FocusOverlay {
     });
   }
 
-  private static createSolidPaint(color: string): SolidPaint {
+  private static createSolidPaint(color: string, opacity = 1): SolidPaint {
     return {
       type: "SOLID",
       color: FocusOverlay.parseHexColor(color),
-      opacity: 1,
+      opacity: opacity,
     };
   }
 

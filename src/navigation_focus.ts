@@ -4,6 +4,7 @@ export type { ComponentFocusMapping, ComponentFocusMappingType } from "./swap_va
 export enum NavigationFocusMode {
   VARIANT = 'variant',
   STROKE = 'stroke',
+  FILL = 'fill',
   SHADOW = 'shadow',
   SCALE_SHADOW = 'scale-shadow'
 }
@@ -16,6 +17,11 @@ export interface StrokeFocusConfig {
   readonly color: string
   readonly weight: number
   readonly align: StrokeAlign
+}
+
+export interface FillFocusConfig {
+  readonly color: string
+  readonly opacity: number
 }
 
 export interface ShadowFocusConfig {
@@ -39,6 +45,7 @@ export interface NavigationFocusConfig {
   readonly variant: SwapVariant
   readonly components: Array<ComponentFocusMapping>
   readonly stroke: StrokeFocusConfig
+  readonly fill: FillFocusConfig
   readonly shadow: ShadowFocusConfig
   readonly scaleShadow: ScaleShadowFocusConfig
 }
@@ -60,6 +67,11 @@ export const DEFAULT_STROKE_FOCUS: StrokeFocusConfig = {
   color: '#0C8CE9',
   weight: 8,
   align: 'OUTSIDE'
+}
+
+export const DEFAULT_FILL_FOCUS: FillFocusConfig = {
+  color: '#FFFFFF',
+  opacity: 50
 }
 
 export const DEFAULT_SHADOW_FOCUS: ShadowFocusConfig = {
@@ -86,6 +98,7 @@ export function getDefaultNavigationFocusConfig(variant: SwapVariant = DEFAULT_V
     variant: getVariantCompatibilityMapping(components, normalizedVariant),
     components: components,
     stroke: { ...DEFAULT_STROKE_FOCUS },
+    fill: { ...DEFAULT_FILL_FOCUS },
     shadow: { ...DEFAULT_SHADOW_FOCUS },
     scaleShadow: { ...DEFAULT_SCALE_SHADOW_FOCUS }
   }
@@ -109,6 +122,10 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
       color: normalizeColor(value.stroke?.color, DEFAULT_STROKE_FOCUS.color),
       weight: normalizeNumber(value.stroke?.weight, DEFAULT_STROKE_FOCUS.weight),
       align: normalizeStrokeAlign(value.stroke?.align, DEFAULT_STROKE_FOCUS.align)
+    },
+    fill: {
+      color: normalizeColor(value.fill?.color, DEFAULT_FILL_FOCUS.color),
+      opacity: normalizeNumber(value.fill?.opacity, DEFAULT_FILL_FOCUS.opacity, 100)
     },
     shadow: {
       color: normalizeColor(value.shadow?.color, DEFAULT_SHADOW_FOCUS.color),
@@ -219,12 +236,14 @@ function hasAnyVariantFocusValue(variant: SwapVariant): boolean {
 function normalizeFocusMode(value, fallback: NavigationFocusMode): NavigationFocusMode {
   if (value === NavigationFocusMode.VARIANT) return NavigationFocusMode.VARIANT
   if (value === NavigationFocusMode.STROKE) return NavigationFocusMode.STROKE
+  if (value === NavigationFocusMode.FILL) return NavigationFocusMode.FILL
   if (value === NavigationFocusMode.SCALE_SHADOW) return NavigationFocusMode.SCALE_SHADOW
   return fallback
 }
 
-function normalizeNumber(value, fallback: number): number {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : fallback
+function normalizeNumber(value, fallback: number, maximum?: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return fallback
+  return typeof maximum === 'number' ? Math.min(value, maximum) : value
 }
 
 function normalizeColor(value, fallback: string): string {

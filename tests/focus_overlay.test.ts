@@ -89,6 +89,8 @@ function createLayer(id: string, parent: any, bounds: Rect, properties = {}) {
     height: bounds.height,
     absoluteBoundingBox: bounds,
     effects: [],
+    fills: [],
+    fillStyleId: '',
     strokes: [],
     strokeStyleId: '',
     strokeWeight: 0,
@@ -135,6 +137,8 @@ function createLayerNode(id: string, bounds: Rect, properties = {}) {
     height: bounds.height,
     absoluteBoundingBox: { ...bounds },
     effects: [],
+    fills: [],
+    fillStyleId: '',
     strokes: [],
     strokeStyleId: '',
     strokeWeight: 0,
@@ -183,6 +187,10 @@ function createFocus(mode: NavigationFocusMode) {
       weight: 6,
       align: 'OUTSIDE'
     },
+    fill: {
+      color: '#00AAFF',
+      opacity: 35
+    },
     shadow: {
       color: '#00AAFF',
       blur: 16,
@@ -214,6 +222,26 @@ test('applies stroke focus directly to the target layer', () => {
   assert.equal(target.strokes[0].color.b, 170 / 255)
   assert.equal(target.strokeWeight, 6)
   assert.equal(target.strokeAlign, 'OUTSIDE')
+})
+
+test('applies fill focus above existing fills', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  let originalFill = { type: 'SOLID', color: { r: 1, g: 0, b: 0 }, opacity: 1 }
+  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 }, {
+    fills: [originalFill]
+  })
+
+  let result = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.FILL) as any) as any
+
+  assert.equal(result, target)
+  assert.deepEqual(frame.children, [target])
+  assert.equal(target.fills.length, 2)
+  assert.deepEqual(target.fills[0], originalFill)
+  assert.equal(target.fills[1].color.r, 0)
+  assert.equal(target.fills[1].color.g, 170 / 255)
+  assert.equal(target.fills[1].color.b, 1)
+  assert.equal(target.fills[1].opacity, 0.35)
 })
 
 test('applies shadow focus directly to the target layer', () => {
@@ -313,6 +341,21 @@ test('restores managed direct focus state', () => {
   assert.equal(target.width, 100)
   assert.equal(target.height, 50)
   assert.deepEqual(target.effects, [originalEffect])
+  assert.equal(target.getPluginData('prototyper_focus_direct_state'), '')
+})
+
+test('restores direct fill focus state', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
+  let originalFill = { type: 'SOLID', color: { r: 0, g: 1, b: 0 }, opacity: 0.5 }
+  let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, {
+    fills: [originalFill]
+  })
+
+  FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.FILL) as any)
+  FocusOverlay.resetManagedFocus(frame)
+
+  assert.deepEqual(target.fills, [originalFill])
   assert.equal(target.getPluginData('prototyper_focus_direct_state'), '')
 })
 
