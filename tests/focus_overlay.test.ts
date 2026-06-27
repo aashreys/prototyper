@@ -83,11 +83,78 @@ function createLayer(id: string, parent: any, bounds: Rect, properties = {}) {
     name: id,
     type: 'RECTANGLE',
     parent: parent,
+    x: bounds.x - (parent?.absoluteBoundingBox?.x || 0),
+    y: bounds.y - (parent?.absoluteBoundingBox?.y || 0),
+    width: bounds.width,
+    height: bounds.height,
     absoluteBoundingBox: bounds,
-    ...properties
+    pluginData: {},
+    ...properties,
+    rescale(scale: number) {
+      this.width = this.width * scale
+      this.height = this.height * scale
+      this.absoluteBoundingBox = {
+        ...this.absoluteBoundingBox,
+        width: this.absoluteBoundingBox.width * scale,
+        height: this.absoluteBoundingBox.height * scale
+      }
+    },
+    setPluginData(key: string, value: string) {
+      this.pluginData[key] = value
+    },
+    getPluginData(key: string) {
+      return this.pluginData[key] || ''
+    },
+    remove() {
+      if (!this.parent) return
+      let index = this.parent.children.indexOf(this)
+      if (index >= 0) this.parent.children.splice(index, 1)
+    },
+    clone() {
+      return createLayerNode(`${this.id}-clone`, bounds, properties)
+    }
   } as any
   parent.children.push(layer)
   return layer
+}
+
+function createLayerNode(id: string, bounds: Rect, properties = {}) {
+  return {
+    id: id,
+    name: id,
+    type: 'RECTANGLE',
+    parent: undefined,
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    absoluteBoundingBox: { ...bounds },
+    pluginData: {},
+    ...properties,
+    rescale(scale: number) {
+      this.width = this.width * scale
+      this.height = this.height * scale
+      this.absoluteBoundingBox = {
+        ...this.absoluteBoundingBox,
+        width: this.absoluteBoundingBox.width * scale,
+        height: this.absoluteBoundingBox.height * scale
+      }
+    },
+    setPluginData(key: string, value: string) {
+      this.pluginData[key] = value
+    },
+    getPluginData(key: string) {
+      return this.pluginData[key] || ''
+    },
+    remove() {
+      if (!this.parent) return
+      let index = this.parent.children.indexOf(this)
+      if (index >= 0) this.parent.children.splice(index, 1)
+    },
+    clone() {
+      return createLayerNode(`${this.id}-clone`, this.absoluteBoundingBox, properties)
+    }
+  } as any
 }
 
 function createNestedFrame(id: string, parent: any, bounds: Rect) {
@@ -114,6 +181,17 @@ function createFocus(mode: NavigationFocusMode) {
       spread: 2,
       padding: 7,
       cornerRadius: 4
+    },
+    scaleShadow: {
+      scalePercent: 108,
+      color: '#000000',
+      opacity: 35,
+      blur: 24,
+      spread: 0,
+      offsetY: 8,
+      padding: 6,
+      useAutoCornerRadius: true,
+      cornerRadius: 12
     }
   }
 }
@@ -240,6 +318,33 @@ test('creates shadow overlay below the top-level ancestor for nested target laye
   let overlay = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SHADOW) as any) as any
 
   assert.deepEqual(frame.children, [background, overlay, container])
+})
+
+test('creates scale shadow artifacts with shadow below target and scaled clone above target', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
+  let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, { cornerRadius: 10 })
+
+  let clone = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.SCALE_SHADOW) as any) as any
+
+  let shadow = frame.children[0] as any
+  assert.deepEqual(frame.children, [shadow, target, clone])
+  assert.equal(shadow.name, '__Prototyper Focus Overlay')
+  assert.equal(shadow.getPluginData('prototyper_focus_overlay'), 'true')
+  assert.equal(shadow.x, 20)
+  assert.equal(shadow.y, 50)
+  assert.equal(shadow.width, 120)
+  assert.equal(shadow.height, 66)
+  assert.equal(shadow.cornerRadius, 16.8)
+  assert.equal(shadow.effects[0].type, 'DROP_SHADOW')
+  assert.equal(shadow.effects[0].radius, 24)
+  assert.equal(shadow.effects[0].color.a, 0.35)
+  assert.equal(clone.name, '__Prototyper Focus Scale Clone')
+  assert.equal(clone.getPluginData('prototyper_focus_overlay'), 'true')
+  assert.equal(clone.x, 26)
+  assert.equal(clone.y, 48)
+  assert.equal(clone.width, 108)
+  assert.equal(clone.height, 54)
 })
 
 test('removes only plugin-managed overlays', () => {

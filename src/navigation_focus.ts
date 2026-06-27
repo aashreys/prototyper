@@ -3,7 +3,8 @@ import { SwapVariant } from "./swap_variant";
 export enum NavigationFocusMode {
   VARIANT = 'variant',
   STROKE = 'stroke',
-  SHADOW = 'shadow'
+  SHADOW = 'shadow',
+  SCALE_SHADOW = 'scale-shadow'
 }
 
 export interface StrokeFocusConfig {
@@ -22,11 +23,24 @@ export interface ShadowFocusConfig {
   readonly cornerRadius: number
 }
 
+export interface ScaleShadowFocusConfig {
+  readonly scalePercent: number
+  readonly color: string
+  readonly opacity: number
+  readonly blur: number
+  readonly spread: number
+  readonly offsetY: number
+  readonly padding: number
+  readonly useAutoCornerRadius: boolean
+  readonly cornerRadius: number
+}
+
 export interface NavigationFocusConfig {
   readonly mode: NavigationFocusMode
   readonly variant: SwapVariant
   readonly stroke: StrokeFocusConfig
   readonly shadow: ShadowFocusConfig
+  readonly scaleShadow: ScaleShadowFocusConfig
 }
 
 export const DEFAULT_VARIANT_FOCUS: SwapVariant = {
@@ -51,12 +65,25 @@ export const DEFAULT_SHADOW_FOCUS: ShadowFocusConfig = {
   cornerRadius: 8
 }
 
+export const DEFAULT_SCALE_SHADOW_FOCUS: ScaleShadowFocusConfig = {
+  scalePercent: 108,
+  color: '#000000',
+  opacity: 35,
+  blur: 24,
+  spread: 0,
+  offsetY: 8,
+  padding: 6,
+  useAutoCornerRadius: true,
+  cornerRadius: 12
+}
+
 export function getDefaultNavigationFocusConfig(variant: SwapVariant = DEFAULT_VARIANT_FOCUS): NavigationFocusConfig {
   return {
     mode: isVariantFocusConfigured(variant) ? NavigationFocusMode.VARIANT : NavigationFocusMode.STROKE,
     variant: normalizeVariantFocus(variant),
     stroke: { ...DEFAULT_STROKE_FOCUS },
-    shadow: { ...DEFAULT_SHADOW_FOCUS }
+    shadow: { ...DEFAULT_SHADOW_FOCUS },
+    scaleShadow: { ...DEFAULT_SCALE_SHADOW_FOCUS }
   }
 }
 
@@ -81,6 +108,17 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
       spread: normalizeNumber(value.shadow?.spread, DEFAULT_SHADOW_FOCUS.spread),
       padding: normalizeNumber(value.shadow?.padding, DEFAULT_SHADOW_FOCUS.padding),
       cornerRadius: normalizeNumber(value.shadow?.cornerRadius, DEFAULT_SHADOW_FOCUS.cornerRadius)
+    },
+    scaleShadow: {
+      scalePercent: normalizeNumber(value.scaleShadow?.scalePercent, DEFAULT_SCALE_SHADOW_FOCUS.scalePercent),
+      color: normalizeColor(value.scaleShadow?.color, DEFAULT_SCALE_SHADOW_FOCUS.color),
+      opacity: normalizeNumber(value.scaleShadow?.opacity, DEFAULT_SCALE_SHADOW_FOCUS.opacity),
+      blur: normalizeNumber(value.scaleShadow?.blur, DEFAULT_SCALE_SHADOW_FOCUS.blur),
+      spread: normalizeNumber(value.scaleShadow?.spread, DEFAULT_SCALE_SHADOW_FOCUS.spread),
+      offsetY: normalizeNumber(value.scaleShadow?.offsetY, DEFAULT_SCALE_SHADOW_FOCUS.offsetY),
+      padding: normalizeNumber(value.scaleShadow?.padding, DEFAULT_SCALE_SHADOW_FOCUS.padding),
+      useAutoCornerRadius: normalizeBoolean(value.scaleShadow?.useAutoCornerRadius, DEFAULT_SCALE_SHADOW_FOCUS.useAutoCornerRadius),
+      cornerRadius: normalizeNumber(value.scaleShadow?.cornerRadius, DEFAULT_SCALE_SHADOW_FOCUS.cornerRadius)
     }
   }
 }
@@ -105,6 +143,7 @@ function normalizeFocusMode(value, fallback: NavigationFocusMode): NavigationFoc
   if (value === NavigationFocusMode.VARIANT) return NavigationFocusMode.VARIANT
   if (value === NavigationFocusMode.STROKE) return NavigationFocusMode.STROKE
   if (value === NavigationFocusMode.SHADOW) return NavigationFocusMode.SHADOW
+  if (value === NavigationFocusMode.SCALE_SHADOW) return NavigationFocusMode.SCALE_SHADOW
   return fallback
 }
 

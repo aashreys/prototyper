@@ -53,6 +53,8 @@ test('defaults new configs to stroke focus', () => {
 
   assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
   assert.equal(config.focus.stroke.useAutoCornerRadius, false)
+  assert.equal(config.focus.scaleShadow.scalePercent, 108)
+  assert.equal(config.focus.scaleShadow.opacity, 35)
   assert.deepEqual(config.swapVariant, {
     property: '',
     from: '',
@@ -164,6 +166,33 @@ test('preserves saved auto stroke corner radius setting', () => {
   let config = Config.getSavedConfig()
 
   assert.equal(config.focus.stroke.useAutoCornerRadius, true)
+})
+
+test('preserves saved scale shadow settings', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: NavigationFocusMode.SCALE_SHADOW,
+      scaleShadow: {
+        ...Config.getDefaultConfig().focus.scaleShadow,
+        scalePercent: 112,
+        opacity: 42,
+        offsetY: 10
+      }
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.SCALE_SHADOW)
+  assert.equal(config.focus.scaleShadow.scalePercent, 112)
+  assert.equal(config.focus.scaleShadow.opacity, 42)
+  assert.equal(config.focus.scaleShadow.offsetY, 10)
 })
 
 test('preserves saved focus variant when compatibility swapVariant is empty', () => {

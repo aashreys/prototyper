@@ -2,6 +2,7 @@ import { NavigationFocusConfig, NavigationFocusMode } from "./navigation_focus";
 import { Utils } from "./utils";
 
 const OVERLAY_NAME = '__Prototyper Focus Overlay'
+const SCALE_CLONE_NAME = '__Prototyper Focus Scale Clone'
 const OVERLAY_PLUGIN_DATA_KEY = 'prototyper_focus_overlay'
 
 export class FocusOverlay {
@@ -19,9 +20,11 @@ export class FocusOverlay {
   }
 
   static create(topLevelFrame: FrameNode, target: SceneNode, focus: NavigationFocusConfig): SceneNode {
-    const overlay = figma.createRectangle()
-    overlay.name = OVERLAY_NAME
-    overlay.setPluginData(OVERLAY_PLUGIN_DATA_KEY, 'true')
+    if (focus.mode === NavigationFocusMode.SCALE_SHADOW) {
+      return FocusOverlay.createScaleShadow(topLevelFrame, target, focus)
+    }
+
+    const overlay = FocusOverlay.createManagedRectangle(OVERLAY_NAME)
     FocusOverlay.insertOverlay(topLevelFrame, target, overlay, focus.mode)
 
     if (FocusOverlay.canUseAbsoluteLayout(overlay, topLevelFrame)) {
@@ -47,11 +50,53 @@ export class FocusOverlay {
     return overlay
   }
 
+  private static createScaleShadow(topLevelFrame: FrameNode, target: SceneNode, focus: NavigationFocusConfig): SceneNode {
+    const scale = Math.max(0.01, focus.scaleShadow.scalePercent / 100)
+    const targetBounds = Utils.getAbsoluteBounds(target)
+    const frameBounds = Utils.getAbsoluteBounds(topLevelFrame)
+    const scaledBounds = FocusOverlay.getScaledBounds(targetBounds, scale)
+    const shadowBounds = FocusOverlay.getFocusBounds(scaledBounds, frameBounds, focus.scaleShadow.padding)
+    shadowBounds.y = shadowBounds.y + focus.scaleShadow.offsetY
+
+    const shadow = FocusOverlay.createManagedRectangle(OVERLAY_NAME)
+    FocusOverlay.insertOverlay(topLevelFrame, target, shadow, NavigationFocusMode.SHADOW)
+    if (FocusOverlay.canUseAbsoluteLayout(shadow, topLevelFrame)) {
+      shadow.layoutPositioning = 'ABSOLUTE'
+    }
+
+    shadow.resize(shadowBounds.width, shadowBounds.height)
+    shadow.x = shadowBounds.x
+    shadow.y = shadowBounds.y
+    FocusOverlay.applyScaleShadowCornerRadius(shadow, target, focus, shadowBounds, scale)
+    FocusOverlay.applyDropShadow(
+      shadow,
+      focus.scaleShadow.color,
+      focus.scaleShadow.opacity / 100,
+      focus.scaleShadow.blur,
+      focus.scaleShadow.spread,
+      0
+    )
+
+    const clone = FocusOverlay.createScaledClone(topLevelFrame, target, scaledBounds, scale)
+    return clone || shadow
+  }
+
+  private static createManagedRectangle(name: string): RectangleNode {
+    const overlay = figma.createRectangle()
+    overlay.name = name
+    FocusOverlay.setManagedArtifactData(overlay)
+    return overlay
+  }
+
+  private static setManagedArtifactData(node: SceneNode) {
+    node.setPluginData(OVERLAY_PLUGIN_DATA_KEY, 'true')
+  }
+
   private static isManagedOverlay(node): boolean {
     return Boolean(node?.getPluginData && node.getPluginData(OVERLAY_PLUGIN_DATA_KEY) === 'true')
   }
 
-  private static insertOverlay(topLevelFrame: FrameNode, target: SceneNode, overlay: RectangleNode, mode: NavigationFocusMode) {
+  private static insertOverlay(topLevelFrame: FrameNode, target: SceneNode, overlay: SceneNode, mode: NavigationFocusMode) {
     if (mode !== NavigationFocusMode.SHADOW) {
       topLevelFrame.appendChild(overlay)
       return
@@ -80,8 +125,8 @@ export class FocusOverlay {
     return null
   }
 
-  private static canUseAbsoluteLayout(overlay: RectangleNode, parent: FrameNode): boolean {
-    return 'layoutPositioning' in overlay && 'layoutMode' in parent && parent.layoutMode !== 'NONE'
+  private static canUseAbsoluteLayout(node: SceneNode, parent: FrameNode): boolean {
+    return 'layoutPositioning' in node && 'layoutMode' in parent && parent.layoutMode !== 'NONE'
   }
 
   private static getFocusBounds(targetBounds: Rect, frameBounds: Rect, padding: number) {
@@ -101,7 +146,18 @@ export class FocusOverlay {
   }
 
   private static applyShadow(overlay: RectangleNode, focus: NavigationFocusConfig) {
-    const color = FocusOverlay.parseHexColor(focus.shadow.color)
+    FocusOverlay.applyDropShadow(overlay, focus.shadow.color, 1, focus.shadow.blur, focus.shadow.spread, 0)
+  }
+
+  private static applyDropShadow(
+    overlay: RectangleNode,
+    colorValue: string,
+    opacity: number,
+    blur: number,
+    spread: number,
+    offsetY: number
+  ) {
+    const color = FocusOverlay.parseHexColor(colorValue)
     overlay.fills = [{
       type: 'SOLID',
       color: color,
@@ -112,14 +168,14 @@ export class FocusOverlay {
       type: 'DROP_SHADOW',
       color: {
         ...color,
-        a: 1
+        a: Math.min(Math.max(0, opacity), 1)
       },
       offset: {
         x: 0,
-        y: 0
+        y: offsetY
       },
-      radius: focus.shadow.blur,
-      spread: focus.shadow.spread,
+      radius: blur,
+      spread: spread,
       visible: true,
       blendMode: 'NORMAL',
       showShadowBehindNode: true
@@ -127,6 +183,7 @@ export class FocusOverlay {
   }
 
   private static getPadding(focus: NavigationFocusConfig): number {
+    if (focus.mode === NavigationFocusMode.SCALE_SHADOW) return focus.scaleShadow.padding
     if (focus.mode === NavigationFocusMode.SHADOW) return focus.shadow.padding
     return focus.stroke.padding
   }
@@ -144,7 +201,26 @@ export class FocusOverlay {
     overlay.cornerRadius = FocusOverlay.clampRadius(FocusOverlay.getCornerRadius(focus), maxRadius)
   }
 
+  private static applyScaleShadowCornerRadius(
+    overlay: RectangleNode,
+    target: SceneNode,
+    focus: NavigationFocusConfig,
+    focusBounds: Rect,
+    scale: number
+  ) {
+    const maxRadius = FocusOverlay.getMaxRadius(focusBounds)
+    if (focus.scaleShadow.useAutoCornerRadius) {
+      const radii = FocusOverlay.getTargetCornerRadii(target)
+      if (radii) {
+        FocusOverlay.setOverlayCornerRadii(overlay, radii, focus.scaleShadow.padding, maxRadius, scale)
+        return
+      }
+    }
+    overlay.cornerRadius = FocusOverlay.clampRadius(focus.scaleShadow.cornerRadius, maxRadius)
+  }
+
   private static getCornerRadius(focus: NavigationFocusConfig): number {
+    if (focus.mode === NavigationFocusMode.SCALE_SHADOW) return focus.scaleShadow.cornerRadius
     if (focus.mode === NavigationFocusMode.SHADOW) return focus.shadow.cornerRadius
     return focus.stroke.cornerRadius
   }
@@ -167,8 +243,14 @@ export class FocusOverlay {
     return radii as [number, number, number, number]
   }
 
-  private static setOverlayCornerRadii(overlay: RectangleNode, radii: [number, number, number, number], padding: number, maxRadius: number) {
-    const [topLeft, topRight, bottomRight, bottomLeft] = radii.map(radius => FocusOverlay.clampRadius(radius + padding, maxRadius))
+  private static setOverlayCornerRadii(
+    overlay: RectangleNode,
+    radii: [number, number, number, number],
+    padding: number,
+    maxRadius: number,
+    scale = 1
+  ) {
+    const [topLeft, topRight, bottomRight, bottomLeft] = radii.map(radius => FocusOverlay.clampRadius((radius * scale) + padding, maxRadius))
     if (topLeft === topRight && topRight === bottomRight && bottomRight === bottomLeft) {
       overlay.cornerRadius = topLeft
       return
@@ -185,6 +267,66 @@ export class FocusOverlay {
 
   private static clampRadius(radius: number, maxRadius: number): number {
     return Math.min(Math.max(0, radius), maxRadius)
+  }
+
+  private static getScaledBounds(bounds: Rect, scale: number): Rect {
+    const width = bounds.width * scale
+    const height = bounds.height * scale
+    return {
+      x: bounds.x + (bounds.width - width) / 2,
+      y: bounds.y + (bounds.height - height) / 2,
+      width: width,
+      height: height
+    }
+  }
+
+  private static createScaledClone(topLevelFrame: FrameNode, target: SceneNode, scaledBounds: Rect, scale: number): SceneNode | null {
+    const cloneTarget: any = target
+    if (typeof cloneTarget.clone !== 'function') {
+      FocusOverlay.logScaleCloneFailure('Unable to create scale focus clone', target)
+      return null
+    }
+
+    let clone: SceneNode | null = null
+    try {
+      clone = cloneTarget.clone() as SceneNode
+      clone.name = SCALE_CLONE_NAME
+      FocusOverlay.setManagedArtifactData(clone)
+      topLevelFrame.appendChild(clone)
+      if (FocusOverlay.canUseAbsoluteLayout(clone, topLevelFrame)) {
+        ;(clone as any).layoutPositioning = 'ABSOLUTE'
+      }
+
+      if (typeof (clone as any).rescale === 'function') {
+        ;(clone as any).rescale(scale)
+      } else if (typeof (clone as any).resizeWithoutConstraints === 'function') {
+        ;(clone as any).resizeWithoutConstraints((clone as any).width * scale, (clone as any).height * scale)
+      } else if (typeof (clone as any).resize === 'function') {
+        ;(clone as any).resize((clone as any).width * scale, (clone as any).height * scale)
+      } else {
+        FocusOverlay.logScaleCloneFailure('Unable to scale focus clone', target)
+        clone.remove()
+        return null
+      }
+
+      const cloneBounds = Utils.getAbsoluteBounds(clone)
+      clone.x = clone.x + (scaledBounds.x - cloneBounds.x)
+      clone.y = clone.y + (scaledBounds.y - cloneBounds.y)
+      return clone
+    } catch (error) {
+      FocusOverlay.logScaleCloneFailure('Unable to create scale focus clone', target, error)
+      if (clone) clone.remove()
+      return null
+    }
+  }
+
+  private static logScaleCloneFailure(message: string, target: SceneNode, error?: unknown) {
+    console.warn(message, {
+      targetId: target.id,
+      targetName: target.name,
+      targetType: target.type,
+      error: error instanceof Error ? error.message : String(error || '')
+    })
   }
 
   private static createSolidPaint(color: string): SolidPaint {
