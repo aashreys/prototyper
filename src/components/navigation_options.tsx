@@ -14,6 +14,7 @@ import { RightStickIcon } from '../icons/right_stick';
 import { ShoulderButtonsIcon } from '../icons/shoulder_buttons';
 import { TriggerButtonsIcon } from '../icons/trigger_buttons';
 import { Navigation, NavigationKeycodes, NavScheme } from '../navigation';
+import styles from '../styles.css';
 import { CustomInput } from './custom_input';
 
 const XBOX = 'Xbox'
@@ -121,11 +122,11 @@ export class NavigationOptions extends Component<any, any> {
     return (
       <div style={props.style ? props.style : ''}>
 
-        <Text style={'margin-left: 8px'}><Bold>Navigate With</Bold></Text>
+        <Text class={styles.sectionHeading}><Bold>Navigate With</Bold></Text>
 
         <VerticalSpace space='small' />
 
-        <div style='display: flex'>
+        <div class={styles.controlRow}>
 
           <Dropdown
           icon={this.getIcon(this.getUiValueFromConfig(navigation.device))}

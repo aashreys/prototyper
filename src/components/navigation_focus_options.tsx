@@ -28,7 +28,7 @@ type ScaleShadowNumberKey = "scale";
 
 const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
-  { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale up" },
+  { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
   { value: NavigationFocusMode.VARIANT, text: "Custom" },
 ];
 
@@ -121,11 +121,7 @@ export class NavigationFocusOptions extends Component<
   onScaleShadowNumberChange(key: ScaleShadowNumberKey, value: null | number) {
     this.updateScaleShadow({
       ...this.props.focus.scaleShadow,
-      [key]: this.toFocusNumber(
-        value,
-        this.props.focus.scaleShadow[key],
-        0.01,
-      ),
+      [key]: this.toFocusNumber(value, this.props.focus.scaleShadow[key], 0.01),
     });
   }
 
@@ -168,17 +164,15 @@ export class NavigationFocusOptions extends Component<
 
   renderVariantControls(props: NavigationFocusOptionsProps) {
     return (
-      <div>
+      <div class={styles.variantFocusControls}>
         <Text>
-          Create component variants for the unfocused and focused states, then
-          enter the component property and values to swap.
+          Enter the variant property and the values to use for the default and
+          focused states of your UI components.
         </Text>
-
-        <div style="height: 6px" />
 
         <Textbox
           onInput={(e) => this.onVariantPropertyChange(e.currentTarget.value)}
-          placeholder="Focus component property name"
+          placeholder="Component property e.g. Focus"
           value={props.focus.variant.property}
         />
 
@@ -188,22 +182,20 @@ export class NavigationFocusOptions extends Component<
           </div>
         )}
 
-        <div style="height: 4px" />
-
-        <div style="display: flex; align-items:center">
+        <div class={styles.variantValueRow}>
           <Textbox
-            style={"flex-grow: 1;"}
+            style={"flex-grow: 1; min-width: 0;"}
             onInput={(e) => this.onVariantFromChange(e.currentTarget.value)}
-            placeholder="Unfocused value"
+            placeholder="Default value"
             value={props.focus.variant.from}
           />
 
-          <div style="padding-left: 2px; padding-right: 2px;">
+          <div class={styles.variantValueArrow}>
             <ArrowRightIcon class={styles.greyIcon} />
           </div>
 
           <Textbox
-            style={"flex-grow: 1;"}
+            style={"flex-grow: 1; min-width: 0;"}
             onInput={(e) => this.onVariantToChange(e.currentTarget.value)}
             placeholder="Focused value"
             value={props.focus.variant.to}
@@ -326,7 +318,7 @@ export class NavigationFocusOptions extends Component<
   render(props: NavigationFocusOptionsProps, _state) {
     return (
       <div style={props.style ? props.style : ""}>
-        <Text style={"margin-left: 8px"}>
+        <Text class={styles.sectionHeading}>
           <Bold>Navigation Focus</Bold>
         </Text>
 
@@ -334,7 +326,13 @@ export class NavigationFocusOptions extends Component<
 
         {this.renderFocusModeRow(props)}
 
-        <div style="height: 8px" />
+        <div
+          style={
+            props.focus.mode === NavigationFocusMode.VARIANT
+              ? "height: 12px"
+              : "height: 8px"
+          }
+        />
 
         {this.renderFocusModeControls(props)}
       </div>

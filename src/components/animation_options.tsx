@@ -274,7 +274,7 @@ export class AnimationOptions extends Component<any, any> {
   render(props, state) {
     return (
       <div style={props.style ? props.style : ''}>
-        <Text style={'margin-left: 8px'}>
+        <Text class={styles.sectionHeading}>
           <Bold>Animation</Bold>
         </Text>
         
@@ -305,16 +305,17 @@ export class AnimationOptions extends Component<any, any> {
         
         {
           this.isTimedAndEased() &&
-          <div style='display: flex; margin-top: 4px;'>
+          <div class={styles.animationSecondaryRow}>
 
-            <Dropdown // Easing Select
-            style={'width: 60%;'}
-            // icon={this.getIcon(this.getUiValue(props.animation.easing))}
-            onChange={e => this.onEasingChange(e.currentTarget.value)}
-            options={EASING_OPTIONS}
-            value={this.getUiValue(props.animation.easing)} />
+            <div class={styles.animationEasingControl}>
+              <Dropdown // Easing Select
+              // icon={this.getIcon(this.getUiValue(props.animation.easing))}
+              onChange={e => this.onEasingChange(e.currentTarget.value)}
+              options={EASING_OPTIONS}
+              value={this.getUiValue(props.animation.easing)} />
+            </div>
 
-            <div style='width: 40%;'>
+            <div class={styles.animationDurationControl}>
               <DurationInput // Duration Input
               callback={this.onDurationChange} 
               value={props.animation.duration} />

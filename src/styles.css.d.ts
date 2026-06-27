@@ -1,15 +1,21 @@
 declare const styles: {
   readonly "animationDirectionControl": string;
+  readonly "animationDurationControl": string;
+  readonly "animationEasingControl": string;
   readonly "animationPrimaryRow": string;
+  readonly "animationSecondaryRow": string;
   readonly "animationTransitionControl": string;
+  readonly "controlRow": string;
   readonly "errorText": string;
   readonly "focusModeInlineControl": string;
   readonly "focusModeRow": string;
   readonly "focusModeSelect": string;
+  readonly "formContent": string;
   readonly "greyIcon": string;
   readonly "helpButton": string;
   readonly "linkButton": string;
   readonly "onboardingContainer": string;
+  readonly "sectionHeading": string;
   readonly "separator": string;
   readonly "statsBigText": string;
   readonly "statsMedText": string;
@@ -18,6 +24,9 @@ declare const styles: {
   readonly "textTertiary": string;
   readonly "themedIcon": string;
   readonly "tooltip": string;
+  readonly "variantFocusControls": string;
+  readonly "variantValueArrow": string;
+  readonly "variantValueRow": string;
   readonly "verticalMenu": string;
 };
 export = styles;

@@ -1,203 +1,255 @@
 .verticalMenu {
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  bottom: 60px;
-  right: 16px;
-  width: 180px; 
-  padding-top: 8px;
-  padding-bottom: 8px;
-  z-index: 2;
-  background-color: #1e1e1e;
-  box-shadow: 0 5px 17px rgba(0,0,0,.2),0 2px 7px rgba(0,0,0,.15);
-  border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    bottom: 60px;
+    right: 16px;
+    width: 180px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    z-index: 2;
+    background-color: #1e1e1e;
+    box-shadow:
+        0 5px 17px rgba(0, 0, 0, 0.2),
+        0 2px 7px rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
 }
 
 .verticalMenu p {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.4); /* Black text color */
-  display: block; /* Make the links appear below each other */
-  padding-left: 16px;
-  padding-right: 16px;
-  margin: 0px;
-  line-height: 28px;
-  text-decoration: none; /* Remove underline from links */
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4); /* Black text color */
+    display: block; /* Make the links appear below each other */
+    padding-left: 16px;
+    padding-right: 16px;
+    margin: 0px;
+    line-height: 28px;
+    text-decoration: none; /* Remove underline from links */
 }
 
 .verticalMenu a {
-  font-size: 12px;
-  color: white; /* Black text color */
-  display: block; /* Make the links appear below each other */
-  padding-left: 16px;
-  padding-right: 16px;
-  line-height: 28px;
-  text-decoration: none; /* Remove underline from links */
+    font-size: 12px;
+    color: white; /* Black text color */
+    display: block; /* Make the links appear below each other */
+    padding-left: 16px;
+    padding-right: 16px;
+    line-height: 28px;
+    text-decoration: none; /* Remove underline from links */
 }
 
 .verticalMenu a:hover {
-  background-color: #0c8ce9; /* Dark grey background on mouse-over */
+    background-color: #0c8ce9; /* Dark grey background on mouse-over */
 }
 
 .verticalMenu::after {
-  content: "";
-  width: 0;
-  height: 0;
-  position: absolute;
-  top: calc(100% - 1px);
-  right: 11px;
-  border: 6px solid transparent;
-  border-top: 6px solid #1e1e1e;
+    content: "";
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: calc(100% - 1px);
+    right: 11px;
+    border: 6px solid transparent;
+    border-top: 6px solid #1e1e1e;
 }
 
 .tooltip {
-  display: flex;
-  position: absolute;
-  bottom: 60px;
-  right: 16px;
-  background-color: #1e1e1e;
-  color: white;
-  padding-left: 16px;
-  padding-right: 16px;
-  line-height: 28px;
-  z-index: 2;
-  border-radius: 2px;
+    display: flex;
+    position: absolute;
+    bottom: 60px;
+    right: 16px;
+    background-color: #1e1e1e;
+    color: white;
+    padding-left: 16px;
+    padding-right: 16px;
+    line-height: 28px;
+    z-index: 2;
+    border-radius: 2px;
 }
 
 .tooltip::after {
-  content: "";
-  width: 0;
-  height: 0;
-  position: absolute;
-  top: calc(100% - 1px);
-  right: 11px;
-  border: 6px solid transparent;
-  border-top: 6px solid var(--figma-color-bg-secondary);
+    content: "";
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: calc(100% - 1px);
+    right: 11px;
+    border: 6px solid transparent;
+    border-top: 6px solid var(--figma-color-bg-secondary);
 }
 
 .helpButton {
-  background-color: #1e1e1e;
-  text-align: center;
-  border-radius: 32px;
-  font-weight: 200;
-  color: white;
-  font-size: 14px;
-  height: 32px;
-  width: 32px;
-  overflow: hidden;
-  white-space: nowrap;
+    background-color: #1e1e1e;
+    text-align: center;
+    border-radius: 32px;
+    font-weight: 200;
+    color: white;
+    font-size: 14px;
+    height: 32px;
+    width: 32px;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .linkButton {
-  color: var(--figma-color-text-brand);
-  text-decoration: none;
-  pointer-events: all;
+    color: var(--figma-color-text-brand);
+    text-decoration: none;
+    pointer-events: all;
 }
 
 .linkButton:hover {
-  cursor: pointer;
-  text-decoration: underline;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 .separator {
-  width: 100%;
-  height: 1px;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  border-top: 1px solid #4e4e4e;
+    width: 100%;
+    height: 1px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    border-top: 1px solid #4e4e4e;
 }
 
 .onboardingContainer {
-  background-color: var(--figma-color-bg-brand-tertiary);
-  padding-top: var(--space-large);
-  padding-bottom: var(--space-medium);
-  padding-left: var(--space-medium);
-  padding-right: var(--space-medium);
-  width: 100%;
-  display: block;
-  border-bottom: 1px solid var(--figma-color-border);
+    background-color: var(--figma-color-bg-brand-tertiary);
+    padding-top: var(--space-large);
+    padding-bottom: var(--space-medium);
+    padding-left: var(--space-medium);
+    padding-right: var(--space-medium);
+    width: 100%;
+    display: block;
+    border-bottom: 1px solid var(--figma-color-border);
 }
 
 .errorText {
-  color: var(--figma-color-text-danger)
+    color: var(--figma-color-text-danger);
 }
 
 .themedIcon {
-  fill: var(--figma-color-icon)
+    fill: var(--figma-color-icon);
 }
 
 .greyIcon {
-  fill: #b0b0b0
+    fill: #b0b0b0;
 }
 
 .statsBigText {
-  font-size: 36px;
-  font-weight: 600;
-  line-height: 120%;
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 120%;
 }
 
 .statsMedText {
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 130%;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 130%;
+}
+
+.formContent {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.controlRow {
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+}
+
+.sectionHeading {
+    margin-left: 0;
 }
 
 .textTertiary {
-  font-size: 11px;
-  color: var(--figma-color-text-tertiary);
+    font-size: 11px;
+    color: var(--figma-color-text-tertiary);
 }
 
 .strokeControls {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 8px 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px 8px;
 }
 
 .strokeWeightControl {
-  position: relative;
-  min-width: 0;
+    position: relative;
+    min-width: 0;
 }
 
 .focusModeRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .focusModeSelect {
-  flex: 0 0 40%;
-  min-width: 0;
+    flex: 0 0 40%;
+    min-width: 0;
 }
 
 .focusModeInlineControl {
-  flex: 1 1 60%;
-  min-width: 0;
+    flex: 1 1 60%;
+    min-width: 0;
+}
+
+.variantFocusControls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.variantValueRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.variantValueArrow {
+    flex: 0 0 auto;
 }
 
 .animationPrimaryRow {
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  min-width: 0;
-  align-items: center;
-  row-gap: var(--space-4);
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: var(--space-4);
 }
 
 .animationTransitionControl {
-  flex: 1 1 120px;
-  min-width: 0;
+    flex: 1 1 120px;
+    min-width: 0;
 }
 
 .animationDirectionControl {
-  display: flex;
-  flex: 0 0 auto;
-  min-width: 0;
+    display: flex;
+    flex: 0 0 auto;
+    min-width: 0;
 }
 
 .animationDirectionControl label:first-of-type > div {
-  min-width: 56px;
+    min-width: 56px;
 }
 
 .animationDirectionControl label:not(:first-of-type) > div {
-  width: 28px;
-  min-width: 28px;
+    width: 28px;
+    min-width: 28px;
+}
+
+.animationSecondaryRow {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    min-width: 0;
+}
+
+.animationEasingControl {
+    flex: 1 1 60%;
+    min-width: 0;
+}
+
+.animationDurationControl {
+    flex: 1 1 40%;
+    min-width: 0;
 }

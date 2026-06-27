@@ -205,13 +205,13 @@ export class PrototypeForm extends Component<any, any>  {
 
         <VerticalSpace space='large' />
 
-        <div style='padding-left: 16px; padding-right: 16px;'> 
+        <div class={styles.formContent}>
           <Text>{this.props.uiMessage}</Text>
         </div>
         
         {
           this.state.ui.errorMessage.length > 0 && 
-          <div style='padding-left: 16px; padding-right: 16px;'> 
+          <div class={styles.formContent}>
             <VerticalSpace space='large' />
             <text class={styles.errorText}>{this.state.ui.errorMessage}</text>
           </div>
@@ -220,7 +220,7 @@ export class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='extraLarge' />
 
         <NavigationOptions
-          style='padding-left: 8px; padding-right: 8px;'
+          style='padding-left: 16px; padding-right: 16px;'
           onNavigationChange={this.onNavigationChange}
           activeNavigation={this.state.config.activeNavigation}
           keyboardNavigation={this.state.config.storedNavigation.keyboard}
@@ -231,7 +231,7 @@ export class PrototypeForm extends Component<any, any>  {
         <VerticalSpace space='large' />
 
         <AnimationOptions
-          style='padding-left: 8px; padding-right: 8px;'
+          style='padding-left: 16px; padding-right: 16px;'
           animation={this.state.config.animation}
           onAnimationChange={this.onAnimationChange}
         />
@@ -241,7 +241,7 @@ export class PrototypeForm extends Component<any, any>  {
         {
           this.props.mode !== Mode.LINK &&
           <NavigationFocusOptions
-          style='padding-left: 8px; padding-right: 8px; padding-bottom: 12px;'
+          style='padding-left: 16px; padding-right: 16px; padding-bottom: 12px;'
           focus={this.state.config.focus}
           onNavigationFocusChange={this.onNavigationFocusChange}
           showPropertyError={this.state.ui.showVariantPropertyError}
