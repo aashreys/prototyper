@@ -248,12 +248,15 @@ export class PrototypeForm extends Component<any, any>  {
           showToVariantError={this.state.ui.showVariantToValueError} />
         }
 
+        <div class={styles.actionDivider} />
+
         <div style="display: flex; padding-left: 16px; padding-right: 16px;"> 
           <div style="flex-grow: 1"> 
             <Button 
             fullWidth
             disabled={this.state.ui.buttonLoading} 
             loading={this.state.ui.buttonLoading} 
+            style="height: 32px;"
             onClick={this.onClick}>{this.props.buttonTitle}
             </Button>
           </div>

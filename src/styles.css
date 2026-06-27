@@ -148,6 +148,11 @@
     padding-right: 16px;
 }
 
+.actionDivider {
+    border-top: 1px solid var(--figma-color-border);
+    margin-bottom: 16px;
+}
+
 .controlRow {
     display: flex;
     gap: 8px;
@@ -156,6 +161,12 @@
 
 .sectionHeading {
     margin-left: 0;
+}
+
+.helperText {
+    color: var(--figma-color-text-secondary);
+    font-size: 11px;
+    line-height: 16px;
 }
 
 .textTertiary {

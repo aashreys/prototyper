@@ -1,4 +1,5 @@
 declare const styles: {
+  readonly "actionDivider": string;
   readonly "animationDirectionControl": string;
   readonly "animationDurationControl": string;
   readonly "animationEasingControl": string;
@@ -13,6 +14,7 @@ declare const styles: {
   readonly "formContent": string;
   readonly "greyIcon": string;
   readonly "helpButton": string;
+  readonly "helperText": string;
   readonly "linkButton": string;
   readonly "onboardingContainer": string;
   readonly "sectionHeading": string;

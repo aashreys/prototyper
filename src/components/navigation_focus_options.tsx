@@ -165,14 +165,13 @@ export class NavigationFocusOptions extends Component<
   renderVariantControls(props: NavigationFocusOptionsProps) {
     return (
       <div class={styles.variantFocusControls}>
-        <Text>
-          Enter the variant property and the values to use for the default and
-          focused states of your UI components.
-        </Text>
+        <div class={styles.helperText}>
+          Use your own UI components to display navigation focus.
+        </div>
 
         <Textbox
           onInput={(e) => this.onVariantPropertyChange(e.currentTarget.value)}
-          placeholder="Component property e.g. Focus"
+          placeholder="Component property e.g. State"
           value={props.focus.variant.property}
         />
 
