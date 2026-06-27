@@ -42,7 +42,7 @@ const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
   { value: NavigationFocusMode.FILL, text: "Fill" },
   { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
-  { value: NavigationFocusMode.VARIANT, text: "Components" },
+  { value: NavigationFocusMode.VARIANT, text: "Existing components" },
 ];
 
 const COMPONENT_MAPPING_TYPE_OPTIONS: Array<DropdownOption> = [
@@ -55,6 +55,13 @@ const STROKE_ALIGN_OPTIONS: Array<DropdownOption> = [
   { value: "INSIDE", text: "Inside" },
   { value: "OUTSIDE", text: "Outside" },
 ];
+
+const HELPER_TEXT = {
+  stroke: "Add a stroke to show focus. Works with any layer.",
+  fill: "Add a fill to show focus. Best for layers with no or unobscured fills.",
+  scale: "Change scale to show focus e.g. tvOS. Works with any layer.",
+  component: "Modify component properties to show focus.",
+};
 
 function FocusNumberInput(props: FocusNumberInputProps) {
   const [value, setValue] = useState(formatNumericInputValue(props));
@@ -385,9 +392,7 @@ export class NavigationFocusOptions extends Component<
     return (
       <div class={styles.variantFocusControls}>
         <div class={styles.componentMappingHeader}>
-          <div class={styles.helperText}>
-            {"Add properties to show the focused state of your components"}
-          </div>
+          <div class={styles.helperText}>{HELPER_TEXT.component}</div>
           <IconButton onClick={() => this.addMapping()} title="Add mapping">
             <IconPlusSmall24 />
           </IconButton>
@@ -487,6 +492,8 @@ export class NavigationFocusOptions extends Component<
   renderStrokeControls(props: NavigationFocusOptionsProps) {
     return (
       <div class={styles.strokeControls}>
+        <div class={styles.helperText}>{HELPER_TEXT.stroke}</div>
+
         <div>
           <TextboxColor
             fullWidth
@@ -527,41 +534,51 @@ export class NavigationFocusOptions extends Component<
 
   renderFillControls(props: NavigationFocusOptionsProps) {
     return (
-      <TextboxColor
-        fullWidth
-        hexColor={this.toTextboxHexColor(props.focus.fill.color)}
-        onHexColorInput={(e) => this.onFillColorChange(e.currentTarget.value)}
-        onOpacityNumericValueInput={(value) => this.onFillOpacityChange(value)}
-        opacity={props.focus.fill.opacity.toString()}
-      />
+      <div class={styles.variantFocusControls}>
+        <div class={styles.helperText}>{HELPER_TEXT.fill}</div>
+
+        <TextboxColor
+          fullWidth
+          hexColor={this.toTextboxHexColor(props.focus.fill.color)}
+          onHexColorInput={(e) => this.onFillColorChange(e.currentTarget.value)}
+          onOpacityNumericValueInput={(value) =>
+            this.onFillOpacityChange(value)
+          }
+          opacity={props.focus.fill.opacity.toString()}
+        />
+      </div>
     );
   }
 
   renderScaleShadowControls(props: NavigationFocusOptionsProps) {
     return (
-      <div class={styles.scaleControls}>
-        <div class={styles.scaleControl}>
-          <FocusNumberInput
-            icon={<IconScaleSmall24 />}
-            minimum={0.01}
-            onNumberInput={(value) =>
-              this.onScaleShadowNumberChange("scale", value)
-            }
-            placeholder="Scale"
-            suffix="x"
-            value={props.focus.scaleShadow.scale}
-          />
-        </div>
+      <div class={styles.variantFocusControls}>
+        <div class={styles.helperText}>{HELPER_TEXT.scale}</div>
 
-        <div class={styles.scaleShadowToggle}>
-          <Checkbox
-            onChange={(e) =>
-              this.onScaleShadowShowShadowChange(e.currentTarget.checked)
-            }
-            value={props.focus.scaleShadow.showShadow}
-          >
-            <Text>Add shadow</Text>
-          </Checkbox>
+        <div class={styles.scaleControls}>
+          <div class={styles.scaleControl}>
+            <FocusNumberInput
+              icon={<IconScaleSmall24 />}
+              minimum={0.01}
+              onNumberInput={(value) =>
+                this.onScaleShadowNumberChange("scale", value)
+              }
+              placeholder="Scale"
+              suffix="x"
+              value={props.focus.scaleShadow.scale}
+            />
+          </div>
+
+          <div class={styles.scaleShadowToggle}>
+            <Checkbox
+              onChange={(e) =>
+                this.onScaleShadowShowShadowChange(e.currentTarget.checked)
+              }
+              value={props.focus.scaleShadow.showShadow}
+            >
+              <Text>Add shadow</Text>
+            </Checkbox>
+          </div>
         </div>
       </div>
     );
