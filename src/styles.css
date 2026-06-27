@@ -164,12 +164,12 @@
 }
 
 .focusModeSelect {
-  flex: 1 1 0;
+  flex: 0 0 40%;
   min-width: 0;
 }
 
 .focusModeInlineControl {
-  flex: 1 1 0;
+  flex: 1 1 60%;
   min-width: 0;
 }
 
