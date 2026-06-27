@@ -1,19 +1,48 @@
 {
   "dependencies": {
-    "@create-figma-plugin/ui": "^3",
-    "@create-figma-plugin/utilities": "^3",
-    "gamepad.js": "^2",
-    "preact": "^10.5.14"
+    "@create-figma-plugin/ui": "^4.0.3",
+    "@create-figma-plugin/utilities": "^4.0.3",
+    "gamepad.js": "^3.0.1",
+    "preact": "^10.29.3"
   },
   "devDependencies": {
-    "@create-figma-plugin/build": "^3",
-    "@create-figma-plugin/tsconfig": "^3",
-    "@figma/plugin-typings": "*",
-    "typescript": "^5.5.2"
+    "@create-figma-plugin/build": "^4.0.3",
+    "@create-figma-plugin/tsconfig": "^4.0.3",
+    "@eslint/js": "^10.0.1",
+    "@figma/eslint-plugin-figma-plugins": "^1.0.0",
+    "@figma/plugin-typings": "^1.130.0",
+    "@typescript-eslint/eslint-plugin": "^8.62.0",
+    "@typescript-eslint/parser": "^8.62.0",
+    "eslint": "^10.6.0",
+    "patch-package": "^8.0.1",
+    "typescript": "^6.0.3"
   },
   "scripts": {
     "build": "build-figma-plugin --typecheck --minify",
+    "postinstall": "patch-package",
     "watch": "build-figma-plugin --typecheck --watch"
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@figma/figma-plugins/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "root": true,
+    "rules": {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "caughtErrorsIgnorePattern": "^_"
+        }
+      ]
+    }
   },
   "figma-plugin": {
     "id": "1020894954864594118",
@@ -31,7 +60,9 @@
       }
     },
     "networkAccess": {
-      "allowedDomains": ["none"],
+      "allowedDomains": [
+        "none"
+      ],
       "reasoning": ""
     },
     "documentAccess": "dynamic-page"

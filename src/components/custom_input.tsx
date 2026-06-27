@@ -1,9 +1,13 @@
-import { IconArrowDown16, IconArrowLeft16, IconArrowRight16, IconArrowUp16, Textbox } from "@create-figma-plugin/ui";
+import { Textbox } from "@create-figma-plugin/ui";
 import { Component, h } from "preact";
 import { GamepadListener } from 'gamepad.js'
 import { Device, Keycode, KeycodeUtils } from "../device";
 import { OS, Utils } from "../utils";
 import { KeyboardKeycodes } from "../keyboard_keycodes";
+import { ArrowDownIcon } from "../icons/arrow_down";
+import { ArrowLeftIcon } from "../icons/arrow_left";
+import { ArrowRightIcon } from "../icons/arrow_right";
+import { ArrowUpIcon } from "../icons/arrow_up";
 import styles from "../styles.css";
 
 const PRESS_KEY = 'Press Key'
@@ -240,7 +244,7 @@ export class CustomInput extends Component<any, any> {
 
         <div style="width: 50%; margin: auto; margin-top: 4px;">
           <CustomInputTextbox 
-          icon={<IconArrowUp16 />}
+          icon={<ArrowUpIcon />}
           placeholder='Up Input'
           device={props.device}
           onKeycodeChange={this.onUpKeycodeChange}
@@ -250,7 +254,7 @@ export class CustomInput extends Component<any, any> {
         <div style="display: flex; margin-top: 4px">
           <div style="width: 50%;">
             <CustomInputTextbox 
-            icon={<IconArrowLeft16 />}
+            icon={<ArrowLeftIcon />}
             placeholder='Left Input'
             device={props.device}
             onKeycodeChange={this.onLeftKeycodeChange}
@@ -259,7 +263,7 @@ export class CustomInput extends Component<any, any> {
 
           <div style="width: 50%;">
             <CustomInputTextbox 
-            icon={<IconArrowRight16 />}
+            icon={<ArrowRightIcon />}
             placeholder='Right Input'
             device={props.device}
             onKeycodeChange={this.onRightKeycodeChange}
@@ -270,7 +274,7 @@ export class CustomInput extends Component<any, any> {
         
         <div style="width: 50%; margin: auto; margin-top: 4px;">
             <CustomInputTextbox 
-            icon={<IconArrowDown16 />}
+            icon={<ArrowDownIcon />}
             placeholder='Down Input'
             device={props.device}
             onKeycodeChange={this.onDownKeycodeChange}

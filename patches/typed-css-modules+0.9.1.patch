@@ -1,0 +1,13 @@
+diff --git a/node_modules/typed-css-modules/lib/cli.js b/node_modules/typed-css-modules/lib/cli.js
+index bc7d9ca..3424489 100755
+--- a/node_modules/typed-css-modules/lib/cli.js
++++ b/node_modules/typed-css-modules/lib/cli.js
+@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+     return (mod && mod.__esModule) ? mod : { "default": mod };
+ };
+ Object.defineProperty(exports, "__esModule", { value: true });
+-const yargs_1 = __importDefault(require("yargs/yargs"));
++const yargs_1 = __importDefault(require("yargs"));
+ const helpers_1 = require("yargs/helpers");
+ const run_1 = require("./run");
+ const yarg = (0, yargs_1.default)((0, helpers_1.hideBin)(process.argv))

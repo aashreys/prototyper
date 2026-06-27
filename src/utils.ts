@@ -315,7 +315,8 @@ export class Utils {
       actions: [{
         type: "NODE",
         destinationId: toFrame.id,
-        navigation: "NAVIGATE",
+        // Figma's global `Navigation` type collides with the DOM `Navigation` type in TypeScript 6.
+        navigation: "NAVIGATE" as unknown as Navigation,
         transition: Utils.createTransition(animation),
         preserveScrollPosition: false,
       }],

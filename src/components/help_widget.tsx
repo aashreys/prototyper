@@ -31,7 +31,7 @@ export class HelpWdiget extends Component<any, any> {
         {
           this.state.isMenuShown &&
           <div class={styles.verticalMenu}
-            ref={(container) => (this.container = container)}>
+            ref={(container) => { this.container = container }}>
               <p>Video Tutorials</p>
               <a href="https://youtu.be/6KvnigBr6i4?t=1251" target="_blank">Using Prototyper</a>
               <a href="https://youtu.be/6KvnigBr6i4" target="_blank">Game UI Navigation</a>
@@ -45,7 +45,7 @@ export class HelpWdiget extends Component<any, any> {
         }
         <button
         class={styles.helpButton} 
-        ref={(button) => (this.button = button)}
+        ref={(button) => { this.button = button }}
         onClick={this.onButtonClick}
         onMouseEnter={this.onButtonMouseEnter}
         onMouseLeave={this.onButtonMouseLeave}
