@@ -7,6 +7,7 @@ import {
   IconMinusSmall24,
   IconPlusSmall24,
   IconScaleSmall24,
+  IconAutoLayoutSpacingHorizontal24,
   IconStrokeWeight24,
   Text,
   Textbox,
@@ -537,6 +538,11 @@ export class NavigationFocusOptions extends Component<
           {props.focus.stroke.align === "OUTSIDE" && (
             <div class={styles.strokeWeightControl}>
               <FocusNumberInput
+                icon={
+                  <IconAutoLayoutSpacingHorizontal24
+                    class={styles.strokeGapIcon}
+                  />
+                }
                 minimum={0}
                 onNumberInput={(value) =>
                   this.onStrokeNumberChange("gap", value)

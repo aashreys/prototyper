@@ -182,14 +182,14 @@
 
 .strokeSecondaryControls {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 40% minmax(0, 1fr);
     gap: 8px;
     align-items: center;
 }
 
 .strokeSecondaryControlsWithGap {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 40% minmax(0, 1fr) minmax(0, 1fr);
     gap: 8px;
     align-items: center;
 }
@@ -197,6 +197,11 @@
 .strokeWeightControl {
     position: relative;
     min-width: 0;
+}
+
+.strokeGapIcon {
+    transform: scale(1.25);
+    transform-origin: center;
 }
 
 .scaleControls {
