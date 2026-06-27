@@ -53,7 +53,8 @@ test('defaults new configs to stroke focus', () => {
 
   assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
   assert.equal(config.focus.stroke.align, 'OUTSIDE')
-  assert.equal(config.focus.scaleShadow.scale, 1.08)
+  assert.equal(config.focus.stroke.weight, 8)
+  assert.equal(config.focus.scaleShadow.scale, 1.2)
   assert.equal(config.focus.scaleShadow.showShadow, true)
   assert.deepEqual(config.swapVariant, {
     property: '',

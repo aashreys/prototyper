@@ -11,10 +11,10 @@ import {
   Text,
   Textbox,
   TextboxColor,
-  TextboxNumeric,
   VerticalSpace,
 } from "@create-figma-plugin/ui";
-import { Component, h } from "preact";
+import { Component, h, JSX } from "preact";
+import { useEffect, useState } from "preact/hooks";
 import {
   ComponentFocusMapping,
   ComponentFocusPropertyType,
@@ -34,6 +34,9 @@ import styles from "../styles.css";
 type StrokeNumberKey = "weight";
 type ScaleShadowNumberKey = "scale";
 
+const DECIMAL_INPUT_PATTERN = /^\d*(?:\.\d*)?$/;
+const DECIMAL_WITH_X_PATTERN = /^(?:\d+|\d+\.\d+|\.\d+)x$/i;
+
 const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
   { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
@@ -50,6 +53,85 @@ const STROKE_ALIGN_OPTIONS: Array<DropdownOption> = [
   { value: "INSIDE", text: "Inside" },
   { value: "OUTSIDE", text: "Outside" },
 ];
+
+function FocusNumberInput(props: FocusNumberInputProps) {
+  const [value, setValue] = useState(formatNumericInputValue(props));
+  const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setValue(formatNumericInputValue(props));
+    }
+  }, [isFocused, props.suffix, props.value]);
+
+  function handleInput(event: JSX.TargetedEvent<HTMLInputElement>) {
+    const nextValue = event.currentTarget.value;
+    if (!isAllowedNumericInput(nextValue, props.suffix)) {
+      event.currentTarget.value = value;
+      return;
+    }
+    setValue(nextValue);
+
+    const parsedValue = parseNumericInputValue(nextValue, props.suffix);
+    if (parsedValue === null) return;
+    if (parsedValue < props.minimum) return;
+    props.onNumberInput(parsedValue);
+  }
+
+  function validateOnBlur(nextValue: string): string | boolean {
+    const parsedValue = parseNumericInputValue(nextValue, props.suffix);
+    if (parsedValue === null || parsedValue < props.minimum) return false;
+    return formatNumericInputValue({
+      ...props,
+      value: parsedValue,
+    });
+  }
+
+  return (
+    <Textbox
+      icon={props.icon}
+      onBlur={() => setIsFocused(false)}
+      onFocus={() => setIsFocused(true)}
+      onInput={handleInput}
+      placeholder={props.placeholder}
+      validateOnBlur={validateOnBlur}
+      value={value}
+    />
+  );
+}
+
+function isAllowedNumericInput(value: string, suffix?: string): boolean {
+  const normalizedValue = value.trim();
+  if (suffix === "x") {
+    if (normalizedValue.endsWith("x") || normalizedValue.endsWith("X")) {
+      return DECIMAL_WITH_X_PATTERN.test(normalizedValue);
+    }
+    return DECIMAL_INPUT_PATTERN.test(normalizedValue);
+  }
+  return DECIMAL_INPUT_PATTERN.test(normalizedValue);
+}
+
+function parseNumericInputValue(value: string, suffix?: string): null | number {
+  let normalizedValue = value.trim();
+  if (suffix === "x") normalizedValue = normalizedValue.replace(/x$/i, "");
+  if (
+    normalizedValue.length === 0 ||
+    normalizedValue === "." ||
+    !DECIMAL_INPUT_PATTERN.test(normalizedValue)
+  ) {
+    return null;
+  }
+
+  const parsedValue = Number(normalizedValue);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function formatNumericInputValue(props: {
+  suffix?: string;
+  value: number;
+}): string {
+  return `${props.value.toString()}${props.suffix || ""}`;
+}
 
 export class NavigationFocusOptions extends Component<
   NavigationFocusOptionsProps,
@@ -398,13 +480,14 @@ export class NavigationFocusOptions extends Component<
           </div>
 
           <div class={styles.strokeWeightControl}>
-            <TextboxNumeric
+            <FocusNumberInput
               icon={<IconStrokeWeight24 />}
               minimum={0}
-              onNumericValueInput={(value) =>
+              onNumberInput={(value) =>
                 this.onStrokeNumberChange("weight", value)
               }
-              value={props.focus.stroke.weight.toString()}
+              placeholder="Thickness"
+              value={props.focus.stroke.weight}
             />
           </div>
         </div>
@@ -416,15 +499,15 @@ export class NavigationFocusOptions extends Component<
     return (
       <div class={styles.scaleControls}>
         <div class={styles.scaleControl}>
-          <TextboxNumeric
+          <FocusNumberInput
             icon={<IconScaleSmall24 />}
-            integer={false}
             minimum={0.01}
-            onNumericValueInput={(value) =>
+            onNumberInput={(value) =>
               this.onScaleShadowNumberChange("scale", value)
             }
+            placeholder="Scale"
             suffix="x"
-            value={props.focus.scaleShadow.scale.toString()}
+            value={props.focus.scaleShadow.scale}
           />
         </div>
 
@@ -500,4 +583,13 @@ interface NavigationFocusOptionsProps {
   showPropertyError: boolean;
   showToVariantError: boolean;
   style?: string;
+}
+
+interface FocusNumberInputProps {
+  icon: JSX.Element;
+  minimum: number;
+  onNumberInput: (value: number) => void;
+  placeholder: string;
+  suffix?: string;
+  value: number;
 }

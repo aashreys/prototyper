@@ -58,7 +58,7 @@ export const DEFAULT_COMPONENT_FOCUS_MAPPING: ComponentFocusMapping = {
 
 export const DEFAULT_STROKE_FOCUS: StrokeFocusConfig = {
   color: '#0C8CE9',
-  weight: 4,
+  weight: 8,
   align: 'OUTSIDE'
 }
 
@@ -71,7 +71,7 @@ export const DEFAULT_SHADOW_FOCUS: ShadowFocusConfig = {
 }
 
 export const DEFAULT_SCALE_SHADOW_FOCUS: ScaleShadowFocusConfig = {
-  scale: 1.08,
+  scale: 1.2,
   showShadow: true,
   padding: 6,
   useAutoCornerRadius: true,
