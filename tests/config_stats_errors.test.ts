@@ -53,7 +53,7 @@ test('defaults new configs to stroke focus', () => {
 
   assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
   assert.equal(config.focus.stroke.useAutoCornerRadius, false)
-  assert.equal(config.focus.scaleShadow.scalePercent, 108)
+  assert.equal(config.focus.scaleShadow.scale, 1.08)
   assert.equal(config.focus.scaleShadow.opacity, 35)
   assert.deepEqual(config.swapVariant, {
     property: '',
@@ -176,7 +176,7 @@ test('preserves saved scale shadow settings', () => {
       mode: NavigationFocusMode.SCALE_SHADOW,
       scaleShadow: {
         ...Config.getDefaultConfig().focus.scaleShadow,
-        scalePercent: 112,
+        scale: 1.12,
         opacity: 42,
         offsetY: 10
       }
@@ -190,9 +190,50 @@ test('preserves saved scale shadow settings', () => {
   let config = Config.getSavedConfig()
 
   assert.equal(config.focus.mode, NavigationFocusMode.SCALE_SHADOW)
-  assert.equal(config.focus.scaleShadow.scalePercent, 112)
+  assert.equal(config.focus.scaleShadow.scale, 1.12)
   assert.equal(config.focus.scaleShadow.opacity, 42)
   assert.equal(config.focus.scaleShadow.offsetY, 10)
+})
+
+test('migrates legacy scale shadow percent to multiplier scale', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: NavigationFocusMode.SCALE_SHADOW,
+      scaleShadow: {
+        ...Config.getDefaultConfig().focus.scaleShadow,
+        scale: undefined,
+        scalePercent: 116
+      }
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.scaleShadow.scale, 1.16)
+})
+
+test('preserves saved Apple TV focus mode', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: NavigationFocusMode.APPLE_TV
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.APPLE_TV)
 })
 
 test('preserves saved focus variant when compatibility swapVariant is empty', () => {

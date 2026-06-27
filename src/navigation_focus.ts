@@ -4,7 +4,8 @@ export enum NavigationFocusMode {
   VARIANT = 'variant',
   STROKE = 'stroke',
   SHADOW = 'shadow',
-  SCALE_SHADOW = 'scale-shadow'
+  SCALE_SHADOW = 'scale-shadow',
+  APPLE_TV = 'apple-tv'
 }
 
 export interface StrokeFocusConfig {
@@ -24,7 +25,7 @@ export interface ShadowFocusConfig {
 }
 
 export interface ScaleShadowFocusConfig {
-  readonly scalePercent: number
+  readonly scale: number
   readonly color: string
   readonly opacity: number
   readonly blur: number
@@ -66,7 +67,7 @@ export const DEFAULT_SHADOW_FOCUS: ShadowFocusConfig = {
 }
 
 export const DEFAULT_SCALE_SHADOW_FOCUS: ScaleShadowFocusConfig = {
-  scalePercent: 108,
+  scale: 1.08,
   color: '#000000',
   opacity: 35,
   blur: 24,
@@ -110,7 +111,7 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
       cornerRadius: normalizeNumber(value.shadow?.cornerRadius, DEFAULT_SHADOW_FOCUS.cornerRadius)
     },
     scaleShadow: {
-      scalePercent: normalizeNumber(value.scaleShadow?.scalePercent, DEFAULT_SCALE_SHADOW_FOCUS.scalePercent),
+      scale: normalizeScale(value.scaleShadow, DEFAULT_SCALE_SHADOW_FOCUS.scale),
       color: normalizeColor(value.scaleShadow?.color, DEFAULT_SCALE_SHADOW_FOCUS.color),
       opacity: normalizeNumber(value.scaleShadow?.opacity, DEFAULT_SCALE_SHADOW_FOCUS.opacity),
       blur: normalizeNumber(value.scaleShadow?.blur, DEFAULT_SCALE_SHADOW_FOCUS.blur),
@@ -144,6 +145,7 @@ function normalizeFocusMode(value, fallback: NavigationFocusMode): NavigationFoc
   if (value === NavigationFocusMode.STROKE) return NavigationFocusMode.STROKE
   if (value === NavigationFocusMode.SHADOW) return NavigationFocusMode.SHADOW
   if (value === NavigationFocusMode.SCALE_SHADOW) return NavigationFocusMode.SCALE_SHADOW
+  if (value === NavigationFocusMode.APPLE_TV) return NavigationFocusMode.APPLE_TV
   return fallback
 }
 
@@ -157,4 +159,17 @@ function normalizeColor(value, fallback: string): string {
 
 function normalizeBoolean(value, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback
+}
+
+function normalizeScale(value, fallback: number): number {
+  const hasScale = typeof value?.scale === 'number' && Number.isFinite(value.scale) && value.scale >= 0.01
+  const hasScalePercent = typeof value?.scalePercent === 'number' && Number.isFinite(value.scalePercent) && value.scalePercent >= 1
+  if (hasScale && value.scale !== fallback) {
+    return value.scale
+  }
+  if (hasScalePercent) {
+    return value.scalePercent / 100
+  }
+  if (hasScale) return value.scale
+  return fallback
 }

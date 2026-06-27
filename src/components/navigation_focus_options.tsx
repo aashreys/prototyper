@@ -24,7 +24,7 @@ import styles from "../styles.css";
 type StrokeNumberKey = "weight" | "padding" | "cornerRadius";
 type ShadowNumberKey = "blur" | "spread";
 type ScaleShadowNumberKey =
-  | "scalePercent"
+  | "scale"
   | "opacity"
   | "blur"
   | "spread"
@@ -34,6 +34,7 @@ const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
   { value: NavigationFocusMode.SHADOW, text: "Shadow" },
   { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale + Shadow" },
+  { value: NavigationFocusMode.APPLE_TV, text: "Apple TV" },
   { value: NavigationFocusMode.VARIANT, text: "Swap Variant" },
 ];
 
@@ -153,7 +154,7 @@ export class NavigationFocusOptions extends Component<
       [key]: this.toFocusNumber(
         value,
         this.props.focus.scaleShadow[key],
-        key === "scalePercent" ? 1 : 0,
+        key === "scale" ? 0.01 : 0,
         key === "opacity" ? 100 : undefined,
       ),
     });
@@ -327,9 +328,9 @@ export class NavigationFocusOptions extends Component<
 
         {this.renderNumericControl(
           "Scale",
-          props.focus.scaleShadow.scalePercent,
-          (value) => this.onScaleShadowNumberChange("scalePercent", value),
-          { minimum: 1, suffix: "%" },
+          props.focus.scaleShadow.scale,
+          (value) => this.onScaleShadowNumberChange("scale", value),
+          { integer: false, minimum: 0.01 },
         )}
         {this.renderNumericControl("Blur", props.focus.scaleShadow.blur, (value) =>
           this.onScaleShadowNumberChange("blur", value),
@@ -352,13 +353,18 @@ export class NavigationFocusOptions extends Component<
     label: string,
     value: number,
     onChange: (value: null | number) => void,
-    options: { minimum?: number; maximum?: number; suffix?: string } = {},
+    options: {
+      integer?: boolean;
+      minimum?: number;
+      maximum?: number;
+      suffix?: string;
+    } = {},
   ) {
     return (
       <div>
         <Text>{label}</Text>
         <TextboxNumeric
-          integer
+          integer={options.integer ?? true}
           minimum={options.minimum ?? 0}
           maximum={options.maximum}
           onNumericValueInput={onChange}
@@ -376,6 +382,7 @@ export class NavigationFocusOptions extends Component<
       return this.renderShadowControls(props);
     if (props.focus.mode === NavigationFocusMode.SCALE_SHADOW)
       return this.renderScaleShadowControls(props);
+    if (props.focus.mode === NavigationFocusMode.APPLE_TV) return null;
     return this.renderStrokeControls(props);
   }
 

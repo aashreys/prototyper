@@ -185,7 +185,7 @@ function createFocus(mode: NavigationFocusMode) {
       cornerRadius: 4
     },
     scaleShadow: {
-      scalePercent: 108,
+      scale: 1.08,
       color: '#000000',
       opacity: 35,
       blur: 24,
@@ -313,6 +313,31 @@ test('applies scale shadow focus directly to the target layer', () => {
   assert.equal(target.effects[0].radius, 24)
   assert.equal(target.effects[0].offset.y, 8)
   assert.equal(target.effects[0].color.a, 0.35)
+})
+
+test('applies Apple TV focus directly with fixed scale and layered shadows', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
+  let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 })
+
+  let result = FocusOverlay.create(frame, target, createFocus(NavigationFocusMode.APPLE_TV) as any) as any
+
+  assert.equal(result, target)
+  assert.deepEqual(frame.children, [target])
+  assert.equal(target.x, 20)
+  assert.equal(target.y, 45)
+  assert.equal(target.width, 120)
+  assert.equal(target.height, 60)
+  assert.equal(target.effects.length, 3)
+  assert.equal(target.effects[0].radius, 10)
+  assert.equal(target.effects[0].offset.y, 4)
+  assert.equal(target.effects[0].color.a, 0.24)
+  assert.equal(target.effects[1].radius, 24)
+  assert.equal(target.effects[1].offset.y, 14)
+  assert.equal(target.effects[1].color.a, 0.22)
+  assert.equal(target.effects[2].radius, 48)
+  assert.equal(target.effects[2].offset.y, 30)
+  assert.equal(target.effects[2].color.a, 0.16)
 })
 
 test('removes only plugin-managed overlays', () => {
