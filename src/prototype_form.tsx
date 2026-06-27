@@ -265,7 +265,7 @@ export class PrototypeForm extends Component<any, any>  {
         {
           this.props.mode !== Mode.LINK &&
           <NavigationFocusOptions
-          style='padding-left: 16px; padding-right: 16px; padding-bottom: 12px;'
+          style='padding-left: 16px; padding-right: 16px; padding-bottom: 16px;'
           focus={this.state.config.focus}
           onComponentMappingAdd={this.clearComponentFocusErrors}
           onNavigationFocusChange={this.onNavigationFocusChange}
