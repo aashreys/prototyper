@@ -58,7 +58,7 @@ const STROKE_ALIGN_OPTIONS: Array<DropdownOption> = [
 ];
 
 const COMPONENT_HELPER_TEXT =
-  "Add component properties to default and focus states";
+  "Add component properties to show focused UI state";
 
 function FocusNumberInput(props: FocusNumberInputProps) {
   const [value, setValue] = useState(formatNumericInputValue(props));
@@ -272,6 +272,7 @@ export class NavigationFocusOptions extends Component<
       ...mappings,
       { ...DEFAULT_COMPONENT_FOCUS_MAPPING },
     ]);
+    this.props.onComponentMappingAdd();
   }
 
   removeMapping(index: number) {
@@ -386,6 +387,9 @@ export class NavigationFocusOptions extends Component<
   }
 
   renderVariantControls(props: NavigationFocusOptionsProps) {
+    const mappings = this.getComponentMappings(props);
+    const showEmptyMappingsError =
+      props.showPropertyError && mappings.length === 0;
     return (
       <div class={styles.variantFocusControls}>
         <div class={styles.componentMappingHeader}>
@@ -395,8 +399,14 @@ export class NavigationFocusOptions extends Component<
           </IconButton>
         </div>
 
+        {showEmptyMappingsError && (
+          <div class={styles.componentMappingHeaderError}>
+            <text class={styles.errorText}>Component property required</text>
+          </div>
+        )}
+
         <div class={styles.componentMappings}>
-          {this.getComponentMappings(props).map((mapping, index) =>
+          {mappings.map((mapping, index) =>
             this.renderMappingControl(mapping, index, props),
           )}
         </div>
@@ -655,6 +665,7 @@ export class NavigationFocusOptions extends Component<
 
 interface NavigationFocusOptionsProps {
   focus: NavigationFocusConfig;
+  onComponentMappingAdd: () => void;
   onNavigationFocusChange: (focus: NavigationFocusConfig) => void;
   showPropertyError: boolean;
   showToVariantError: boolean;

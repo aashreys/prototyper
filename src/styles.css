@@ -254,6 +254,11 @@
     gap: 8px;
 }
 
+.componentMappingHeaderError {
+    margin-top: -4px;
+    margin-left: 0;
+}
+
 .componentMapping {
     --componentMappingActionWidth: 28px;
     --componentMappingArrowWidth: 11px;

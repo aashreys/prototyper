@@ -9,6 +9,7 @@ declare const styles: {
   readonly "componentMapping": string;
   readonly "componentMappingError": string;
   readonly "componentMappingHeader": string;
+  readonly "componentMappingHeaderError": string;
   readonly "componentMappingRow": string;
   readonly "componentMappingValueFields": string;
   readonly "componentMappingValueRow": string;

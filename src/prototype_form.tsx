@@ -45,6 +45,7 @@ export class PrototypeForm extends Component<any, any>  {
     this.onAnimationChange = this.onAnimationChange.bind(this);
     this.onNavigationChange = this.onNavigationChange.bind(this);
     this.onNavigationFocusChange = this.onNavigationFocusChange.bind(this);
+    this.clearComponentFocusErrors = this.clearComponentFocusErrors.bind(this);
     this.registerEventHandlers = this.registerEventHandlers.bind(this);
   }
 
@@ -171,6 +172,17 @@ export class PrototypeForm extends Component<any, any>  {
     }))
   }
 
+  clearComponentFocusErrors() {
+    this.setState(prevState => ({
+      config: prevState.config,
+      ui: {
+        ...prevState.ui,
+        showVariantPropertyError: false,
+        showVariantToValueError: false
+      }
+    }))
+  }
+
   isCustomInputValid() {
     let config = this.state.config
     let scheme = config.activeNavigation.scheme
@@ -246,6 +258,7 @@ export class PrototypeForm extends Component<any, any>  {
           <NavigationFocusOptions
           style='padding-left: 16px; padding-right: 16px; padding-bottom: 12px;'
           focus={this.state.config.focus}
+          onComponentMappingAdd={this.clearComponentFocusErrors}
           onNavigationFocusChange={this.onNavigationFocusChange}
           showPropertyError={this.state.ui.showVariantPropertyError}
           showToVariantError={this.state.ui.showVariantToValueError} />
