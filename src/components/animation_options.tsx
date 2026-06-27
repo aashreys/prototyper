@@ -280,22 +280,25 @@ export class AnimationOptions extends Component<any, any> {
         
         <VerticalSpace space='small' />
         
-        <div style='display: flex; align-items:center'>
+        <div class={styles.animationPrimaryRow}>
 
-          <Dropdown // Transition Select
-          style={'min-width: 35%; flex-grow: 1'}
-          // icon={this.getIcon(this.getUiValue(props.animation.type))}
-          onChange={e => this.onTypeChange(e.currentTarget.value)}
-          options={TRANSITION_OPTIONS}
-          value={this.getUiValue(props.animation.type)} />
+          <div class={styles.animationTransitionControl}>
+            <Dropdown // Transition Select
+            // icon={this.getIcon(this.getUiValue(props.animation.type))}
+            onChange={e => this.onTypeChange(e.currentTarget.value)}
+            options={TRANSITION_OPTIONS}
+            value={this.getUiValue(props.animation.type)} />
+          </div>
 
           {
             this.isDirectional() && 
-            <SegmentedControl // Direction Select
-            onChange={e => this.onDirectionChange(e.currentTarget.value)} 
-            options={DIRECTION_OPTIONS} 
-            value={props.animation.isAutoDirection ? AUTO : 
-              this.getUiValue(props.animation.direction)} />
+            <div class={styles.animationDirectionControl}>
+              <SegmentedControl // Direction Select
+              onChange={e => this.onDirectionChange(e.currentTarget.value)} 
+              options={DIRECTION_OPTIONS} 
+              value={props.animation.isAutoDirection ? AUTO : 
+                this.getUiValue(props.animation.direction)} />
+            </div>
 
           }
         </div>

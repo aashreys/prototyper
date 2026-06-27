@@ -1,4 +1,7 @@
 declare const styles: {
+  readonly "animationDirectionControl": string;
+  readonly "animationPrimaryRow": string;
+  readonly "animationTransitionControl": string;
   readonly "errorText": string;
   readonly "greyIcon": string;
   readonly "helpButton": string;

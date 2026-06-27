@@ -145,3 +145,32 @@
   font-size: 11px;
   color: var(--figma-color-text-tertiary);
 }
+
+.animationPrimaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  row-gap: var(--space-4);
+}
+
+.animationTransitionControl {
+  flex: 1 1 120px;
+  min-width: 0;
+}
+
+.animationDirectionControl {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.animationDirectionControl label:first-of-type > div {
+  min-width: 56px;
+}
+
+.animationDirectionControl label:not(:first-of-type) > div {
+  width: 28px;
+  min-width: 28px;
+}
