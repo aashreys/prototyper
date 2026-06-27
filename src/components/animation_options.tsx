@@ -77,6 +77,9 @@ const EASING_OPTIONS: Array<DropdownOption> = [
   { value: EASE_IN_AND_OUT_BACK },
 ]
 
+const DURATION_INCREMENT_SMALL = 10
+const DURATION_INCREMENT_LARGE = 50
+
 const DurationInput = function (props) {
 
   const [value, setValue] = useState(formatPropsValue(props.value))
@@ -85,6 +88,21 @@ const DurationInput = function (props) {
     const newValue = event.currentTarget.value;
     setValue(newValue);
     props.callback(newValue.length > 0 ? removeMsString(newValue) : 0);
+  }
+
+  function handleKeyDown(event: JSX.TargetedKeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
+    event.preventDefault()
+    const increment = event.shiftKey ? DURATION_INCREMENT_LARGE : DURATION_INCREMENT_SMALL
+    const direction = event.key === 'ArrowUp' ? 1 : -1
+    const parsedValue = parseDurationValue(value)
+    const baseValue = parsedValue === null ? props.value : parsedValue
+    const nextValue = Math.max(0, baseValue + direction * increment)
+    const nextDisplayValue = formatPropsValue(nextValue)
+    setValue(nextDisplayValue)
+    event.currentTarget.value = nextDisplayValue
+    event.currentTarget.select()
+    props.callback(nextValue)
   }
 
   function removeMsString(string) {
@@ -104,11 +122,19 @@ const DurationInput = function (props) {
     return valueString && valueString.length > 0 ? removeMsString(valueString) + 'ms' : valueString
   }
 
+  function parseDurationValue(value): null | number {
+    const normalizedValue = removeMsString(value).trim()
+    if (normalizedValue.length === 0 || hasNonDigit(normalizedValue)) return null
+    const parsedValue = Number(normalizedValue)
+    return Number.isFinite(parsedValue) ? parsedValue : null
+  }
+
   function validateOnBlur(value: null | string): null | string | boolean {
     if (value.length > 0) {
       value = removeMsString(value)
       if (!hasNonDigit(value)) {
         value = removeLeadingZeroes(value)
+        if (value.length === 0) value = '0'
         if (value.length > 0) {
           value = value + 'ms'
           return value;
@@ -130,6 +156,7 @@ const DurationInput = function (props) {
     <Textbox
     // icon={<TimerIcon />}
     validateOnBlur={validateOnBlur}
+    onKeyDown={handleKeyDown}
     onInput={handleInput}
     placeholder='Duration'
     value={value} />

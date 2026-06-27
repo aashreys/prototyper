@@ -184,6 +184,7 @@ function createFocus(mode: NavigationFocusMode) {
     variant: { property: '', from: '', to: '' },
     stroke: {
       color: '#FF00AA',
+      opacity: 80,
       weight: 6,
       align: 'OUTSIDE',
       gap: 4
@@ -225,6 +226,7 @@ test('applies outside stroke focus as an overlay with gap', () => {
   assert.equal(result.strokes[0].color.r, 1)
   assert.equal(result.strokes[0].color.g, 0)
   assert.equal(result.strokes[0].color.b, 170 / 255)
+  assert.equal(result.strokes[0].opacity, 0.8)
   assert.equal(result.strokeWeight, 6)
   assert.equal(result.strokeAlign, 'OUTSIDE')
 })

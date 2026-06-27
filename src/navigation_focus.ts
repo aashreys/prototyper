@@ -15,6 +15,7 @@ export type StrokeAlign = 'INSIDE' | 'CENTER' | 'OUTSIDE'
 
 export interface StrokeFocusConfig {
   readonly color: string
+  readonly opacity: number
   readonly weight: number
   readonly align: StrokeAlign
   readonly gap: number
@@ -66,6 +67,7 @@ export const DEFAULT_COMPONENT_FOCUS_MAPPING: ComponentFocusMapping = {
 
 export const DEFAULT_STROKE_FOCUS: StrokeFocusConfig = {
   color: '#0C8CE9',
+  opacity: 100,
   weight: 8,
   align: 'OUTSIDE',
   gap: 0
@@ -122,6 +124,7 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
     components: components,
     stroke: {
       color: normalizeColor(value.stroke?.color, DEFAULT_STROKE_FOCUS.color),
+      opacity: normalizeNumber(value.stroke?.opacity, DEFAULT_STROKE_FOCUS.opacity, 100),
       weight: normalizeNumber(value.stroke?.weight, DEFAULT_STROKE_FOCUS.weight),
       align: normalizeStrokeAlign(value.stroke?.align, DEFAULT_STROKE_FOCUS.align),
       gap: normalizeNumber(value.stroke?.gap, DEFAULT_STROKE_FOCUS.gap)

@@ -444,7 +444,12 @@ export class FocusOverlay {
     focus: NavigationFocusConfig,
   ) {
     overlay.fills = [];
-    overlay.strokes = [FocusOverlay.createSolidPaint(focus.stroke.color)];
+    overlay.strokes = [
+      FocusOverlay.createSolidPaint(
+        focus.stroke.color,
+        Math.min(Math.max(0, focus.stroke.opacity / 100), 1),
+      ),
+    ];
     overlay.strokeWeight = focus.stroke.weight;
     overlay.strokeAlign = focus.stroke.align;
     overlay.effects = [];

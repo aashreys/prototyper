@@ -53,6 +53,7 @@ test('defaults new configs to stroke focus', () => {
 
   assert.equal(config.focus.mode, NavigationFocusMode.STROKE)
   assert.equal(config.focus.stroke.align, 'OUTSIDE')
+  assert.equal(config.focus.stroke.opacity, 100)
   assert.equal(config.focus.stroke.weight, 8)
   assert.equal(config.focus.stroke.gap, 0)
   assert.equal(config.focus.fill.color, '#FFFFFF')
@@ -300,6 +301,7 @@ test('preserves saved stroke align setting', () => {
       stroke: {
         ...Config.getDefaultConfig().focus.stroke,
         align: 'INSIDE',
+        opacity: 72,
         gap: 5
       }
     }
@@ -312,6 +314,7 @@ test('preserves saved stroke align setting', () => {
   let config = Config.getSavedConfig()
 
   assert.equal(config.focus.stroke.align, 'INSIDE')
+  assert.equal(config.focus.stroke.opacity, 72)
   assert.equal(config.focus.stroke.gap, 5)
 })
 

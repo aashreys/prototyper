@@ -38,6 +38,7 @@ type ScaleShadowNumberKey = "scale";
 
 const DECIMAL_INPUT_PATTERN = /^\d*(?:\.\d*)?$/;
 const DECIMAL_WITH_X_PATTERN = /^(?:\d+|\d+\.\d+|\.\d+)x$/i;
+const DECIMAL_PRECISION = 6;
 
 const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
@@ -84,6 +85,31 @@ function FocusNumberInput(props: FocusNumberInputProps) {
     props.onNumberInput(parsedValue);
   }
 
+  function handleKeyDown(event: JSX.TargetedKeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+    event.preventDefault();
+    const increment = event.shiftKey ? props.incrementLarge : props.incrementSmall;
+    const direction = event.key === "ArrowUp" ? 1 : -1;
+    const parsedValue = parseNumericInputValue(value, props.suffix);
+    const baseValue =
+      parsedValue === null || parsedValue < props.minimum
+        ? props.value
+        : parsedValue;
+    const nextValue = clampNumber(
+      roundNumber(baseValue + direction * increment),
+      props.minimum,
+      props.maximum,
+    );
+    const nextDisplayValue = formatNumericInputValue({
+      ...props,
+      value: nextValue,
+    });
+    setValue(nextDisplayValue);
+    event.currentTarget.value = nextDisplayValue;
+    event.currentTarget.select();
+    props.onNumberInput(nextValue);
+  }
+
   function validateOnBlur(nextValue: string): string | boolean {
     const parsedValue = parseNumericInputValue(nextValue, props.suffix);
     if (parsedValue === null || parsedValue < props.minimum) return false;
@@ -99,6 +125,7 @@ function FocusNumberInput(props: FocusNumberInputProps) {
       onBlur={() => setIsFocused(false)}
       onFocus={() => setIsFocused(true)}
       onInput={handleInput}
+      onKeyDown={handleKeyDown}
       placeholder={props.placeholder}
       validateOnBlur={validateOnBlur}
       value={value}
@@ -139,6 +166,17 @@ function formatNumericInputValue(props: {
   return `${props.value.toString()}${props.suffix || ""}`;
 }
 
+function clampNumber(value: number, minimum: number, maximum?: number): number {
+  const lowerBounded = Math.max(minimum, value);
+  return typeof maximum === "number"
+    ? Math.min(maximum, lowerBounded)
+    : lowerBounded;
+}
+
+function roundNumber(value: number): number {
+  return Number(value.toFixed(DECIMAL_PRECISION));
+}
+
 export class NavigationFocusOptions extends Component<
   NavigationFocusOptionsProps,
   any
@@ -165,6 +203,19 @@ export class NavigationFocusOptions extends Component<
     this.updateStroke({
       ...this.props.focus.stroke,
       color: this.toStoredHexColor(color),
+    });
+  }
+
+  onStrokeOpacityChange(opacity: null | number) {
+    if (opacity === null) return;
+    this.updateStroke({
+      ...this.props.focus.stroke,
+      opacity: this.toFocusNumber(
+        opacity * 100,
+        this.props.focus.stroke.opacity,
+        0,
+        100,
+      ),
     });
   }
 
@@ -506,7 +557,10 @@ export class NavigationFocusOptions extends Component<
             onHexColorInput={(e) =>
               this.onStrokeColorChange(e.currentTarget.value)
             }
-            opacity="100"
+            onOpacityNumericValueInput={(value) =>
+              this.onStrokeOpacityChange(value)
+            }
+            opacity={props.focus.stroke.opacity.toString()}
           />
         </div>
 
@@ -534,6 +588,8 @@ export class NavigationFocusOptions extends Component<
               onNumberInput={(value) =>
                 this.onStrokeNumberChange("weight", value)
               }
+              incrementLarge={2}
+              incrementSmall={1}
               placeholder="Thickness"
               value={props.focus.stroke.weight}
             />
@@ -551,6 +607,8 @@ export class NavigationFocusOptions extends Component<
                 onNumberInput={(value) =>
                   this.onStrokeNumberChange("gap", value)
                 }
+                incrementLarge={2}
+                incrementSmall={1}
                 placeholder="Gap"
                 value={props.focus.stroke.gap}
               />
@@ -588,6 +646,8 @@ export class NavigationFocusOptions extends Component<
               onNumberInput={(value) =>
                 this.onScaleShadowNumberChange("scale", value)
               }
+              incrementLarge={0.1}
+              incrementSmall={0.01}
               placeholder="Scale"
               suffix="x"
               value={props.focus.scaleShadow.scale}
@@ -674,6 +734,9 @@ interface NavigationFocusOptionsProps {
 
 interface FocusNumberInputProps {
   icon?: JSX.Element;
+  incrementLarge: number;
+  incrementSmall: number;
+  maximum?: number;
   minimum: number;
   onNumberInput: (value: number) => void;
   placeholder: string;
