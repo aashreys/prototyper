@@ -66,11 +66,11 @@ export const DEFAULT_COMPONENT_FOCUS_MAPPING: ComponentFocusMapping = {
 }
 
 export const DEFAULT_STROKE_FOCUS: StrokeFocusConfig = {
-  color: '#0C8CE9',
+  color: '#FFFFFF',
   opacity: 100,
   weight: 8,
   align: 'OUTSIDE',
-  gap: 0
+  gap: 8
 }
 
 export const DEFAULT_FILL_FOCUS: FillFocusConfig = {
