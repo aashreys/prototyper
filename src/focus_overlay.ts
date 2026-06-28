@@ -506,7 +506,7 @@ export class FocusOverlay {
     glow.y = padding;
     glow.resize(targetBounds.width, targetBounds.height);
     glow.fills = [
-      FocusOverlay.createLinearGradientPaint("#FFFFFF", "#7A7A7A", 0.08),
+      FocusOverlay.createLinearGradientPaint("#FFFFFF", "#7A7A7A", 0.12),
     ];
     glow.strokes = [];
     glow.effects = [];

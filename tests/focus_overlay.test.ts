@@ -279,7 +279,7 @@ test('applies outside stroke focus as an overlay with gap', () => {
   assert.equal(result.children[0].fills[0].gradientStops[1].color.r, 122 / 255)
   assert.equal(result.children[0].fills[0].gradientStops[1].color.g, 122 / 255)
   assert.equal(result.children[0].fills[0].gradientStops[1].color.b, 122 / 255)
-  assert.equal(result.children[0].fills[0].opacity, 0.08)
+  assert.equal(result.children[0].fills[0].opacity, 0.12)
 })
 
 test('applies center and inside stroke focus without user gap', () => {
