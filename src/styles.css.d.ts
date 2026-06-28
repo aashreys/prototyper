@@ -35,6 +35,7 @@ declare const styles: {
   readonly "statsMedText": string;
   readonly "strokeControls": string;
   readonly "strokeGapIcon": string;
+  readonly "strokeGlowControl": string;
   readonly "strokeSecondaryControls": string;
   readonly "strokeSecondaryControlsWithGap": string;
   readonly "strokeWeightControl": string;

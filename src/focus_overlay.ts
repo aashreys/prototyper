@@ -2,6 +2,7 @@ import { NavigationFocusConfig, NavigationFocusMode } from "./navigation_focus";
 import { Utils } from "./utils";
 
 const OVERLAY_NAME = "__Prototyper Focus Overlay";
+const GLOW_NAME = "__Prototyper Focus Glow";
 const OVERLAY_PLUGIN_DATA_KEY = "prototyper_focus_overlay";
 const DIRECT_FOCUS_PLUGIN_DATA_KEY = "prototyper_focus_direct_state";
 const DEFAULT_SCALE_SHADOWS = [
@@ -105,7 +106,7 @@ export class FocusOverlay {
     target: SceneNode,
     focus: NavigationFocusConfig,
   ): SceneNode {
-    const overlay = FocusOverlay.createManagedRectangle(
+    const overlay = FocusOverlay.createManagedFrame(
       OVERLAY_NAME,
       topLevelFrame,
     );
@@ -133,6 +134,15 @@ export class FocusOverlay {
     overlay.y = focusBounds.y;
     FocusOverlay.applyStrokeCornerRadius(overlay, target, padding, focusBounds);
     FocusOverlay.applyStroke(overlay, focus);
+    if (focus.stroke.addGlow) {
+      FocusOverlay.addStrokeGlow(
+        overlay,
+        topLevelFrame,
+        target,
+        targetBounds,
+        padding,
+      );
+    }
     return overlay;
   }
 
@@ -216,6 +226,18 @@ export class FocusOverlay {
   ): RectangleNode {
     const overlay = figma.createRectangle();
     overlay.name = FocusOverlay.getManagedArtifactName(name, topLevelFrame);
+    FocusOverlay.setManagedArtifactData(overlay);
+    return overlay;
+  }
+
+  private static createManagedFrame(
+    name: string,
+    topLevelFrame: FrameNode,
+  ): FrameNode {
+    const overlay = figma.createFrame();
+    overlay.name = FocusOverlay.getManagedArtifactName(name, topLevelFrame);
+    overlay.fills = [];
+    overlay.clipsContent = false;
     FocusOverlay.setManagedArtifactData(overlay);
     return overlay;
   }
@@ -433,14 +455,12 @@ export class FocusOverlay {
     return (node as any).absoluteRenderBounds || Utils.getAbsoluteBounds(node);
   }
 
-  private static getStrokeOverlayPadding(
-    focus: NavigationFocusConfig,
-  ): number {
+  private static getStrokeOverlayPadding(focus: NavigationFocusConfig): number {
     return focus.stroke.align === "OUTSIDE" ? focus.stroke.gap : 0;
   }
 
   private static applyStroke(
-    overlay: RectangleNode,
+    overlay: FrameNode | RectangleNode,
     focus: NavigationFocusConfig,
   ) {
     overlay.fills = [];
@@ -456,7 +476,7 @@ export class FocusOverlay {
   }
 
   private static applyStrokeCornerRadius(
-    overlay: RectangleNode,
+    overlay: FrameNode | RectangleNode,
     target: SceneNode,
     padding: number,
     focusBounds: Rect,
@@ -474,12 +494,40 @@ export class FocusOverlay {
     );
   }
 
+  private static addStrokeGlow(
+    overlay: FrameNode,
+    topLevelFrame: FrameNode,
+    target: SceneNode,
+    targetBounds: Rect,
+    padding: number,
+  ) {
+    const glow = FocusOverlay.createManagedRectangle(GLOW_NAME, topLevelFrame);
+    glow.x = padding;
+    glow.y = padding;
+    glow.resize(targetBounds.width, targetBounds.height);
+    glow.fills = [
+      FocusOverlay.createLinearGradientPaint("#FFFFFF", "#7A7A7A", 0.08),
+    ];
+    glow.strokes = [];
+    glow.effects = [];
+    FocusOverlay.applyStrokeCornerRadius(glow, target, 0, {
+      x: 0,
+      y: 0,
+      width: targetBounds.width,
+      height: targetBounds.height,
+    });
+    overlay.appendChild(glow);
+  }
+
   private static getTargetCornerRadii(
     target: SceneNode,
   ): [number, number, number, number] | null {
     const node: any = target;
     if (!("cornerRadius" in node)) return null;
-    if (typeof node.cornerRadius === "number" && Number.isFinite(node.cornerRadius)) {
+    if (
+      typeof node.cornerRadius === "number" &&
+      Number.isFinite(node.cornerRadius)
+    ) {
       return [
         node.cornerRadius,
         node.cornerRadius,
@@ -487,7 +535,8 @@ export class FocusOverlay {
         node.cornerRadius,
       ];
     }
-    const mixed = typeof figma !== "undefined" ? (figma as any).mixed : undefined;
+    const mixed =
+      typeof figma !== "undefined" ? (figma as any).mixed : undefined;
     if (node.cornerRadius !== mixed) return null;
     const radii = [
       node.topLeftRadius,
@@ -505,7 +554,7 @@ export class FocusOverlay {
   }
 
   private static setOverlayCornerRadii(
-    overlay: RectangleNode,
+    overlay: FrameNode | RectangleNode,
     radii: [number, number, number, number],
     padding: number,
     maxRadius: number,
@@ -724,6 +773,37 @@ export class FocusOverlay {
     return {
       type: "SOLID",
       color: FocusOverlay.parseHexColor(color),
+      opacity: opacity,
+    };
+  }
+
+  private static createLinearGradientPaint(
+    fromColor: string,
+    toColor: string,
+    opacity: number,
+  ): GradientPaint {
+    return {
+      type: "GRADIENT_LINEAR",
+      gradientTransform: [
+        [0, 1, 0],
+        [-1, 0, 1],
+      ],
+      gradientStops: [
+        {
+          position: 0,
+          color: {
+            ...FocusOverlay.parseHexColor(fromColor),
+            a: 1,
+          },
+        },
+        {
+          position: 1,
+          color: {
+            ...FocusOverlay.parseHexColor(toColor),
+            a: 1,
+          },
+        },
+      ],
       opacity: opacity,
     };
   }

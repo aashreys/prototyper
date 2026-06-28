@@ -204,6 +204,10 @@
     transform-origin: center;
 }
 
+.strokeGlowControl {
+    min-width: 0;
+}
+
 .scaleControls {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

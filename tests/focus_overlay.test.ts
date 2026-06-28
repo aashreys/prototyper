@@ -6,6 +6,7 @@ import { NavigationFocusMode } from '../src/navigation_focus'
 function setFigmaForOverlay() {
   ;(globalThis as any).figma = {
     mixed: Symbol.for('figma.mixed'),
+    createFrame: () => createFrame('overlay-frame', { x: 0, y: 0, width: 0, height: 0 }),
     createRectangle: () => createRectangle()
   }
 }
@@ -61,11 +62,29 @@ function createFrame(id: string, bounds: Rect) {
     parent: { type: 'PAGE' },
     children: [],
     layoutMode: 'NONE',
+    layoutPositioning: 'AUTO',
+    clipsContent: false,
     absoluteBoundingBox: bounds,
     x: bounds.x,
     y: bounds.y,
     width: bounds.width,
     height: bounds.height,
+    fills: [],
+    strokes: [],
+    effects: [],
+    strokeWeight: 0,
+    strokeAlign: 'CENTER',
+    cornerRadius: undefined,
+    topLeftRadius: undefined,
+    topRightRadius: undefined,
+    bottomLeftRadius: undefined,
+    bottomRightRadius: undefined,
+    pluginData: {},
+    removed: false,
+    resize(width: number, height: number) {
+      this.width = width
+      this.height = height
+    },
     appendChild(child) {
       child.parent = this
       this.children.push(child)
@@ -73,6 +92,18 @@ function createFrame(id: string, bounds: Rect) {
     insertChild(index: number, child) {
       child.parent = this
       this.children.splice(index, 0, child)
+    },
+    setPluginData(key: string, value: string) {
+      this.pluginData[key] = value
+    },
+    getPluginData(key: string) {
+      return this.pluginData[key] || ''
+    },
+    remove() {
+      this.removed = true
+      if (!this.parent) return
+      let index = this.parent.children.indexOf(this)
+      if (index >= 0) this.parent.children.splice(index, 1)
     }
   } as any
 }
@@ -187,7 +218,8 @@ function createFocus(mode: NavigationFocusMode) {
       opacity: 80,
       weight: 6,
       align: 'OUTSIDE',
-      gap: 4
+      gap: 4,
+      addGlow: true
     },
     fill: {
       color: '#00AAFF',
@@ -229,6 +261,25 @@ test('applies outside stroke focus as an overlay with gap', () => {
   assert.equal(result.strokes[0].opacity, 0.8)
   assert.equal(result.strokeWeight, 6)
   assert.equal(result.strokeAlign, 'OUTSIDE')
+  assert.equal(result.type, 'FRAME')
+  assert.equal(result.children.length, 1)
+  assert.equal(result.children[0].type, 'RECTANGLE')
+  assert.equal(result.children[0].x, 4)
+  assert.equal(result.children[0].y, 4)
+  assert.equal(result.children[0].width, 80)
+  assert.equal(result.children[0].height, 40)
+  assert.equal(result.children[0].fills[0].type, 'GRADIENT_LINEAR')
+  assert.deepEqual(result.children[0].fills[0].gradientTransform, [
+    [0, 1, 0],
+    [-1, 0, 1]
+  ])
+  assert.equal(result.children[0].fills[0].gradientStops[0].color.r, 1)
+  assert.equal(result.children[0].fills[0].gradientStops[0].color.g, 1)
+  assert.equal(result.children[0].fills[0].gradientStops[0].color.b, 1)
+  assert.equal(result.children[0].fills[0].gradientStops[1].color.r, 122 / 255)
+  assert.equal(result.children[0].fills[0].gradientStops[1].color.g, 122 / 255)
+  assert.equal(result.children[0].fills[0].gradientStops[1].color.b, 122 / 255)
+  assert.equal(result.children[0].fills[0].opacity, 0.08)
 })
 
 test('applies center and inside stroke focus without user gap', () => {
@@ -258,6 +309,19 @@ test('applies center and inside stroke focus without user gap', () => {
   assert.equal(insideResult.width, 80)
   assert.equal(insideResult.height, 40)
   assert.equal(insideResult.strokeAlign, 'INSIDE')
+})
+
+test('omits stroke glow when disabled', () => {
+  setFigmaForOverlay()
+  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
+  let focus = createFocus(NavigationFocusMode.STROKE)
+  focus.stroke.addGlow = false
+
+  let result = FocusOverlay.create(frame, target, focus as any) as any
+
+  assert.equal(result.type, 'FRAME')
+  assert.equal(result.children.length, 0)
 })
 
 test('applies fill focus above existing fills', () => {
@@ -298,7 +362,7 @@ test('applies shadow focus directly to the target layer', () => {
   assert.equal(target.effects[0].color.b, 1)
 })
 
-test('applies Scale up directly with Apple TV shadows when enabled', () => {
+test('applies Scale up directly with default shadows when enabled', () => {
   setFigmaForOverlay()
   let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
   let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, { cornerRadius: 10 })
@@ -313,15 +377,18 @@ test('applies Scale up directly with Apple TV shadows when enabled', () => {
   assert.equal(target.height, 54)
   assert.equal(target.effects.length, 3)
   assert.equal(target.effects[0].type, 'DROP_SHADOW')
-  assert.equal(target.effects[0].radius, 10)
-  assert.equal(target.effects[0].offset.y, 4)
-  assert.equal(target.effects[0].color.a, 0.24)
-  assert.equal(target.effects[1].radius, 24)
-  assert.equal(target.effects[1].offset.y, 14)
-  assert.equal(target.effects[1].color.a, 0.22)
-  assert.equal(target.effects[2].radius, 48)
-  assert.equal(target.effects[2].offset.y, 30)
-  assert.equal(target.effects[2].color.a, 0.16)
+  assert.equal(target.effects[0].radius, 16)
+  assert.equal(target.effects[0].spread, 1)
+  assert.equal(target.effects[0].offset.y, 6)
+  assert.equal(target.effects[0].color.a, 0.2)
+  assert.equal(target.effects[1].radius, 36)
+  assert.equal(target.effects[1].spread, 2)
+  assert.equal(target.effects[1].offset.y, 18)
+  assert.equal(target.effects[1].color.a, 0.18)
+  assert.equal(target.effects[2].radius, 64)
+  assert.equal(target.effects[2].spread, 4)
+  assert.equal(target.effects[2].offset.y, 38)
+  assert.equal(target.effects[2].color.a, 0.12)
 })
 
 test('applies Scale up without shadows when disabled', () => {

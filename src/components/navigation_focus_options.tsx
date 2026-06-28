@@ -233,6 +233,13 @@ export class NavigationFocusOptions extends Component<
     });
   }
 
+  onStrokeAddGlowChange(addGlow: boolean) {
+    this.updateStroke({
+      ...this.props.focus.stroke,
+      addGlow: addGlow,
+    });
+  }
+
   updateStroke(stroke: StrokeFocusConfig) {
     this.props.onNavigationFocusChange({
       ...this.props.focus,
@@ -618,6 +625,17 @@ export class NavigationFocusOptions extends Component<
               />
             </div>
           )}
+        </div>
+
+        <div class={styles.strokeGlowControl}>
+          <Checkbox
+            onChange={(e) =>
+              this.onStrokeAddGlowChange(e.currentTarget.checked)
+            }
+            value={props.focus.stroke.addGlow}
+          >
+            <Text>Add glow</Text>
+          </Checkbox>
         </div>
       </div>
     );
