@@ -4,10 +4,10 @@ import { Utils } from "./utils";
 const OVERLAY_NAME = "__Prototyper Focus Overlay";
 const OVERLAY_PLUGIN_DATA_KEY = "prototyper_focus_overlay";
 const DIRECT_FOCUS_PLUGIN_DATA_KEY = "prototyper_focus_direct_state";
-const APPLE_TV_SHADOWS = [
-  { color: "#000000", opacity: 0.24, blur: 10, spread: 0, offsetY: 4 },
-  { color: "#000000", opacity: 0.22, blur: 24, spread: 0, offsetY: 14 },
-  { color: "#000000", opacity: 0.16, blur: 48, spread: 0, offsetY: 30 },
+const DEFAULT_SCALE_SHADOWS = [
+  { color: "#000000", opacity: 0.2, blur: 16, spread: 1, offsetY: 6 },
+  { color: "#000000", opacity: 0.18, blur: 36, spread: 2, offsetY: 18 },
+  { color: "#000000", opacity: 0.12, blur: 64, spread: 4, offsetY: 38 },
 ];
 
 interface DirectFocusState {
@@ -75,7 +75,7 @@ export class FocusOverlay {
     FocusOverlay.scaleNodeCentered(target, scaledBounds, scale);
     if (
       focus.scaleShadow.showShadow &&
-      !FocusOverlay.applyDirectDropShadows(target, APPLE_TV_SHADOWS)
+      !FocusOverlay.applyDirectDropShadows(target, DEFAULT_SCALE_SHADOWS)
     ) {
       FocusOverlay.logDirectFocusFailure(
         "Unable to apply Scale up shadow focus effect",
