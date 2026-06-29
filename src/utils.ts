@@ -310,28 +310,7 @@ export class Utils {
       return numInteractionsAdded
     }
 
-    const shouldPrimeSpringDuration = Utils.hasCustomSpringTransition(reactions)
-    let writePhase = 'final'
-
     try {
-      if (shouldPrimeSpringDuration) {
-        const primingReactions = Utils.createDurationPrimingReactions(reactions)
-        writePhase = 'duration-prime'
-        DebugReport.addEvent({
-          type: 'spring-duration-prime-write',
-          frame: DebugReport.getNodeRef(frame),
-          reactionCount: primingReactions.length,
-          reactions: primingReactions.map(reaction => DebugReport.summarizeReaction(reaction))
-        })
-        if (typeof figma !== 'undefined') {
-          console.log('Priming custom spring transition durations', {
-            frameId: frame.id,
-            reactionCount: primingReactions.length
-          })
-        }
-        await frame.setReactionsAsync(primingReactions)
-      }
-      writePhase = 'final'
       await frame.setReactionsAsync(reactions)
     } catch (e) {
       DebugReport.addEvent(Utils.getReactionWriteDebugEvent(
@@ -352,7 +331,6 @@ export class Utils {
         e
       ))
       console.error('Failed to write prototype reactions', {
-        writePhase: writePhase,
         frameId: frame.id,
         existingReactions: frame.reactions.length,
         nextReactions: reactions.length,
@@ -392,35 +370,6 @@ export class Utils {
       })
     }
     return numInteractionsAdded
-  }
-
-  private static hasCustomSpringTransition(reactions: Array<Reaction>): boolean {
-    return reactions.some(reaction => ((reaction as any).actions || []).some(action => {
-      return Utils.isCustomSpringTransition(action?.transition)
-    }))
-  }
-
-  private static createDurationPrimingReactions(reactions: Array<Reaction>): Array<Reaction> {
-    return reactions.map(reaction => {
-      const actions = (reaction as any).actions
-      if (!(actions instanceof Array)) return reaction
-
-      return {
-        ...reaction,
-        actions: actions.map(action => {
-          if (!Utils.isCustomSpringTransition(action?.transition)) return action
-          return {
-            ...action,
-            transition: {
-              ...action.transition,
-              easing: {
-                type: AnimationEasing.EASE_OUT
-              }
-            }
-          }
-        })
-      }
-    }) as Array<Reaction>
   }
 
   private static isCustomSpringTransition(transition): boolean {

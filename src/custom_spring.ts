@@ -15,6 +15,9 @@ const SPRING_PRESETS: Partial<Record<AnimationEasing, {
   readonly stiffnessConstant: number
   readonly dampingConstant: number
 }>> = {
+  // These constants intentionally differ from Figma's native spring presets.
+  // They keep the same duration-scaling model while tuning each preset to reach
+  // the target position at the transition duration cutoff.
   [AnimationEasing.GENTLE]: {
     stiffnessConstant: 66667487,
     dampingConstant: 12000

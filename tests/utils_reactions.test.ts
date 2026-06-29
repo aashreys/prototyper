@@ -248,7 +248,7 @@ test('creates directional transition with spring preset as custom spring easing'
   })
 })
 
-test('primes custom spring duration before writing final spring reactions', async () => {
+test('writes custom spring reactions in one pass', async () => {
   let source = createFrame('source')
   let destination = createFrame('right')
   let config = {
@@ -272,15 +272,9 @@ test('primes custom spring duration before writing final spring reactions', asyn
     config as any
   )
 
-  assert.equal(source.writes.length, 2)
+  assert.equal(source.writes.length, 1)
 
-  const primedTransition = source.writes[0][0].actions[0].transition
-  assert.equal(primedTransition.duration, 0.1)
-  assert.deepEqual(primedTransition.easing, {
-    type: AnimationEasing.EASE_OUT
-  })
-
-  const finalTransition = source.writes[1][0].actions[0].transition
+  const finalTransition = source.writes[0][0].actions[0].transition
   assert.equal(finalTransition.duration, 0.1)
   assert.deepEqual(finalTransition.easing, {
     type: AnimationEasing.CUSTOM_SPRING,
