@@ -3,6 +3,7 @@ declare const styles: {
   readonly "animationDirectionControl": string;
   readonly "animationDurationControl": string;
   readonly "animationEasingControl": string;
+  readonly "animationMatchLayersControl": string;
   readonly "animationPrimaryRow": string;
   readonly "animationSecondaryRow": string;
   readonly "animationSpringControls": string;

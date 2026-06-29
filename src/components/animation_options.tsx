@@ -465,12 +465,12 @@ export class AnimationOptions extends Component<any, any> {
 
         {
           this.isDirectional() && 
-          <div style='margin-top: 12px; margin-bottom: 8px; margin-left: 8px; margin-right: 8px'>
+          <div class={styles.animationMatchLayersControl}>
 
             <Checkbox // Match Layers Checkbox
             onChange={e => this.onIsMatchLayersChange(e.currentTarget.checked)} 
             value={props.animation.isMatchLayers} >
-              <Text>Smart animate matching layers</Text>
+              <Text>Animate matching layers</Text>
             </Checkbox>
             
           </div>

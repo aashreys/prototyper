@@ -337,27 +337,36 @@
     min-width: 0;
     align-items: center;
     column-gap: 8px;
-    row-gap: var(--space-4);
+    row-gap: 8px;
 }
 
 .animationTransitionControl {
-    flex: 1 1 120px;
+    flex: 1 1 100%;
     min-width: 0;
 }
 
 .animationDirectionControl {
     display: flex;
-    flex: 0 0 auto;
+    flex: 1 1 100%;
     min-width: 0;
 }
 
+.animationDirectionControl > div {
+    flex: 1 1 100%;
+}
+
+.animationDirectionControl label {
+    flex: 1 1 0;
+}
+
 .animationDirectionControl label:first-of-type > div {
-    min-width: 56px;
+    width: 100%;
+    min-width: 0;
 }
 
 .animationDirectionControl label:not(:first-of-type) > div {
-    width: 28px;
-    min-width: 28px;
+    width: 100%;
+    min-width: 0;
 }
 
 .animationSecondaryRow {
@@ -383,4 +392,9 @@
     gap: 8px;
     align-items: center;
     margin-top: 8px;
+}
+
+.animationMatchLayersControl {
+    margin-top: 8px;
+    min-width: 0;
 }
