@@ -375,3 +375,11 @@
     flex: 1 1 40%;
     min-width: 0;
 }
+
+.animationSpringControls {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+}

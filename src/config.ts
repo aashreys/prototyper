@@ -3,6 +3,7 @@ import { Navigation, NavigationKeycodes, NavScheme } from "./navigation";
 import { Device } from "./device";
 import { SwapVariant } from "./swap_variant";
 import { getDefaultNavigationFocusConfig, isVariantFocusConfigured, NavigationFocusConfig, normalizeNavigationFocusConfig } from "./navigation_focus";
+import { DEFAULT_CUSTOM_SPRING, normalizeCustomSpring } from "./custom_spring";
 
 export class Config {
 
@@ -101,7 +102,8 @@ export class Config {
       direction: AnimationDirection.LEFT,
       isMatchLayers: false,
       easing: AnimationEasing.EASE_OUT,
-      duration: 300
+      duration: 300,
+      customSpring: DEFAULT_CUSTOM_SPRING
     }
 
     return new Config(
@@ -166,8 +168,13 @@ export class Config {
       delete focusSource.components
     }
     const focus = normalizeNavigationFocusConfig(focusSource, legacyVariant)
+    const animation = {
+      ...config.animation,
+      customSpring: normalizeCustomSpring(config.animation?.customSpring)
+    }
     return {
       ...config,
+      animation: animation,
       focus: focus,
       swapVariant: focus.variant
     }

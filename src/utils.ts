@@ -1,4 +1,5 @@
-import { Animation, AnimationDirection, AnimationType } from "./animation";
+import { Animation, AnimationDirection, AnimationEasing, AnimationType } from "./animation";
+import { getTransitionDuration, getTransitionEasing } from "./custom_spring";
 import { Config } from "./config";
 import { DebugReport } from "./debug_report";
 import { Device } from "./device";
@@ -309,7 +310,28 @@ export class Utils {
       return numInteractionsAdded
     }
 
+    const shouldPrimeSpringDuration = Utils.hasCustomSpringTransition(reactions)
+    let writePhase = 'final'
+
     try {
+      if (shouldPrimeSpringDuration) {
+        const primingReactions = Utils.createDurationPrimingReactions(reactions)
+        writePhase = 'duration-prime'
+        DebugReport.addEvent({
+          type: 'spring-duration-prime-write',
+          frame: DebugReport.getNodeRef(frame),
+          reactionCount: primingReactions.length,
+          reactions: primingReactions.map(reaction => DebugReport.summarizeReaction(reaction))
+        })
+        if (typeof figma !== 'undefined') {
+          console.log('Priming custom spring transition durations', {
+            frameId: frame.id,
+            reactionCount: primingReactions.length
+          })
+        }
+        await frame.setReactionsAsync(primingReactions)
+      }
+      writePhase = 'final'
       await frame.setReactionsAsync(reactions)
     } catch (e) {
       DebugReport.addEvent(Utils.getReactionWriteDebugEvent(
@@ -330,6 +352,7 @@ export class Utils {
         e
       ))
       console.error('Failed to write prototype reactions', {
+        writePhase: writePhase,
         frameId: frame.id,
         existingReactions: frame.reactions.length,
         nextReactions: reactions.length,
@@ -369,6 +392,39 @@ export class Utils {
       })
     }
     return numInteractionsAdded
+  }
+
+  private static hasCustomSpringTransition(reactions: Array<Reaction>): boolean {
+    return reactions.some(reaction => ((reaction as any).actions || []).some(action => {
+      return Utils.isCustomSpringTransition(action?.transition)
+    }))
+  }
+
+  private static createDurationPrimingReactions(reactions: Array<Reaction>): Array<Reaction> {
+    return reactions.map(reaction => {
+      const actions = (reaction as any).actions
+      if (!(actions instanceof Array)) return reaction
+
+      return {
+        ...reaction,
+        actions: actions.map(action => {
+          if (!Utils.isCustomSpringTransition(action?.transition)) return action
+          return {
+            ...action,
+            transition: {
+              ...action.transition,
+              easing: {
+                type: AnimationEasing.EASE_OUT
+              }
+            }
+          }
+        })
+      }
+    }) as Array<Reaction>
+  }
+
+  private static isCustomSpringTransition(transition): boolean {
+    return transition?.easing?.type === AnimationEasing.CUSTOM_SPRING
   }
 
   private static getReactionWriteDebugEvent(
@@ -451,7 +507,8 @@ export class Utils {
       direction: AnimationDirection.RIGHT,
       isMatchLayers: animation.isMatchLayers,
       easing: animation.easing,
-      duration: animation.duration
+      duration: animation.duration,
+      customSpring: animation.customSpring
     }
 
     let rightAnim: Animation = {
@@ -460,7 +517,8 @@ export class Utils {
       direction: AnimationDirection.LEFT,
       isMatchLayers: animation.isMatchLayers,
       easing: animation.easing,
-      duration: animation.duration
+      duration: animation.duration,
+      customSpring: animation.customSpring
     }
 
     let topAnim: Animation = {
@@ -469,7 +527,8 @@ export class Utils {
       direction: AnimationDirection.BOTTOM,
       isMatchLayers: animation.isMatchLayers,
       easing: animation.easing,
-      duration: animation.duration
+      duration: animation.duration,
+      customSpring: animation.customSpring
     }
 
     let bottomAnim: Animation = {
@@ -478,7 +537,8 @@ export class Utils {
       direction: AnimationDirection.TOP,
       isMatchLayers: animation.isMatchLayers,
       easing: animation.easing,
-      duration: animation.duration
+      duration: animation.duration,
+      customSpring: animation.customSpring
     }
 
     return {
@@ -585,23 +645,42 @@ export class Utils {
     switch(animation.type) {
       case AnimationType.INSTANT: return null;
       case AnimationType.DISSOLVE: 
-      case AnimationType.SMART_ANIMATE: return {
-        type: animation.type,
-        easing: { type: animation.easing },
-        duration: animation.duration / 1000
+      case AnimationType.SMART_ANIMATE: {
+        const transition = {
+          type: animation.type,
+          easing: getTransitionEasing(animation),
+          duration: getTransitionDuration(animation) / 1000
+        }
+        Utils.logCustomSpringTransition(animation, transition)
+        return transition
       }
       case AnimationType.MOVE_IN:
       case AnimationType.MOVE_OUT:
       case AnimationType.PUSH:
       case AnimationType.SLIDE_IN:
-      case AnimationType.SLIDE_OUT: return {
-        type: animation.type,
-        direction: animation.direction,
-        matchLayers: animation.isMatchLayers,
-        easing: { type: animation.easing },
-        duration: animation.duration / 1000 
+      case AnimationType.SLIDE_OUT: {
+        const transition = {
+          type: animation.type,
+          direction: animation.direction,
+          matchLayers: animation.isMatchLayers,
+          easing: getTransitionEasing(animation),
+          duration: getTransitionDuration(animation) / 1000
+        }
+        Utils.logCustomSpringTransition(animation, transition)
+        return transition
       }
     }
+  }
+
+  private static logCustomSpringTransition(animation: Animation, transition: Transition) {
+    if (!Utils.isCustomSpringTransition(transition)) return
+    if (typeof figma === 'undefined') return
+    console.log('Creating custom spring transition', {
+      sourceEasing: animation.easing,
+      sourceDuration: animation.duration,
+      duration: (transition as any).duration,
+      easingFunctionSpring: (transition as any).easing?.easingFunctionSpring
+    })
   }
 
   static clone(val): any {

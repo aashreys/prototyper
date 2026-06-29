@@ -9,7 +9,9 @@ function createFrame(id: string, reactions: any[] = []) {
   return {
     id: id,
     reactions: reactions,
+    writes: [] as any[],
     setReactionsAsync: async function(nextReactions: any[]) {
+      this.writes.push(nextReactions)
       this.reactions = nextReactions
     }
   } as any
@@ -104,6 +106,7 @@ test('creates distinct reactions for multi-input mappings', async () => {
   ].join(':'))
 
   assert.equal(interactions, 2)
+  assert.equal(source.writes.length, 1)
   assert.equal(source.reactions.length, 2)
   assert.equal(new Set(signatures).size, source.reactions.length)
 })
@@ -193,4 +196,174 @@ test('replaces any conflicting same-device reaction for managed keys', async () 
 
   assert.equal(source.reactions.some(reaction => reaction.actions[0].type === 'BACK'), false)
   assert.equal(source.reactions.filter(reaction => reaction.actions[0].destinationId === 'new-right').length, 2)
+})
+
+test('creates simple transition with spring preset as custom spring easing', () => {
+  const transition = Utils.createTransition({
+    type: AnimationType.SMART_ANIMATE,
+    isAutoDirection: false,
+    direction: AnimationDirection.LEFT,
+    isMatchLayers: false,
+    easing: AnimationEasing.BOUNCY,
+    duration: 450
+  })
+
+  assert.deepEqual(transition, {
+    type: AnimationType.SMART_ANIMATE,
+    easing: {
+      type: AnimationEasing.CUSTOM_SPRING,
+      easingFunctionSpring: {
+        mass: 1,
+        stiffness: 1896.296,
+        damping: 26.667
+      }
+    },
+    duration: 0.45
+  })
+})
+
+test('creates directional transition with spring preset as custom spring easing', () => {
+  const transition = Utils.createTransition({
+    type: AnimationType.PUSH,
+    isAutoDirection: false,
+    direction: AnimationDirection.RIGHT,
+    isMatchLayers: true,
+    easing: AnimationEasing.GENTLE,
+    duration: 600
+  })
+
+  assert.deepEqual(transition, {
+    type: AnimationType.PUSH,
+    direction: AnimationDirection.RIGHT,
+    matchLayers: true,
+    easing: {
+      type: AnimationEasing.CUSTOM_SPRING,
+      easingFunctionSpring: {
+        mass: 1,
+        stiffness: 177.778,
+        damping: 20
+      }
+    },
+    duration: 0.6
+  })
+})
+
+test('primes custom spring duration before writing final spring reactions', async () => {
+  let source = createFrame('source')
+  let destination = createFrame('right')
+  let config = {
+    ...createConfig(),
+    animation: {
+      type: AnimationType.SMART_ANIMATE,
+      isAutoDirection: false,
+      direction: AnimationDirection.LEFT,
+      isMatchLayers: false,
+      easing: AnimationEasing.GENTLE,
+      duration: 100
+    }
+  }
+
+  await Utils.addInteractions(
+    source,
+    undefined as any,
+    destination,
+    undefined as any,
+    undefined as any,
+    config as any
+  )
+
+  assert.equal(source.writes.length, 2)
+
+  const primedTransition = source.writes[0][0].actions[0].transition
+  assert.equal(primedTransition.duration, 0.1)
+  assert.deepEqual(primedTransition.easing, {
+    type: AnimationEasing.EASE_OUT
+  })
+
+  const finalTransition = source.writes[1][0].actions[0].transition
+  assert.equal(finalTransition.duration, 0.1)
+  assert.deepEqual(finalTransition.easing, {
+    type: AnimationEasing.CUSTOM_SPRING,
+    easingFunctionSpring: {
+      mass: 1,
+      stiffness: 6400,
+      damping: 120
+    }
+  })
+})
+
+test('creates transition with configured custom spring easing', () => {
+  const transition = Utils.createTransition({
+    type: AnimationType.SMART_ANIMATE,
+    isAutoDirection: false,
+    direction: AnimationDirection.LEFT,
+    isMatchLayers: false,
+    easing: AnimationEasing.CUSTOM_SPRING,
+    duration: 300,
+    customSpring: {
+      duration: 750,
+      mass: 1.25,
+      stiffness: 90,
+      damping: 14,
+      initialVelocity: 2
+    }
+  })
+
+  assert.deepEqual(transition, {
+    type: AnimationType.SMART_ANIMATE,
+    easing: {
+      type: AnimationEasing.CUSTOM_SPRING,
+      easingFunctionSpring: {
+        mass: 1.25,
+        stiffness: 90,
+        damping: 14
+      }
+    },
+    duration: 0.75
+  })
+})
+
+test('preserves configured custom spring easing for auto-direction reactions', async () => {
+  let source = createFrame('source')
+  let destination = createFrame('right')
+  let config = {
+    ...createConfig(),
+    animation: {
+      type: AnimationType.SMART_ANIMATE,
+      isAutoDirection: true,
+      direction: AnimationDirection.LEFT,
+      isMatchLayers: false,
+      easing: AnimationEasing.CUSTOM_SPRING,
+      duration: 650,
+      customSpring: {
+        duration: 650,
+        mass: 1.4,
+        stiffness: 88,
+        damping: 13,
+        initialVelocity: 0
+      }
+    }
+  }
+
+  await Utils.addInteractions(
+    source,
+    undefined as any,
+    destination,
+    undefined as any,
+    undefined as any,
+    config as any
+  )
+
+  assert.equal(source.reactions.length, 2)
+  for (const reaction of source.reactions) {
+    assert.deepEqual(reaction.actions[0].transition.easing, {
+      type: AnimationEasing.CUSTOM_SPRING,
+      easingFunctionSpring: {
+        mass: 1.4,
+        stiffness: 88,
+        damping: 13
+      }
+    })
+    assert.equal(reaction.actions[0].transition.duration, 0.65)
+  }
 })

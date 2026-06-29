@@ -56,6 +56,12 @@ export class PrototypeForm extends Component<any, any>  {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
+    if (prevProps.value.config !== this.props.value.config && this.state.config !== this.props.value.config) {
+      this.setState(prevState => ({
+        ...prevState,
+        config: this.props.value.config
+      }))
+    }
     this.onHeightChanged()
   }
 
