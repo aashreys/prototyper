@@ -6,17 +6,6 @@ export interface Animation {
   readonly isMatchLayers: boolean
   readonly easing: AnimationEasing
   readonly duration: number // in milliseconds
-  readonly customSpring?: AnimationCustomSpring
-
-}
-
-export interface AnimationCustomSpring {
-
-  readonly duration: number // in milliseconds
-  readonly mass: number
-  readonly stiffness: number
-  readonly damping: number
-  readonly initialVelocity: number
 
 }
 

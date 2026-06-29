@@ -1,7 +1,7 @@
-import { Dropdown, DropdownOption, VerticalSpace, Text, Textbox, TextboxNumeric, SegmentedControl, SegmentedControlOption, Checkbox, Bold} from '@create-figma-plugin/ui'
+import { Dropdown, DropdownOption, VerticalSpace, Text, Textbox, SegmentedControl, SegmentedControlOption, Checkbox, Bold} from '@create-figma-plugin/ui'
 import { Component, h, JSX } from 'preact'
 import { useEffect, useState } from 'preact/hooks'
-import { AnimationCustomSpring, AnimationDirection, AnimationEasing, AnimationType } from '../animation'
+import { AnimationDirection, AnimationType } from '../animation'
 import { ArrowDownIcon } from '../icons/arrow_down'
 import { ArrowLeftIcon } from '../icons/arrow_left'
 import { ArrowRightIcon } from '../icons/arrow_right'
@@ -19,7 +19,6 @@ import { TransitionMoveIcon } from '../icons/move'
 import { TransitionSmartAnimateIcon } from '../icons/smart_animate'
 import {
   BOUNCY,
-  CUSTOM_SPRING,
   EASE_IN,
   EASE_IN_AND_OUT,
   EASE_IN_AND_OUT_BACK,
@@ -34,7 +33,6 @@ import {
   QUICK,
   SLOW
 } from '../animation_easing'
-import { getCustomSpringForAnimation, normalizeCustomSpring } from '../custom_spring'
 import styles from '../styles.css'
 
 // Animation Type
@@ -179,14 +177,9 @@ export class AnimationOptions extends Component<any, any> {
     this.onEasingChange = this.onEasingChange.bind(this)
     this.onDirectionChange = this.onDirectionChange.bind(this)
     this.onDurationChange = this.onDurationChange.bind(this)
-    this.onCustomSpringDurationChange = this.onCustomSpringDurationChange.bind(this)
-    this.onCustomSpringMassChange = this.onCustomSpringMassChange.bind(this)
-    this.onCustomSpringStiffnessChange = this.onCustomSpringStiffnessChange.bind(this)
-    this.onCustomSpringDampingChange = this.onCustomSpringDampingChange.bind(this)
     this.onIsMatchLayersChange = this.onIsMatchLayersChange.bind(this)
     this.isDirectional = this.isDirectional.bind(this)
     this.isTimedAndEased = this.isTimedAndEased.bind(this)
-    this.isCustomSpring = this.isCustomSpring.bind(this)
   }
 
   onTypeChange(uiValue) {
@@ -197,15 +190,9 @@ export class AnimationOptions extends Component<any, any> {
   }
 
   onEasingChange(uiValue) {
-    const easing = this.getConfigValue(uiValue)
-    const customSpring = easing === AnimationEasing.CUSTOM_SPRING
-      ? getCustomSpringForAnimation(this.props.animation)
-      : this.props.animation.customSpring
     this.props.onAnimationChange({
       ...this.props.animation,
-      easing: easing,
-      duration: easing === AnimationEasing.CUSTOM_SPRING ? customSpring.duration : this.props.animation.duration,
-      customSpring: customSpring
+      easing: this.getConfigValue(uiValue)
     })
   }
 
@@ -226,65 +213,9 @@ export class AnimationOptions extends Component<any, any> {
   }
 
   onDurationChange(duration) {
-    if (this.props.animation.easing === AnimationEasing.CUSTOM_SPRING) {
-      const customSpring = normalizeCustomSpring({
-        ...getCustomSpringForAnimation(this.props.animation),
-        duration: duration
-      })
-      this.props.onAnimationChange({
-        ...this.props.animation,
-        duration: customSpring.duration,
-        customSpring: customSpring
-      })
-      return
-    }
-
     this.props.onAnimationChange({
       ...this.props.animation,
       duration: duration
-    })
-  }
-
-  onCustomSpringDurationChange(value: null | number) {
-    if (value === null) return
-    const customSpring = normalizeCustomSpring({
-      ...getCustomSpringForAnimation(this.props.animation),
-      duration: value
-    })
-    this.onCustomSpringChange(customSpring)
-  }
-
-  onCustomSpringMassChange(value: null | number) {
-    if (value === null) return
-    this.onCustomSpringChange({
-      ...getCustomSpringForAnimation(this.props.animation),
-      mass: value
-    })
-  }
-
-  onCustomSpringStiffnessChange(value: null | number) {
-    if (value === null) return
-    this.onCustomSpringChange({
-      ...getCustomSpringForAnimation(this.props.animation),
-      stiffness: value
-    })
-  }
-
-  onCustomSpringDampingChange(value: null | number) {
-    if (value === null) return
-    this.onCustomSpringChange({
-      ...getCustomSpringForAnimation(this.props.animation),
-      damping: value
-    })
-  }
-
-  onCustomSpringChange(spring: AnimationCustomSpring) {
-    const customSpring = normalizeCustomSpring(spring)
-    this.props.onAnimationChange({
-      ...this.props.animation,
-      easing: AnimationEasing.CUSTOM_SPRING,
-      duration: customSpring.duration,
-      customSpring: customSpring
     })
   }
 
@@ -302,14 +233,6 @@ export class AnimationOptions extends Component<any, any> {
 
   isTimedAndEased(): boolean {
     return this.props.animation.type !== AnimationType.INSTANT
-  }
-
-  isCustomSpring(): boolean {
-    return this.props.animation.easing === AnimationEasing.CUSTOM_SPRING
-  }
-
-  formatNumber(value: number): string {
-    return Number.isInteger(value) ? value.toString() : value.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')
   }
 
   getUiValue(configValue: string) {
@@ -364,15 +287,12 @@ export class AnimationOptions extends Component<any, any> {
       case QUICK:
       case BOUNCY:
       case SLOW:
-      case CUSTOM_SPRING:
         return <CurveEaseOutIcon />
       default: return <TransitionMoveIcon />
     }
   }
 
   render(props, state) {
-    const customSpring = getCustomSpringForAnimation(props.animation)
-
     return (
       <div style={props.style ? props.style : ''}>
         <Text class={styles.sectionHeading}>
@@ -416,51 +336,13 @@ export class AnimationOptions extends Component<any, any> {
               value={this.getUiValue(props.animation.easing)} />
             </div>
 
-            {
-              !this.isCustomSpring() &&
-              <div class={styles.animationDurationControl}>
-                <DurationInput // Duration Input
-                callback={this.onDurationChange}
-                value={props.animation.duration} />
-              </div>
-            }
+            <div class={styles.animationDurationControl}>
+              <DurationInput // Duration Input
+              callback={this.onDurationChange}
+              value={props.animation.duration} />
+            </div>
 
           </div> 
-        }
-
-        {
-          this.isTimedAndEased() && this.isCustomSpring() &&
-          <div class={styles.animationSpringControls}>
-            <Text>Duration</Text>
-            <TextboxNumeric
-              integer
-              minimum={50}
-              maximum={5000}
-              onNumericValueInput={this.onCustomSpringDurationChange}
-              suffix='ms'
-              value={this.formatNumber(customSpring.duration)} />
-
-            <Text>Mass</Text>
-            <TextboxNumeric
-              minimum={0.001}
-              maximum={1000000}
-              onNumericValueInput={this.onCustomSpringMassChange}
-              value={this.formatNumber(customSpring.mass)} />
-
-            <Text>Stiffness</Text>
-            <TextboxNumeric
-              minimum={0.001}
-              maximum={1000000}
-              onNumericValueInput={this.onCustomSpringStiffnessChange}
-              value={this.formatNumber(customSpring.stiffness)} />
-
-            <Text>Damping</Text>
-            <TextboxNumeric
-              minimum={0.001}
-              maximum={1000000}
-              onNumericValueInput={this.onCustomSpringDampingChange}
-              value={this.formatNumber(customSpring.damping)} />
-          </div>
         }
 
         {

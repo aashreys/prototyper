@@ -12,7 +12,6 @@ export const GENTLE = 'Gentle'
 export const QUICK = 'Quick'
 export const BOUNCY = 'Bouncy'
 export const SLOW = 'Slow'
-export const CUSTOM_SPRING = 'Custom Spring'
 
 export const EASING_OPTIONS: Array<DropdownOption> = [
   { value: LINEAR },
@@ -29,7 +28,6 @@ export const EASING_OPTIONS: Array<DropdownOption> = [
   { value: QUICK },
   { value: BOUNCY },
   { value: SLOW },
-  { value: CUSTOM_SPRING },
 ]
 
 export function getAnimationEasingUiValue(configValue: string) {
@@ -45,7 +43,6 @@ export function getAnimationEasingUiValue(configValue: string) {
     case AnimationEasing.QUICK: return QUICK
     case AnimationEasing.BOUNCY: return BOUNCY
     case AnimationEasing.SLOW: return SLOW
-    case AnimationEasing.CUSTOM_SPRING: return CUSTOM_SPRING
   }
 }
 
@@ -62,6 +59,5 @@ export function getAnimationEasingConfigValue(uiValue: string) {
     case QUICK: return AnimationEasing.QUICK
     case BOUNCY: return AnimationEasing.BOUNCY
     case SLOW: return AnimationEasing.SLOW
-    case CUSTOM_SPRING: return AnimationEasing.CUSTOM_SPRING
   }
 }

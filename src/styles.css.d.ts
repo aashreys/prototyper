@@ -6,7 +6,6 @@ declare const styles: {
   readonly "animationMatchLayersControl": string;
   readonly "animationPrimaryRow": string;
   readonly "animationSecondaryRow": string;
-  readonly "animationSpringControls": string;
   readonly "animationTransitionControl": string;
   readonly "componentMapping": string;
   readonly "componentMappingAction": string;

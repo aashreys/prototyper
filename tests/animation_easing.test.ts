@@ -3,7 +3,6 @@ import test from 'node:test'
 import { AnimationEasing } from '../src/animation'
 import {
   BOUNCY,
-  CUSTOM_SPRING,
   EASE_IN,
   EASE_IN_AND_OUT,
   EASE_IN_AND_OUT_BACK,
@@ -36,8 +35,7 @@ test('lists spring preset easings after back easings', () => {
     GENTLE,
     QUICK,
     BOUNCY,
-    SLOW,
-    CUSTOM_SPRING
+    SLOW
   ])
 })
 
@@ -46,8 +44,7 @@ test('maps spring preset easing labels to config enum values', () => {
     [AnimationEasing.GENTLE, GENTLE],
     [AnimationEasing.QUICK, QUICK],
     [AnimationEasing.BOUNCY, BOUNCY],
-    [AnimationEasing.SLOW, SLOW],
-    [AnimationEasing.CUSTOM_SPRING, CUSTOM_SPRING]
+    [AnimationEasing.SLOW, SLOW]
   ]
 
   for (const [configValue, uiValue] of mappings) {

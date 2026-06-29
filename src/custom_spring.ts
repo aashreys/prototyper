@@ -1,18 +1,14 @@
-import { Animation, AnimationCustomSpring, AnimationEasing } from './animation'
+import { Animation, AnimationEasing } from './animation'
 
 const MIN_DURATION = 50
 const MAX_DURATION = 5000
-const MIN_SPRING_VALUE = 0.001
-const MAX_SPRING_VALUE = 1000000
-const MIN_INITIAL_VELOCITY = -10000
-const MAX_INITIAL_VELOCITY = 10000
+const DEFAULT_DURATION = 300
 
-export const DEFAULT_CUSTOM_SPRING: AnimationCustomSpring = {
-  duration: 300,
-  mass: 1,
-  stiffness: 170,
-  damping: 26,
-  initialVelocity: 0
+type SpringTransition = {
+  readonly duration: number
+  readonly mass: number
+  readonly stiffness: number
+  readonly damping: number
 }
 
 const SPRING_PRESETS: Partial<Record<AnimationEasing, {
@@ -41,48 +37,15 @@ export function isSpringEasing(easing: AnimationEasing): boolean {
   return easing === AnimationEasing.GENTLE ||
     easing === AnimationEasing.QUICK ||
     easing === AnimationEasing.BOUNCY ||
-    easing === AnimationEasing.SLOW ||
-    easing === AnimationEasing.CUSTOM_SPRING
+    easing === AnimationEasing.SLOW
 }
 
-export function normalizeCustomSpring(spring?: Partial<AnimationCustomSpring>): AnimationCustomSpring {
-  return {
-    duration: clampFinite(spring?.duration, MIN_DURATION, MAX_DURATION, DEFAULT_CUSTOM_SPRING.duration),
-    mass: clampFinite(spring?.mass, MIN_SPRING_VALUE, MAX_SPRING_VALUE, DEFAULT_CUSTOM_SPRING.mass),
-    stiffness: clampFinite(spring?.stiffness, MIN_SPRING_VALUE, MAX_SPRING_VALUE, DEFAULT_CUSTOM_SPRING.stiffness),
-    damping: clampFinite(spring?.damping, MIN_SPRING_VALUE, MAX_SPRING_VALUE, DEFAULT_CUSTOM_SPRING.damping),
-    initialVelocity: clampFinite(
-      spring?.initialVelocity,
-      MIN_INITIAL_VELOCITY,
-      MAX_INITIAL_VELOCITY,
-      DEFAULT_CUSTOM_SPRING.initialVelocity
-    )
-  }
-}
-
-export function rescaleCustomSpringDuration(
-  spring: AnimationCustomSpring,
-  duration: number
-): AnimationCustomSpring {
-  const currentSpring = normalizeCustomSpring(spring)
-  const nextDuration = clampFinite(duration, MIN_DURATION, MAX_DURATION, currentSpring.duration)
-  const durationScale = currentSpring.duration / nextDuration
-  return normalizeCustomSpring({
-    duration: nextDuration,
-    mass: currentSpring.mass,
-    stiffness: roundSpringValue(currentSpring.stiffness * durationScale * durationScale),
-    damping: roundSpringValue(currentSpring.damping * durationScale),
-    initialVelocity: currentSpring.initialVelocity
-  })
-}
-
-export function getCustomSpringForAnimation(animation: Animation): AnimationCustomSpring {
-  if (animation.easing === AnimationEasing.CUSTOM_SPRING) {
-    return normalizeCustomSpring(animation.customSpring)
-  }
-
+export function getCustomSpringForAnimation(animation: Animation): SpringTransition {
   const preset = SPRING_PRESETS[animation.easing]
-  if (!preset) return normalizeCustomSpring(animation.customSpring)
+  if (!preset) return getSpringPresetForDuration({
+    stiffnessConstant: 28800000,
+    dampingConstant: 12000
+  }, DEFAULT_DURATION)
   return getSpringPresetForDuration(preset, animation.duration)
 }
 
@@ -92,14 +55,13 @@ function getSpringPresetForDuration(
     readonly dampingConstant: number
   },
   duration: number
-): AnimationCustomSpring {
-  const nextDuration = clampFinite(duration, MIN_DURATION, MAX_DURATION, DEFAULT_CUSTOM_SPRING.duration)
+): SpringTransition {
+  const nextDuration = clampFinite(duration, MIN_DURATION, MAX_DURATION, DEFAULT_DURATION)
   return {
     duration: nextDuration,
     mass: 1,
     stiffness: roundSpringValue(preset.stiffnessConstant / (nextDuration * nextDuration)),
-    damping: roundSpringValue(preset.dampingConstant / nextDuration),
-    initialVelocity: 0
+    damping: roundSpringValue(preset.dampingConstant / nextDuration)
   }
 }
 

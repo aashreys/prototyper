@@ -507,8 +507,7 @@ export class Utils {
       direction: AnimationDirection.RIGHT,
       isMatchLayers: animation.isMatchLayers,
       easing: animation.easing,
-      duration: animation.duration,
-      customSpring: animation.customSpring
+      duration: animation.duration
     }
 
     let rightAnim: Animation = {
@@ -517,8 +516,7 @@ export class Utils {
       direction: AnimationDirection.LEFT,
       isMatchLayers: animation.isMatchLayers,
       easing: animation.easing,
-      duration: animation.duration,
-      customSpring: animation.customSpring
+      duration: animation.duration
     }
 
     let topAnim: Animation = {
@@ -527,8 +525,7 @@ export class Utils {
       direction: AnimationDirection.BOTTOM,
       isMatchLayers: animation.isMatchLayers,
       easing: animation.easing,
-      duration: animation.duration,
-      customSpring: animation.customSpring
+      duration: animation.duration
     }
 
     let bottomAnim: Animation = {
@@ -537,8 +534,7 @@ export class Utils {
       direction: AnimationDirection.TOP,
       isMatchLayers: animation.isMatchLayers,
       easing: animation.easing,
-      duration: animation.duration,
-      customSpring: animation.customSpring
+      duration: animation.duration
     }
 
     return {

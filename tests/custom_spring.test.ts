@@ -1,25 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { AnimationEasing, AnimationType, AnimationDirection } from '../src/animation'
-import { getCustomSpringForAnimation, rescaleCustomSpringDuration } from '../src/custom_spring'
-
-test('rescales custom spring stiffness and damping when duration changes', () => {
-  const spring = rescaleCustomSpringDuration({
-    duration: 1000,
-    mass: 2,
-    stiffness: 100,
-    damping: 20,
-    initialVelocity: 3
-  }, 500)
-
-  assert.deepEqual(spring, {
-    duration: 500,
-    mass: 2,
-    stiffness: 400,
-    damping: 40,
-    initialVelocity: 3
-  })
-})
+import { getCustomSpringForAnimation } from '../src/custom_spring'
 
 test('creates custom spring parameters for a spring preset at requested duration', () => {
   const spring = getCustomSpringForAnimation({
@@ -35,8 +17,7 @@ test('creates custom spring parameters for a spring preset at requested duration
     duration: 250,
     mass: 1,
     stiffness: 6144,
-    damping: 48,
-    initialVelocity: 0
+    damping: 48
   })
 })
 
@@ -54,8 +35,7 @@ test('creates custom spring parameters for numeric string durations', () => {
     duration: 500,
     mass: 1,
     stiffness: 256,
-    damping: 24,
-    initialVelocity: 0
+    damping: 24
   })
 })
 
