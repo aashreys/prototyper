@@ -16,7 +16,7 @@ test('creates custom spring parameters for a spring preset at requested duration
   assert.deepEqual(spring, {
     duration: 250,
     mass: 1,
-    stiffness: 6144,
+    stiffness: 5536.209,
     damping: 48
   })
 })
@@ -34,17 +34,17 @@ test('creates custom spring parameters for numeric string durations', () => {
   assert.deepEqual(spring, {
     duration: 500,
     mass: 1,
-    stiffness: 256,
+    stiffness: 266.67,
     damping: 24
   })
 })
 
 test('calibrates gentle preset spring parameters from duration', () => {
   const expectedValues = [
-    [100, 6400, 120],
-    [500, 256, 24],
-    [800, 100, 15],
-    [1200, 44.444, 10]
+    [100, 6666.749, 120],
+    [500, 266.67, 24],
+    [800, 104.168, 15],
+    [1200, 46.297, 10]
   ]
 
   for (const [duration, stiffness, damping] of expectedValues) {
@@ -64,10 +64,10 @@ test('calibrates gentle preset spring parameters from duration', () => {
 
 test('calibrates quick preset spring parameters from duration', () => {
   const expectedValues = [
-    [100, 10800, 120],
-    [500, 432, 24],
-    [600, 300, 20],
-    [1200, 75, 10]
+    [100, 10774.59, 120],
+    [500, 430.984, 24],
+    [600, 299.294, 20],
+    [1200, 74.824, 10]
   ]
 
   for (const [duration, stiffness, damping] of expectedValues) {
@@ -87,10 +87,10 @@ test('calibrates quick preset spring parameters from duration', () => {
 
 test('calibrates bouncy preset spring parameters from duration', () => {
   const expectedValues = [
-    [100, 38400, 120],
-    [500, 1536, 24],
-    [800, 600, 15],
-    [1200, 266.667, 10]
+    [100, 34601.307, 120],
+    [500, 1384.052, 24],
+    [800, 540.645, 15],
+    [1200, 240.287, 10]
   ]
 
   for (const [duration, stiffness, damping] of expectedValues) {
@@ -110,15 +110,15 @@ test('calibrates bouncy preset spring parameters from duration', () => {
 
 test('calibrates slow preset spring parameters from duration', () => {
   const expectedValues = [
-    [100, 2880, 120],
-    [200, 720, 60],
-    [300, 320, 40],
-    [400, 180, 30],
-    [500, 115.2, 24],
-    [600, 80, 20],
-    [800, 45, 15],
-    [1200, 20, 10],
-    [2000, 7.2, 6]
+    [100, 4337.915, 120],
+    [200, 1084.479, 60],
+    [300, 481.991, 40],
+    [400, 271.12, 30],
+    [500, 173.517, 24],
+    [600, 120.498, 20],
+    [800, 67.78, 15],
+    [1200, 30.124, 10],
+    [2000, 10.845, 6]
   ]
 
   for (const [duration, stiffness, damping] of expectedValues) {

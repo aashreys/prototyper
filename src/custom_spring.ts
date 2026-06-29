@@ -16,19 +16,19 @@ const SPRING_PRESETS: Partial<Record<AnimationEasing, {
   readonly dampingConstant: number
 }>> = {
   [AnimationEasing.GENTLE]: {
-    stiffnessConstant: 64000000,
+    stiffnessConstant: 66667487,
     dampingConstant: 12000
   },
   [AnimationEasing.QUICK]: {
-    stiffnessConstant: 108000000,
+    stiffnessConstant: 107745896,
     dampingConstant: 12000
   },
   [AnimationEasing.BOUNCY]: {
-    stiffnessConstant: 384000000,
+    stiffnessConstant: 346013072,
     dampingConstant: 12000
   },
   [AnimationEasing.SLOW]: {
-    stiffnessConstant: 28800000,
+    stiffnessConstant: 43379154,
     dampingConstant: 12000
   }
 }
@@ -43,7 +43,7 @@ export function isSpringEasing(easing: AnimationEasing): boolean {
 export function getCustomSpringForAnimation(animation: Animation): SpringTransition {
   const preset = SPRING_PRESETS[animation.easing]
   if (!preset) return getSpringPresetForDuration({
-    stiffnessConstant: 28800000,
+    stiffnessConstant: 43379154,
     dampingConstant: 12000
   }, DEFAULT_DURATION)
   return getSpringPresetForDuration(preset, animation.duration)

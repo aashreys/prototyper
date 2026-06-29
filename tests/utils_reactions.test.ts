@@ -214,7 +214,7 @@ test('creates simple transition with spring preset as custom spring easing', () 
       type: AnimationEasing.CUSTOM_SPRING,
       easingFunctionSpring: {
         mass: 1,
-        stiffness: 1896.296,
+        stiffness: 1708.707,
         damping: 26.667
       }
     },
@@ -240,7 +240,7 @@ test('creates directional transition with spring preset as custom spring easing'
       type: AnimationEasing.CUSTOM_SPRING,
       easingFunctionSpring: {
         mass: 1,
-        stiffness: 177.778,
+        stiffness: 185.187,
         damping: 20
       }
     },
@@ -286,7 +286,7 @@ test('primes custom spring duration before writing final spring reactions', asyn
     type: AnimationEasing.CUSTOM_SPRING,
     easingFunctionSpring: {
       mass: 1,
-      stiffness: 6400,
+      stiffness: 6666.749,
       damping: 120
     }
   })
