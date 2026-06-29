@@ -18,7 +18,7 @@ import {
 } from "./errors.js";
 import { DebugReport } from "./debug_report.js";
 
-const WIDTH = 250;
+const WIDTH = 240;
 const HEIGHT = 460;
 
 export enum Mode {
