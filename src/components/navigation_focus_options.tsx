@@ -704,9 +704,6 @@ export class NavigationFocusOptions extends Component<
   renderFocusModeRow(props: NavigationFocusOptionsProps) {
     return (
       <div class={styles.focusModeRow}>
-        <div class={styles.focusModeLabel}>
-          <Text>Show focus with</Text>
-        </div>
         <div class={styles.focusModeSelect}>
           <Dropdown
             onChange={(e) =>
@@ -724,7 +721,7 @@ export class NavigationFocusOptions extends Component<
     return (
       <div style={props.style ? props.style : ""}>
         <Text class={styles.sectionHeading}>
-          <Bold>Navigation Focus</Bold>
+          <Bold>Show focus with</Bold>
         </Text>
 
         <VerticalSpace space="small" />

@@ -122,7 +122,7 @@ export class NavigationOptions extends Component<any, any> {
     return (
       <div style={props.style ? props.style : ''}>
 
-        <Text class={styles.sectionHeading}><Bold>Navigate With</Bold></Text>
+        <Text class={styles.sectionHeading}><Bold>Navigate with</Bold></Text>
 
         <VerticalSpace space='small' />
 
