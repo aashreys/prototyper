@@ -76,19 +76,30 @@ const DIRECTION_OPTIONS: Array<SegmentedControlOption> = [
 
 const DURATION_INCREMENT_SMALL = 10
 const DURATION_INCREMENT_LARGE = 50
+const DURATION_INPUT_PATTERN = /^\d*(?:m|ms)?$/i
 
 const DurationInput = function (props) {
 
   const [value, setValue] = useState(formatPropsValue(props.value))
+  const [isFocused, setIsFocused] = useState(false)
 
   useEffect(() => {
-    setValue(formatPropsValue(props.value))
-  }, [props.value])
+    if (!isFocused) {
+      setValue(formatPropsValue(props.value))
+    }
+  }, [isFocused, props.value])
 
   function handleInput(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value;
-    setValue(newValue);
-    props.callback(parseDurationValue(newValue) || 0);
+    const newValue = event.currentTarget.value
+    if (!isAllowedDurationInput(newValue)) {
+      event.currentTarget.value = value
+      return
+    }
+    setValue(newValue)
+
+    const parsedValue = parseDurationValue(newValue)
+    if (parsedValue === null) return
+    props.callback(parsedValue)
   }
 
   function handleKeyDown(event: JSX.TargetedKeyboardEvent<HTMLInputElement>) {
@@ -106,8 +117,8 @@ const DurationInput = function (props) {
     props.callback(nextValue)
   }
 
-  function removeMsString(string) {
-    return string.replace(/ms/gm, '')
+  function removeDurationSuffix(string: string) {
+    return string.replace(/m?s?$/i, '')
   }
 
   function hasNonDigit(string): boolean {
@@ -120,42 +131,33 @@ const DurationInput = function (props) {
 
   function formatPropsValue(value) {
     let valueString = value.toString();
-    return valueString && valueString.length > 0 ? removeMsString(valueString) + 'ms' : valueString
+    return valueString && valueString.length > 0 ? removeDurationSuffix(valueString) + 'ms' : valueString
+  }
+
+  function isAllowedDurationInput(value: string): boolean {
+    return DURATION_INPUT_PATTERN.test(value.trim())
   }
 
   function parseDurationValue(value): null | number {
-    const normalizedValue = removeMsString(value).trim()
+    const normalizedValue = removeDurationSuffix(value).trim()
     if (normalizedValue.length === 0 || hasNonDigit(normalizedValue)) return null
     const parsedValue = Number(normalizedValue)
     return Number.isFinite(parsedValue) ? parsedValue : null
   }
 
   function validateOnBlur(value: null | string): null | string | boolean {
-    if (value.length > 0) {
-      value = removeMsString(value)
-      if (!hasNonDigit(value)) {
-        value = removeLeadingZeroes(value)
-        if (value.length === 0) value = '0'
-        if (value.length > 0) {
-          value = value + 'ms'
-          return value;
-        }
-        else {
-          return false;
-        }
-      }
-      else {
-        return false;
-      }
-    } 
-    else {
-      return false;
-    }
+    const parsedValue = parseDurationValue(value || '')
+    if (parsedValue === null) return false
+    value = removeLeadingZeroes(parsedValue.toString())
+    if (value.length === 0) value = '0'
+    return value + 'ms'
   }
 
   return (
     <Textbox
     // icon={<TimerIcon />}
+    onBlur={() => setIsFocused(false)}
+    onFocus={() => setIsFocused(true)}
     validateOnBlur={validateOnBlur}
     onKeyDown={handleKeyDown}
     onInput={handleInput}
