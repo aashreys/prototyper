@@ -248,6 +248,208 @@
     gap: 8px;
 }
 
+.pointerControls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pointerToggle {
+    min-width: 0;
+}
+
+.pointerPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pointerLayout {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 110px 100px;
+    align-items: start;
+}
+
+.pointerLeftColumn {
+    min-width: 0;
+    width: 110px;
+}
+
+.pointerControlGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pointerAssetGrid {
+    display: grid;
+    gap: 4px;
+    grid-template-columns: repeat(3, 34px);
+    width: 110px;
+}
+
+.pointerAssetButton,
+.pointerUploadButton button {
+    align-items: center;
+    background: var(--figma-color-bg-secondary);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    display: flex;
+    height: 32px;
+    justify-content: center;
+    padding: 2px;
+    width: 34px;
+}
+
+.pointerAssetButton:hover,
+.pointerUploadButton button:hover {
+    border-color: var(--figma-color-border-brand);
+}
+
+.pointerAssetButtonSelected {
+    border-color: var(--figma-color-border-brand);
+    box-shadow: 0 0 0 1px var(--figma-color-border-brand);
+}
+
+.pointerAssetPreview {
+    display: block;
+    height: 16px;
+    object-fit: contain;
+    width: 16px;
+}
+
+.pointerCustomAssetButton {
+    position: relative;
+}
+
+.pointerAssetRemoveButton {
+    align-items: center;
+    background: var(--figma-color-bg);
+    border: 1px solid var(--figma-color-border);
+    border-radius: 999px;
+    color: var(--figma-color-text-secondary);
+    display: flex;
+    font-size: 10px;
+    height: 14px;
+    justify-content: center;
+    line-height: 1;
+    position: absolute;
+    right: -5px;
+    top: -5px;
+    width: 14px;
+    z-index: 5;
+}
+
+.pointerUploadButton {
+    height: 32px;
+    position: relative;
+    width: 34px;
+}
+
+.pointerUploadInput {
+    display: none;
+}
+
+.pointerSizeControl {
+    width: 110px;
+}
+
+.pointerPositionPad {
+    background: var(--figma-color-bg-secondary);
+    border: 0;
+    border-radius: 4px;
+    height: 100px;
+    overflow: hidden;
+    position: relative;
+    touch-action: none;
+    width: 100px;
+}
+
+.pointerPositionPreset {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    display: flex;
+    height: 16px;
+    justify-content: center;
+    padding: 0;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    z-index: 4;
+}
+
+.pointerPositionDot {
+    background: var(--figma-color-text-tertiary);
+    border-radius: 999px;
+    display: block;
+    height: 3px;
+    width: 3px;
+}
+
+.pointerPositionPreset:hover .pointerPositionDot,
+.pointerPositionPresetSelected .pointerPositionDot {
+    background: var(--figma-color-bg-brand);
+    height: 10px;
+    width: 3px;
+}
+
+.pointerPositionPresetCenter {
+    left: 49.5px;
+    top: 50.5px;
+}
+
+.pointerPositionPresetTopLeft {
+    left: 13.5px;
+    top: 13.5px;
+}
+
+.pointerPositionPresetTop {
+    left: 49.5px;
+    top: 13.5px;
+}
+
+.pointerPositionPresetTopRight {
+    left: 86.5px;
+    top: 13.5px;
+}
+
+.pointerPositionPresetLeft {
+    left: 13.5px;
+    top: 50.5px;
+}
+
+.pointerPositionPresetRight {
+    left: 86.5px;
+    top: 50.5px;
+}
+
+.pointerPositionPresetBottomLeft {
+    left: 13.5px;
+    top: 86.5px;
+}
+
+.pointerPositionPresetBottom {
+    left: 49.5px;
+    top: 86.5px;
+}
+
+.pointerPositionPresetBottomRight {
+    left: 86.5px;
+    top: 86.5px;
+}
+
+.pointerPositionPreview {
+    height: 16px;
+    object-fit: contain;
+    pointer-events: none;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    z-index: 2;
+}
+
 .componentMappingHeader {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--componentMappingActionWidth);

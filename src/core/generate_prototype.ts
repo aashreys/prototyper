@@ -2,6 +2,7 @@ import { emit } from "@create-figma-plugin/utilities";
 import { Config } from "../config";
 import { Constants } from "../constants";
 import { FocusOverlay } from "../focus_overlay";
+import { FocusPointer } from "../focus_pointer";
 import {
   ComponentFocusMapping,
   getComponentFocusMappings,
@@ -48,6 +49,7 @@ export async function doGeneratePrototype(config: Config) {
   assignFrameNeighors(protoFrames, protoNodes);
   positionFrames(protoFrames);
   let statesChanged = setFocus(protoFrames, config);
+  await FocusPointer.createPointers(protoFrames, config.focus);
   saveGenerateDebugReport(focus, protoNodes, protoFrames, isLinked);
   let interactionsCreated = await createInteractions(protoFrames, config);
   DebugReport.update({
@@ -238,6 +240,7 @@ function removeFlowStaringPoints(focusTargets: Array<SceneNode>) {
 }
 
 function resetFocus(focusTargets: Array<SceneNode>, config: Config) {
+  FocusPointer.resetManagedPointers(Utils.findTopLevelFrame(focusTargets[0]))
   if (!isVariantFocusMode(config.focus)) {
     FocusOverlay.resetManagedFocus(Utils.findTopLevelFrame(focusTargets[0]))
     return

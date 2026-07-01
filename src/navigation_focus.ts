@@ -1,4 +1,5 @@
 import { ComponentFocusMapping, ComponentFocusMappingType, SwapVariant } from "./swap_variant";
+import { POINTER_PRESETS } from "./pointer_assets";
 export type { ComponentFocusMapping, ComponentFocusMappingType } from "./swap_variant";
 
 export enum NavigationFocusMode {
@@ -43,6 +44,35 @@ export interface ScaleShadowFocusConfig {
   readonly cornerRadius: number
 }
 
+export type PointerAssetSource = 'preset' | 'custom'
+export type PointerSizeMode = '48' | '64' | '96' | 'custom'
+export type PointerPositionPreset =
+  'top-left' |
+  'top' |
+  'top-right' |
+  'left' |
+  'center' |
+  'right' |
+  'bottom-left' |
+  'bottom' |
+  'bottom-right' |
+  'custom'
+
+export interface PointerPosition {
+  readonly x: number
+  readonly y: number
+}
+
+export interface PointerFocusConfig {
+  readonly enabled: boolean
+  readonly assetSource: PointerAssetSource
+  readonly presetId: string
+  readonly sizeMode: PointerSizeMode
+  readonly customSize: number
+  readonly positionPreset: PointerPositionPreset
+  readonly position: PointerPosition
+}
+
 export interface NavigationFocusConfig {
   readonly mode: NavigationFocusMode
   readonly variant: SwapVariant
@@ -51,6 +81,7 @@ export interface NavigationFocusConfig {
   readonly fill: FillFocusConfig
   readonly shadow: ShadowFocusConfig
   readonly scaleShadow: ScaleShadowFocusConfig
+  readonly pointer: PointerFocusConfig
 }
 
 export const DEFAULT_VARIANT_FOCUS: SwapVariant = {
@@ -96,6 +127,31 @@ export const DEFAULT_SCALE_SHADOW_FOCUS: ScaleShadowFocusConfig = {
   cornerRadius: 12
 }
 
+export const DEFAULT_POINTER_FOCUS: PointerFocusConfig = {
+  enabled: false,
+  assetSource: 'preset',
+  presetId: 'arrow',
+  sizeMode: '96',
+  customSize: 96,
+  positionPreset: 'bottom-right',
+  position: {
+    x: 1,
+    y: 1
+  }
+}
+
+export const POINTER_POSITION_PRESETS: Record<Exclude<PointerPositionPreset, 'custom'>, PointerPosition> = {
+  'top-left': { x: 0, y: 0 },
+  top: { x: 0.5, y: 0 },
+  'top-right': { x: 1, y: 0 },
+  left: { x: 0, y: 0.5 },
+  center: { x: 0.5, y: 0.5 },
+  right: { x: 1, y: 0.5 },
+  'bottom-left': { x: 0, y: 1 },
+  bottom: { x: 0.5, y: 1 },
+  'bottom-right': { x: 1, y: 1 }
+}
+
 export function getDefaultNavigationFocusConfig(variant: SwapVariant = DEFAULT_VARIANT_FOCUS): NavigationFocusConfig {
   const normalizedVariant = normalizeVariantFocus(variant)
   const components = normalizeComponentFocusMappings(undefined, normalizedVariant)
@@ -106,7 +162,8 @@ export function getDefaultNavigationFocusConfig(variant: SwapVariant = DEFAULT_V
     stroke: { ...DEFAULT_STROKE_FOCUS },
     fill: { ...DEFAULT_FILL_FOCUS },
     shadow: { ...DEFAULT_SHADOW_FOCUS },
-    scaleShadow: { ...DEFAULT_SCALE_SHADOW_FOCUS }
+    scaleShadow: { ...DEFAULT_SCALE_SHADOW_FOCUS },
+    pointer: { ...DEFAULT_POINTER_FOCUS, position: { ...DEFAULT_POINTER_FOCUS.position } }
   }
 }
 
@@ -149,8 +206,21 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
       padding: normalizeNumber(value.scaleShadow?.padding, DEFAULT_SCALE_SHADOW_FOCUS.padding),
       useAutoCornerRadius: normalizeBoolean(value.scaleShadow?.useAutoCornerRadius, DEFAULT_SCALE_SHADOW_FOCUS.useAutoCornerRadius),
       cornerRadius: normalizeNumber(value.scaleShadow?.cornerRadius, DEFAULT_SCALE_SHADOW_FOCUS.cornerRadius)
-    }
+    },
+    pointer: normalizePointerFocus(value.pointer)
   }
+}
+
+export function getPointerSize(pointer: PointerFocusConfig): number {
+  if (pointer.sizeMode === 'custom') return normalizeNumber(pointer.customSize, DEFAULT_POINTER_FOCUS.customSize, 1024)
+  return Number(pointer.sizeMode)
+}
+
+export function getPointerPosition(pointer: PointerFocusConfig): PointerPosition {
+  if (pointer.positionPreset !== 'custom') {
+    return POINTER_POSITION_PRESETS[pointer.positionPreset]
+  }
+  return normalizePointerPosition(pointer.position)
 }
 
 export function isVariantFocusConfigured(variant?: Partial<SwapVariant>): boolean {
@@ -248,6 +318,54 @@ function normalizeFocusMode(value, fallback: NavigationFocusMode): NavigationFoc
   if (value === NavigationFocusMode.FILL) return NavigationFocusMode.FILL
   if (value === NavigationFocusMode.SCALE_SHADOW) return NavigationFocusMode.SCALE_SHADOW
   return fallback
+}
+
+function normalizePointerFocus(value): PointerFocusConfig {
+  const defaultPointer = DEFAULT_POINTER_FOCUS
+  return {
+    enabled: normalizeBoolean(value?.enabled, defaultPointer.enabled),
+    assetSource: value?.assetSource === 'custom' ? 'custom' : 'preset',
+    presetId: normalizePointerPresetId(value?.presetId, defaultPointer.presetId),
+    sizeMode: normalizePointerSizeMode(value?.sizeMode, defaultPointer.sizeMode),
+    customSize: normalizeNumber(value?.customSize, defaultPointer.customSize, 1024),
+    positionPreset: normalizePointerPositionPreset(value?.positionPreset, defaultPointer.positionPreset),
+    position: normalizePointerPosition(value?.position)
+  }
+}
+
+function normalizePointerPresetId(value, fallback: string): string {
+  if (typeof value !== 'string' || value.length === 0) return fallback
+  return POINTER_PRESETS.some(asset => asset.id === value) ? value : fallback
+}
+
+function normalizePointerSizeMode(value, fallback: PointerSizeMode): PointerSizeMode {
+  if (value === '48' || value === '64' || value === '96' || value === 'custom') return value
+  return fallback
+}
+
+function normalizePointerPositionPreset(value, fallback: PointerPositionPreset): PointerPositionPreset {
+  if (value === 'above') return 'top'
+  if (value === 'below') return 'bottom'
+  if (
+    value === 'top-left' ||
+    value === 'top' ||
+    value === 'top-right' ||
+    value === 'left' ||
+    value === 'center' ||
+    value === 'right' ||
+    value === 'bottom-left' ||
+    value === 'bottom' ||
+    value === 'bottom-right' ||
+    value === 'custom'
+  ) return value
+  return fallback
+}
+
+function normalizePointerPosition(value): PointerPosition {
+  return {
+    x: normalizeNumber(value?.x, DEFAULT_POINTER_FOCUS.position.x, 1),
+    y: normalizeNumber(value?.y, DEFAULT_POINTER_FOCUS.position.y, 1)
+  }
 }
 
 function normalizeNumber(value, fallback: number, maximum?: number): number {

@@ -61,6 +61,18 @@ test('defaults new configs to stroke focus', () => {
   assert.equal(config.focus.fill.opacity, 50)
   assert.equal(config.focus.scaleShadow.scale, 1.2)
   assert.equal(config.focus.scaleShadow.showShadow, true)
+  assert.deepEqual(config.focus.pointer, {
+    enabled: false,
+    assetSource: 'preset',
+    presetId: 'arrow',
+    sizeMode: '96',
+    customSize: 96,
+    positionPreset: 'bottom-right',
+    position: {
+      x: 1,
+      y: 1
+    }
+  })
   assert.deepEqual(config.swapVariant, {
     property: '',
     from: '',
@@ -109,6 +121,9 @@ test('migrates stale config by merging saved settings with defaults', () => {
       to: 'Focus'
     }
   ])
+  assert.equal(migratedConfig.focus.pointer.enabled, false)
+  assert.equal(migratedConfig.focus.pointer.presetId, 'arrow')
+  assert.deepEqual(migratedConfig.focus.pointer.position, { x: 1, y: 1 })
   assert.equal(migratedConfig.storedNavigation.keyboard.device, Device.KEYBOARD)
   assert.equal(migratedConfig.storedNavigation.controller.device, Device.PS4)
 })
@@ -368,6 +383,41 @@ test('preserves saved scale shadow settings', () => {
   assert.equal(config.focus.mode, NavigationFocusMode.SCALE_SHADOW)
   assert.equal(config.focus.scaleShadow.scale, 1.12)
   assert.equal(config.focus.scaleShadow.showShadow, false)
+})
+
+test('preserves and normalizes saved pointer settings', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      pointer: {
+        enabled: true,
+        assetSource: 'custom',
+        presetId: 'hand',
+        sizeMode: 'custom',
+        customSize: 1200,
+        positionPreset: 'custom',
+        position: {
+          x: 2,
+          y: -1
+        }
+      }
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.pointer.enabled, true)
+  assert.equal(config.focus.pointer.assetSource, 'custom')
+  assert.equal(config.focus.pointer.presetId, 'arrow')
+  assert.equal(config.focus.pointer.sizeMode, 'custom')
+  assert.equal(config.focus.pointer.customSize, 1024)
+  assert.equal(config.focus.pointer.positionPreset, 'custom')
+  assert.deepEqual(config.focus.pointer.position, { x: 1, y: 1 })
 })
 
 test('migrates legacy scale shadow percent to multiplier scale', () => {

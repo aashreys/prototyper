@@ -15,6 +15,11 @@ export abstract class Constants {
 
   static readonly EVENT_REQUEST_STATS = "REQUEST_STATS"
   static readonly EVENT_RECEIVE_STATS = "EMIT_STATS"
+  static readonly EVENT_REQUEST_POINTER_ASSET = "REQUEST_POINTER_ASSET"
+  static readonly EVENT_RECEIVE_POINTER_ASSET = "RECEIVE_POINTER_ASSET"
+  static readonly EVENT_SAVE_POINTER_ASSET = "SAVE_POINTER_ASSET"
+  static readonly EVENT_DELETE_POINTER_ASSET = "DELETE_POINTER_ASSET"
+  static readonly EVENT_POINTER_ASSET_ERROR = "POINTER_ASSET_ERROR"
 
   static readonly ERROR_NOTHING_SELECTED = 'Nothing selected. Select component instances to link and try again.';
   static readonly ERROR_NO_INSTANCES = 'Selection does not contain any component instances to link together.';

@@ -6,6 +6,7 @@ import { doGeneratePrototype } from "./core/generate_prototype.js";
 import { doLinkFrames } from "./core/link_frames.js";
 import { setRelaunchButton } from "@create-figma-plugin/utilities";
 import { Stats } from "./stats.js";
+import { PointerAssetStorage } from "./pointer_asset_storage.js";
 import {
   DEFAULT_ERROR_MESSAGE,
   getErrorType,
@@ -77,6 +78,31 @@ export default function () {
     Stats.getStats().then((stats) =>
       emit(Constants.EVENT_RECEIVE_STATS, stats),
     );
+  });
+
+  on(Constants.EVENT_REQUEST_POINTER_ASSET, () => {
+    PointerAssetStorage.getCustomAsset().then((asset) => {
+      emit(Constants.EVENT_RECEIVE_POINTER_ASSET, asset);
+    });
+  });
+
+  on(Constants.EVENT_SAVE_POINTER_ASSET, (asset) => {
+    PointerAssetStorage.saveCustomAsset(asset).then(
+      (savedAsset) => emit(Constants.EVENT_RECEIVE_POINTER_ASSET, savedAsset),
+      (error) => {
+        const message = normalizeErrorMessage(error);
+        console.error('Failed to save custom pointer asset', {
+          error: message
+        });
+        emit(Constants.EVENT_POINTER_ASSET_ERROR, message);
+      },
+    );
+  });
+
+  on(Constants.EVENT_DELETE_POINTER_ASSET, () => {
+    PointerAssetStorage.deleteCustomAsset().then(() => {
+      emit(Constants.EVENT_RECEIVE_POINTER_ASSET, undefined);
+    });
   });
 
   async function runPlugin(config: Config, mode: Mode) {
