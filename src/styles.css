@@ -450,7 +450,7 @@
 .pointerPositionHoverPreview {
     height: 16px;
     object-fit: contain;
-    opacity: 0.4;
+    opacity: 0.5;
     pointer-events: none;
     position: absolute;
     transform: translate(-50%, -50%);

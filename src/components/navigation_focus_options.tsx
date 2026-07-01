@@ -95,7 +95,7 @@ const POINTER_POSITION_OPTIONS: Array<{
 const POINTER_UPLOAD_NOTE = "PNG & GIF cursors supported";
 const POINTER_PAD_INSET = 12;
 const POINTER_PAD_TRACK_SIZE = 76;
-const POINTER_ANCHOR_HIT_RADIUS = 13;
+const POINTER_ANCHOR_HIT_RADIUS = 6.5;
 
 const COMPONENT_HELPER_TEXT =
   "Add properties to change components to their focused state";
@@ -1198,6 +1198,11 @@ export class NavigationFocusOptions extends Component<
     value: Exclude<PointerPositionPreset, "custom">,
     pointer: PointerFocusConfig,
   ): string {
+    const hiddenPreset = this.state.pointerPositionHoverPreset
+      ? this.state.pointerPositionHoverPreset
+      : pointer.positionPreset === "custom"
+        ? undefined
+        : pointer.positionPreset;
     const positionClass =
       value === "top-left"
         ? styles.pointerPositionPresetTopLeft
@@ -1217,9 +1222,7 @@ export class NavigationFocusOptions extends Component<
                       ? styles.pointerPositionPresetBottom
                       : styles.pointerPositionPresetBottomRight;
     return `${styles.pointerPositionPreset} ${positionClass} ${
-      this.state.pointerPositionHoverPreset === value
-        ? styles.pointerPositionPresetHidden
-        : ""
+      hiddenPreset === value ? styles.pointerPositionPresetHidden : ""
     }`;
   }
 
