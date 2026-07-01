@@ -38,6 +38,7 @@ declare const styles: {
   readonly "pointerLayout": string;
   readonly "pointerLeftColumn": string;
   readonly "pointerPanel": string;
+  readonly "pointerPositionAnchorPreview": string;
   readonly "pointerPositionDot": string;
   readonly "pointerPositionHoverPreview": string;
   readonly "pointerPositionPad": string;
@@ -46,9 +47,9 @@ declare const styles: {
   readonly "pointerPositionPresetBottomLeft": string;
   readonly "pointerPositionPresetBottomRight": string;
   readonly "pointerPositionPresetCenter": string;
+  readonly "pointerPositionPresetHidden": string;
   readonly "pointerPositionPresetLeft": string;
   readonly "pointerPositionPresetRight": string;
-  readonly "pointerPositionPresetSelected": string;
   readonly "pointerPositionPresetTop": string;
   readonly "pointerPositionPresetTopLeft": string;
   readonly "pointerPositionPresetTopRight": string;

@@ -32,6 +32,7 @@ import {
   getPointerSize,
   NavigationFocusConfig,
   NavigationFocusMode,
+  POINTER_POSITION_PRESETS,
   PointerFocusConfig,
   PointerPositionPreset,
   PointerSizeMode,
@@ -92,6 +93,9 @@ const POINTER_POSITION_OPTIONS: Array<{
 ];
 
 const POINTER_UPLOAD_NOTE = "PNG & GIF cursors supported";
+const POINTER_PAD_INSET = 12;
+const POINTER_PAD_TRACK_SIZE = 76;
+const POINTER_ANCHOR_HIT_RADIUS = 13;
 
 const COMPONENT_HELPER_TEXT =
   "Add properties to change components to their focused state";
@@ -248,6 +252,7 @@ export class NavigationFocusOptions extends Component<
       customPointerAsset: undefined,
       customPointerDataUrl: "",
       pointerPositionHover: undefined,
+      pointerPositionHoverPreset: undefined,
       pointerUploadError: "",
     };
     this.bindMethods();
@@ -504,10 +509,24 @@ export class NavigationFocusOptions extends Component<
 
   onPointerPositionInput(event: any) {
     event.currentTarget.setPointerCapture?.(event.pointerId);
-    this.updatePointerPositionHover(event);
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const x = clampNumber((event.clientX - bounds.left - 12) / (bounds.width - 24), 0, 1);
-    const y = clampNumber((event.clientY - bounds.top - 12) / (bounds.height - 24), 0, 1);
+    const hoverState = this.getPointerPositionHoverState(event);
+    this.setState(hoverState);
+    if (hoverState.pointerPositionHoverPreset) {
+      this.onPointerPositionPresetChange(hoverState.pointerPositionHoverPreset);
+      return;
+    }
+    const x = clampNumber(
+      (hoverState.pointerPositionHover.x - POINTER_PAD_INSET) /
+        POINTER_PAD_TRACK_SIZE,
+      0,
+      1,
+    );
+    const y = clampNumber(
+      (hoverState.pointerPositionHover.y - POINTER_PAD_INSET) /
+        POINTER_PAD_TRACK_SIZE,
+      0,
+      1,
+    );
     this.updatePointer({
       ...this.getPointer(),
       positionPreset: "custom",
@@ -519,23 +538,50 @@ export class NavigationFocusOptions extends Component<
   }
 
   onPointerPositionHover(event: any) {
-    this.updatePointerPositionHover(event);
+    this.setState(this.getPointerPositionHoverState(event));
     if (event.buttons !== 1) return;
     this.onPointerPositionInput(event);
   }
 
   onPointerPositionLeave() {
-    this.setState({ pointerPositionHover: undefined });
+    this.setState({
+      pointerPositionHover: undefined,
+      pointerPositionHoverPreset: undefined,
+    });
   }
 
-  updatePointerPositionHover(event: any) {
+  getPointerPositionHoverState(event: any) {
     const bounds = event.currentTarget.getBoundingClientRect();
-    this.setState({
+    const pointerPositionHover = {
+      x: roundNumber(clampNumber(event.clientX - bounds.left, 0, bounds.width)),
+      y: roundNumber(clampNumber(event.clientY - bounds.top, 0, bounds.height)),
+    };
+    return {
       pointerPositionHover: {
-        x: roundNumber(clampNumber(event.clientX - bounds.left, 0, bounds.width)),
-        y: roundNumber(clampNumber(event.clientY - bounds.top, 0, bounds.height)),
+        x: pointerPositionHover.x,
+        y: pointerPositionHover.y,
       },
-    });
+      pointerPositionHoverPreset:
+        this.getPointerAnchorHit(pointerPositionHover) || undefined,
+    };
+  }
+
+  getPointerAnchorHit(position: {
+    readonly x: number;
+    readonly y: number;
+  }): Exclude<PointerPositionPreset, "custom"> | undefined {
+    let closestPreset: Exclude<PointerPositionPreset, "custom"> | undefined;
+    let closestDistance = Number.POSITIVE_INFINITY;
+    for (const option of POINTER_POSITION_OPTIONS) {
+      const anchor = this.getPointerAnchorPixelPosition(option.value);
+      const distance = Math.hypot(position.x - anchor.x, position.y - anchor.y);
+      if (distance > POINTER_ANCHOR_HIT_RADIUS || distance >= closestDistance) {
+        continue;
+      }
+      closestPreset = option.value;
+      closestDistance = distance;
+    }
+    return closestPreset;
   }
 
   toTextboxHexColor(color: string): string {
@@ -1096,12 +1142,23 @@ export class NavigationFocusOptions extends Component<
         {POINTER_POSITION_OPTIONS.map((option) =>
           this.renderPointerPositionPresetButton(option, pointer),
         )}
-        {this.state.pointerPositionHover && (
+        {this.state.pointerPositionHover &&
+          !this.state.pointerPositionHoverPreset && (
+            <img
+              alt=""
+              class={styles.pointerPositionHoverPreview}
+              src={previewSrc}
+              style={this.getPointerPadPixelStyle(this.state.pointerPositionHover)}
+            />
+          )}
+        {this.state.pointerPositionHoverPreset && (
           <img
             alt=""
-            class={styles.pointerPositionHoverPreview}
+            class={styles.pointerPositionAnchorPreview}
             src={previewSrc}
-            style={this.getPointerPadPixelStyle(this.state.pointerPositionHover)}
+            style={this.getPointerPadStyle(
+              POINTER_POSITION_PRESETS[this.state.pointerPositionHoverPreset],
+            )}
           />
         )}
         <img
@@ -1160,16 +1217,35 @@ export class NavigationFocusOptions extends Component<
                       ? styles.pointerPositionPresetBottom
                       : styles.pointerPositionPresetBottomRight;
     return `${styles.pointerPositionPreset} ${positionClass} ${
-      pointer.positionPreset === value ? styles.pointerPositionPresetSelected : ""
+      this.state.pointerPositionHoverPreset === value
+        ? styles.pointerPositionPresetHidden
+        : ""
     }`;
   }
 
   getPointerPadStyle(position: { readonly x: number; readonly y: number }): string {
-    return `left: ${12 + position.x * 76}px; top: ${12 + position.y * 76}px;`;
+    const pixelPosition = this.getPointerPadPixelPosition(position);
+    return this.getPointerPadPixelStyle(pixelPosition);
   }
 
   getPointerPadPixelStyle(position: { readonly x: number; readonly y: number }): string {
     return `left: ${position.x}px; top: ${position.y}px;`;
+  }
+
+  getPointerAnchorPixelPosition(
+    positionPreset: Exclude<PointerPositionPreset, "custom">,
+  ): { readonly x: number; readonly y: number } {
+    return this.getPointerPadPixelPosition(POINTER_POSITION_PRESETS[positionPreset]);
+  }
+
+  getPointerPadPixelPosition(position: {
+    readonly x: number;
+    readonly y: number;
+  }): { readonly x: number; readonly y: number } {
+    return {
+      x: POINTER_PAD_INSET + position.x * POINTER_PAD_TRACK_SIZE,
+      y: POINTER_PAD_INSET + position.y * POINTER_PAD_TRACK_SIZE,
+    };
   }
 
   render(props: NavigationFocusOptionsProps, _state) {
