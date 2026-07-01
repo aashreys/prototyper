@@ -3,6 +3,7 @@ import {
   Checkbox,
   Dropdown,
   DropdownOption,
+  IconExpand24,
   IconButton,
   IconMinusSmall24,
   IconPlus24,
@@ -246,6 +247,7 @@ export class NavigationFocusOptions extends Component<
     this.state = {
       customPointerAsset: undefined,
       customPointerDataUrl: "",
+      pointerPositionHover: undefined,
       pointerUploadError: "",
     };
     this.bindMethods();
@@ -260,6 +262,8 @@ export class NavigationFocusOptions extends Component<
     this.onPointerUploadClick = this.onPointerUploadClick.bind(this);
     this.onPointerUploadInputChange = this.onPointerUploadInputChange.bind(this);
     this.onPointerPositionInput = this.onPointerPositionInput.bind(this);
+    this.onPointerPositionHover = this.onPointerPositionHover.bind(this);
+    this.onPointerPositionLeave = this.onPointerPositionLeave.bind(this);
     this.registerEventListeners = this.registerEventListeners.bind(this);
   }
 
@@ -500,6 +504,7 @@ export class NavigationFocusOptions extends Component<
 
   onPointerPositionInput(event: any) {
     event.currentTarget.setPointerCapture?.(event.pointerId);
+    this.updatePointerPositionHover(event);
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = clampNumber((event.clientX - bounds.left - 12) / (bounds.width - 24), 0, 1);
     const y = clampNumber((event.clientY - bounds.top - 12) / (bounds.height - 24), 0, 1);
@@ -509,6 +514,26 @@ export class NavigationFocusOptions extends Component<
       position: {
         x: roundNumber(x),
         y: roundNumber(y),
+      },
+    });
+  }
+
+  onPointerPositionHover(event: any) {
+    this.updatePointerPositionHover(event);
+    if (event.buttons !== 1) return;
+    this.onPointerPositionInput(event);
+  }
+
+  onPointerPositionLeave() {
+    this.setState({ pointerPositionHover: undefined });
+  }
+
+  updatePointerPositionHover(event: any) {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    this.setState({
+      pointerPositionHover: {
+        x: roundNumber(clampNumber(event.clientX - bounds.left, 0, bounds.width)),
+        y: roundNumber(clampNumber(event.clientY - bounds.top, 0, bounds.height)),
       },
     });
   }
@@ -1040,6 +1065,7 @@ export class NavigationFocusOptions extends Component<
 
         <div class={styles.pointerSizeControl}>
           <FocusNumberInput
+            icon={<IconExpand24 />}
             minimum={1}
             maximum={1024}
             onNumberInput={(value) => this.onPointerSizeChange(value)}
@@ -1064,13 +1090,19 @@ export class NavigationFocusOptions extends Component<
       <div
         class={styles.pointerPositionPad}
         onPointerDown={this.onPointerPositionInput}
-        onPointerMove={(event) => {
-          if (event.buttons !== 1) return;
-          this.onPointerPositionInput(event);
-        }}
+        onPointerLeave={this.onPointerPositionLeave}
+        onPointerMove={this.onPointerPositionHover}
       >
         {POINTER_POSITION_OPTIONS.map((option) =>
           this.renderPointerPositionPresetButton(option, pointer),
+        )}
+        {this.state.pointerPositionHover && (
+          <img
+            alt=""
+            class={styles.pointerPositionHoverPreview}
+            src={previewSrc}
+            style={this.getPointerPadPixelStyle(this.state.pointerPositionHover)}
+          />
         )}
         <img
           alt="Pointer position"
@@ -1134,6 +1166,10 @@ export class NavigationFocusOptions extends Component<
 
   getPointerPadStyle(position: { readonly x: number; readonly y: number }): string {
     return `left: ${12 + position.x * 76}px; top: ${12 + position.y * 76}px;`;
+  }
+
+  getPointerPadPixelStyle(position: { readonly x: number; readonly y: number }): string {
+    return `left: ${position.x}px; top: ${position.y}px;`;
   }
 
   render(props: NavigationFocusOptionsProps, _state) {

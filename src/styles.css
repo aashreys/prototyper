@@ -385,14 +385,15 @@
     border-radius: 999px;
     display: block;
     height: 3px;
+    transition: background 80ms ease, height 80ms ease, width 80ms ease;
     width: 3px;
 }
 
 .pointerPositionPreset:hover .pointerPositionDot,
 .pointerPositionPresetSelected .pointerPositionDot {
     background: var(--figma-color-bg-brand);
-    height: 10px;
-    width: 3px;
+    height: 7px;
+    width: 7px;
 }
 
 .pointerPositionPresetCenter {
@@ -448,6 +449,17 @@
     transform: translate(-50%, -50%);
     width: 16px;
     z-index: 2;
+}
+
+.pointerPositionHoverPreview {
+    height: 16px;
+    object-fit: contain;
+    opacity: 0.24;
+    pointer-events: none;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    z-index: 3;
 }
 
 .componentMappingHeader {
