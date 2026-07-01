@@ -38,7 +38,6 @@ declare const styles: {
   readonly "pointerLayout": string;
   readonly "pointerLeftColumn": string;
   readonly "pointerPanel": string;
-  readonly "pointerPositionAnchorPreview": string;
   readonly "pointerPositionDot": string;
   readonly "pointerPositionHoverPreview": string;
   readonly "pointerPositionPad": string;

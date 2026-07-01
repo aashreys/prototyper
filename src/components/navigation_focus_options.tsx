@@ -1150,17 +1150,18 @@ export class NavigationFocusOptions extends Component<
               src={previewSrc}
               style={this.getPointerPadPixelStyle(this.state.pointerPositionHover)}
             />
-          )}
-        {this.state.pointerPositionHoverPreset && (
+        )}
+        {this.state.pointerPositionHoverPreset &&
+          this.state.pointerPositionHoverPreset !== pointer.positionPreset && (
           <img
             alt=""
-            class={styles.pointerPositionAnchorPreview}
+            class={styles.pointerPositionHoverPreview}
             src={previewSrc}
             style={this.getPointerPadStyle(
               POINTER_POSITION_PRESETS[this.state.pointerPositionHoverPreset],
             )}
           />
-        )}
+          )}
         <img
           alt="Pointer position"
           class={styles.pointerPositionPreview}
