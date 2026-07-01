@@ -4,6 +4,7 @@ import {
   getPointerPosition,
   getPointerSize,
   NavigationFocusConfig,
+  NavigationFocusMode,
   PointerFocusConfig
 } from "./navigation_focus";
 import { PrototypeFrame } from "./prototype_frame";
@@ -21,7 +22,7 @@ export class FocusPointer {
       FocusPointer.resetManagedPointers(protoFrame.topLevelFrame)
     }
 
-    if (!focus.pointer.enabled) return 0
+    if (focus.mode !== NavigationFocusMode.POINTER) return 0
 
     const imageBytes = await FocusPointer.getPointerImageBytes(focus.pointer)
     const image = figma.createImage(imageBytes)

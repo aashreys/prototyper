@@ -64,6 +64,7 @@ const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.FILL, text: "Fill" },
   { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
   { value: NavigationFocusMode.VARIANT, text: "Components" },
+  { value: NavigationFocusMode.POINTER, text: "Floating pointer" },
 ];
 
 const COMPONENT_MAPPING_TYPE_OPTIONS: Array<DropdownOption> = [
@@ -300,6 +301,10 @@ export class NavigationFocusOptions extends Component<
     this.props.onNavigationFocusChange({
       ...this.props.focus,
       mode: mode,
+      pointer: {
+        ...this.getPointer(),
+        enabled: mode === NavigationFocusMode.POINTER,
+      },
     });
   }
 
@@ -407,13 +412,6 @@ export class NavigationFocusOptions extends Component<
     this.props.onNavigationFocusChange({
       ...this.props.focus,
       pointer: pointer,
-    });
-  }
-
-  onPointerEnabledChange(enabled: boolean) {
-    this.updatePointer({
-      ...this.getPointer(),
-      enabled: enabled,
     });
   }
 
@@ -987,6 +985,8 @@ export class NavigationFocusOptions extends Component<
       return this.renderScaleShadowControls(props);
     if (props.focus.mode === NavigationFocusMode.FILL)
       return this.renderFillControls(props);
+    if (props.focus.mode === NavigationFocusMode.POINTER)
+      return this.renderPointerControls(props);
     return this.renderStrokeControls(props);
   }
 
@@ -1010,31 +1010,18 @@ export class NavigationFocusOptions extends Component<
     const pointer = this.getPointer(props);
     return (
       <div class={styles.pointerControls}>
-        <div class={styles.pointerToggle}>
-          <Checkbox
-            onChange={(e) =>
-              this.onPointerEnabledChange(e.currentTarget.checked)
-            }
-            value={pointer.enabled}
-          >
-            <Text>Show pointer over focused layer</Text>
-          </Checkbox>
-        </div>
-
-        {pointer.enabled && (
-          <div class={styles.pointerPanel}>
-            <div class={styles.pointerLayout}>
-              <div class={styles.pointerLeftColumn}>
-                {this.renderPointerAssetControls(pointer)}
-              </div>
-              {this.renderPointerPositionControls(pointer)}
+        <div class={styles.pointerPanel}>
+          <div class={styles.pointerLayout}>
+            <div class={styles.pointerLeftColumn}>
+              {this.renderPointerAssetControls(pointer)}
             </div>
-            <div class={styles.textTertiary}>{POINTER_UPLOAD_NOTE}</div>
-            {this.state.pointerUploadError.length > 0 && (
-              <text class={styles.errorText}>{this.state.pointerUploadError}</text>
-            )}
+            {this.renderPointerPositionControls(pointer)}
           </div>
-        )}
+          <div class={styles.textTertiary}>{POINTER_UPLOAD_NOTE}</div>
+          {this.state.pointerUploadError.length > 0 && (
+            <text class={styles.errorText}>{this.state.pointerUploadError}</text>
+          )}
+        </div>
       </div>
     );
   }
@@ -1270,10 +1257,6 @@ export class NavigationFocusOptions extends Component<
         />
 
         {this.renderFocusModeControls(props)}
-
-        <VerticalSpace space="small" />
-
-        {this.renderPointerControls(props)}
       </div>
     );
   }

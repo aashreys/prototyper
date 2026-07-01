@@ -84,7 +84,7 @@ function createLayer(id: string, parent: any, bounds: Rect) {
 
 function createFocus(pointerOverrides = {}) {
   return {
-    mode: NavigationFocusMode.STROKE,
+    mode: NavigationFocusMode.POINTER,
     variant: { property: '', from: '', to: '' },
     components: [],
     stroke: {},
@@ -175,7 +175,7 @@ test('removes old managed pointers before creating new pointers', async () => {
   assert.equal(frame.children[1].getPluginData('prototyper_focus_pointer'), 'true')
 })
 
-test('removes old managed pointers when pointer is disabled', async () => {
+test('removes old managed pointers when pointer mode is disabled', async () => {
   setFigmaForPointer()
   const frame = createFrame('Frame', { x: 0, y: 0, width: 200, height: 200 })
   const target = createLayer('Target', frame, { x: 20, y: 20, width: 40, height: 40 })
@@ -185,7 +185,10 @@ test('removes old managed pointers when pointer is disabled', async () => {
 
   const count = await FocusPointer.createPointers(
     [{ topLevelFrame: frame, instance: target }] as any,
-    createFocus({ enabled: false })
+    {
+      ...createFocus(),
+      mode: NavigationFocusMode.STROKE
+    }
   )
 
   assert.equal(count, 0)

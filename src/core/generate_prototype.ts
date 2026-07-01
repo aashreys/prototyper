@@ -7,7 +7,8 @@ import {
   ComponentFocusMapping,
   getComponentFocusMappings,
   isVariantFocusMode,
-  NavigationFocusConfig
+  NavigationFocusConfig,
+  NavigationFocusMode
 } from "../navigation_focus";
 import { PrototypeFrame } from "../prototype_frame";
 import { PrototypeNode } from "../prototype_node";
@@ -349,6 +350,7 @@ function positionFrames(frames: Array<PrototypeFrame>) {
 }
 
 function setFocus(protoFrames: Array<PrototypeFrame>, config: Config): number {
+  if (config.focus.mode === NavigationFocusMode.POINTER) return 0
   if (!isVariantFocusMode(config.focus)) return setOverlayFocus(protoFrames, config.focus)
   return setInstanceFocus(protoFrames, config)
 }

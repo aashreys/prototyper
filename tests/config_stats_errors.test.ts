@@ -420,6 +420,24 @@ test('preserves and normalizes saved pointer settings', () => {
   assert.deepEqual(config.focus.pointer.position, { x: 1, y: 1 })
 })
 
+test('preserves saved floating pointer mode', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: NavigationFocusMode.POINTER
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.POINTER)
+})
+
 test('migrates legacy scale shadow percent to multiplier scale', () => {
   let savedConfig = {
     ...Config.getDefaultConfig(),

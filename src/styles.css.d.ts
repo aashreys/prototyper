@@ -54,7 +54,6 @@ declare const styles: {
   readonly "pointerPositionPresetTopRight": string;
   readonly "pointerPositionPreview": string;
   readonly "pointerSizeControl": string;
-  readonly "pointerToggle": string;
   readonly "pointerUploadButton": string;
   readonly "pointerUploadInput": string;
   readonly "scaleControl": string;

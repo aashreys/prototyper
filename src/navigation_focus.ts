@@ -7,7 +7,8 @@ export enum NavigationFocusMode {
   STROKE = 'stroke',
   FILL = 'fill',
   SHADOW = 'shadow',
-  SCALE_SHADOW = 'scale-shadow'
+  SCALE_SHADOW = 'scale-shadow',
+  POINTER = 'pointer'
 }
 
 export type ComponentFocusPropertyType = ComponentFocusMappingType
@@ -317,6 +318,7 @@ function normalizeFocusMode(value, fallback: NavigationFocusMode): NavigationFoc
   if (value === NavigationFocusMode.STROKE) return NavigationFocusMode.STROKE
   if (value === NavigationFocusMode.FILL) return NavigationFocusMode.FILL
   if (value === NavigationFocusMode.SCALE_SHADOW) return NavigationFocusMode.SCALE_SHADOW
+  if (value === NavigationFocusMode.POINTER) return NavigationFocusMode.POINTER
   return fallback
 }
 

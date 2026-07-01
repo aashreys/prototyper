@@ -254,10 +254,6 @@
     gap: 8px;
 }
 
-.pointerToggle {
-    min-width: 0;
-}
-
 .pointerPanel {
     display: flex;
     flex-direction: column;
