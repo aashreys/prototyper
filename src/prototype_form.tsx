@@ -100,10 +100,7 @@ export class PrototypeForm extends Component<any, any>  {
     this.props.onConfigFlush()
     if (this.validateAndShowErrors()) {
       this.setButtonLoading(true);
-      emit(this.props.buttonEvent, {
-        config: this.state.config,
-        algorithm: this.props.algorithm
-      });
+      emit(this.props.buttonEvent, this.state.config);
     }
   }
 

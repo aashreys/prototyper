@@ -44,7 +44,7 @@ const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
   { value: NavigationFocusMode.FILL, text: "Fill" },
   { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
-  { value: NavigationFocusMode.VARIANT, text: "Existing components" },
+  { value: NavigationFocusMode.VARIANT, text: "Components" },
 ];
 
 const COMPONENT_MAPPING_TYPE_OPTIONS: Array<DropdownOption> = [
@@ -59,7 +59,7 @@ const STROKE_ALIGN_OPTIONS: Array<DropdownOption> = [
 ];
 
 const COMPONENT_HELPER_TEXT =
-  "Add component properties to show focused UI state";
+  "Add properties to change components to their focused state";
 
 function FocusNumberInput(props: FocusNumberInputProps) {
   const [value, setValue] = useState(formatNumericInputValue(props));
@@ -721,7 +721,7 @@ export class NavigationFocusOptions extends Component<
     return (
       <div style={props.style ? props.style : ""}>
         <Text class={styles.sectionHeading}>
-          <Bold>Show focus with</Bold>
+          <Bold>Show navigation focus with</Bold>
         </Text>
 
         <VerticalSpace space="small" />

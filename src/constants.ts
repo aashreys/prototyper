@@ -15,8 +15,6 @@ export abstract class Constants {
 
   static readonly EVENT_REQUEST_STATS = "REQUEST_STATS"
   static readonly EVENT_RECEIVE_STATS = "EMIT_STATS"
-  static readonly EVENT_REQUEST_DEBUG_REPORT = "REQUEST_DEBUG_REPORT"
-  static readonly EVENT_RECEIVE_DEBUG_REPORT = "RECEIVE_DEBUG_REPORT"
 
   static readonly ERROR_NOTHING_SELECTED = 'Nothing selected. Select component instances to link and try again.';
   static readonly ERROR_NO_INSTANCES = 'Selection does not contain any component instances to link together.';

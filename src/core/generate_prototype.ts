@@ -13,10 +13,9 @@ import { PrototypeNode } from "../prototype_node";
 import { Stats } from "../stats";
 import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
-import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from "../prototype_algorithm";
 import { DebugReport } from "../debug_report";
 
-export async function doGeneratePrototype(config: Config, algorithm: PrototypeAlgorithm = DEFAULT_PROTOTYPE_ALGORITHM) {
+export async function doGeneratePrototype(config: Config) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
   let focus = config.focus
   let focusTargets: Array<SceneNode> = filterFocusTargetsFromSelection(figma.currentPage.selection, focus)
@@ -40,16 +39,16 @@ export async function doGeneratePrototype(config: Config, algorithm: PrototypeAl
   let parent = topLevelFrame.parent as PageNode | SectionNode // either a Page or Section
 
   let isLinked: boolean = topLevelFrame.reactions.length > 0
-  
+
   let protoNodes: Array<PrototypeNode> = focusTargets.map(node => PrototypeNode.fromSceneNode(node));
-  assignNodeNeighbors(protoNodes, algorithm);
+  assignNodeNeighbors(protoNodes);
   protoNodes = orderProtoNodesFromStart(protoNodes, NearestNeighbor.findStart(protoNodes))
 
   let protoFrames = createProtoFrames(protoNodes, parent);
   assignFrameNeighors(protoFrames, protoNodes);
   positionFrames(protoFrames);
   let statesChanged = setFocus(protoFrames, config);
-  saveGenerateDebugReport(algorithm, focus, protoNodes, protoFrames, isLinked);
+  saveGenerateDebugReport(focus, protoNodes, protoFrames, isLinked);
   let interactionsCreated = await createInteractions(protoFrames, config);
   DebugReport.update({
     phase: 'complete',
@@ -210,7 +209,7 @@ export async function validateInstanceProperties(instances: Array<InstanceNode>,
     }
 
     if (matchedMappings === 0) {
-      throw new Error(`Cannot find any configured focus component properties on layer "${instance.name}". Please add a matching property for this component.`);
+      throw new Error(`Cannot find specified component properties on layer "${instance.name}". Please add a matching property for this component.`);
     }
 
   }
@@ -256,8 +255,8 @@ export function resetInstanceFocus(instances: Array<InstanceNode>, config: Confi
   }
 }
 
-function assignNodeNeighbors(protoNodes: Array<PrototypeNode>, algorithm: PrototypeAlgorithm) {
-  NearestNeighbor.assignNeigbors(protoNodes, algorithm);
+function assignNodeNeighbors(protoNodes: Array<PrototypeNode>) {
+  NearestNeighbor.assignNeigbors(protoNodes);
 }
 
 function orderProtoNodesFromStart(protoNodes: Array<PrototypeNode>, startNode: PrototypeNode): Array<PrototypeNode> {
@@ -405,7 +404,6 @@ function addFlowStartingPoint(protoFrames: Array<PrototypeFrame>) {
 }
 
 function saveGenerateDebugReport(
-  algorithm: PrototypeAlgorithm,
   focus: NavigationFocusConfig,
   protoNodes: Array<PrototypeNode>,
   protoFrames: Array<PrototypeFrame>,
@@ -414,7 +412,6 @@ function saveGenerateDebugReport(
   DebugReport.start({
     mode: 'GENERATE',
     phase: 'before-reactions',
-    algorithm: algorithm,
     focusMode: focus.mode,
     topLevelFrame: DebugReport.getNodeRef(protoFrames[0].topLevelFrame),
     wasLinkedBeforeRun: isLinked,

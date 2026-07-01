@@ -1,13 +1,12 @@
 import { emit } from "@create-figma-plugin/utilities";
 import { Config } from "../config";
 import { Constants } from "../constants";
-import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from "../prototype_algorithm";
 import { Stats } from "../stats";
 import { Utils } from "../utils";
 import { Navigable, NearestNeighbor, Neighbors } from "./nearest_neighbor";
 import { DebugReport } from "../debug_report";
 
-export async function doLinkFrames(config: Config, algorithm: PrototypeAlgorithm = DEFAULT_PROTOTYPE_ALGORITHM) {
+export async function doLinkFrames(config: Config) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
   let selection = figma.currentPage.selection
   validateSelection(selection)
@@ -16,9 +15,9 @@ export async function doLinkFrames(config: Config, algorithm: PrototypeAlgorithm
 
   let isLinked = isLinkedToPrototype(linkableFrames)
 
-  assignNeighbors(linkableFrames, algorithm)
+  assignNeighbors(linkableFrames)
   linkableFrames = orderLinkableFramesFromStart(linkableFrames, NearestNeighbor.findStart(linkableFrames))
-  saveLinkDebugReport(algorithm, linkableFrames, isLinked)
+  saveLinkDebugReport(linkableFrames, isLinked)
   let interactionsCreated = await createInteractions(linkableFrames, config)
   DebugReport.update({
     phase: 'complete',
@@ -91,8 +90,8 @@ export class LinkableFrame implements Navigable {
   
 }
 
-function assignNeighbors(linkableFrames: LinkableFrame[], algorithm: PrototypeAlgorithm) {
-  NearestNeighbor.assignNeigbors(linkableFrames, algorithm)
+function assignNeighbors(linkableFrames: LinkableFrame[]) {
+  NearestNeighbor.assignNeigbors(linkableFrames)
 }
 
 function orderLinkableFramesFromStart(linkableFrames: Array<LinkableFrame>, startFrame: LinkableFrame): Array<LinkableFrame> {
@@ -126,14 +125,12 @@ function addStartingPoint(linkableFrames: Array<LinkableFrame>) {
 }
 
 function saveLinkDebugReport(
-  algorithm: PrototypeAlgorithm,
   linkableFrames: Array<LinkableFrame>,
   isLinked: boolean
 ) {
   DebugReport.start({
     mode: 'LINK',
     phase: 'before-reactions',
-    algorithm: algorithm,
     wasLinkedBeforeRun: isLinked,
     selection: figma.currentPage.selection.map(node => DebugReport.getNodeRef(node)),
     startFrame: DebugReport.getNodeRef(linkableFrames[0].frame),

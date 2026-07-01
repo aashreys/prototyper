@@ -234,7 +234,7 @@ test('rejects missing, duplicate, unsupported, and invalid variant properties', 
       [createInstance({ componentProperties: {} })],
       [{ type: 'variant', property: 'State', from: 'Default', to: 'Focus' }]
     ),
-    /Cannot find any configured focus component properties/
+    /Cannot find specified component properties/
   )
 
   await assert.rejects(
@@ -313,7 +313,7 @@ test('validates each instance matches at least one configured component mapping'
       })],
       mappings as any
     ),
-    /Cannot find any configured focus component properties/
+    /Cannot find specified component properties/
   )
 })
 

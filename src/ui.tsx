@@ -8,19 +8,16 @@ import { OnboardingBanner } from './components/onboarding_banner';
 import { StatsPage } from './stats_ui';
 import { Config } from './config';
 import { StatsModel } from './stats';
-import { DebugOptions } from './components/debug_options';
-import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from './prototype_algorithm';
 
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
 
-const GENERATE_MESSAGE = "Select component instances in the same top-level frame to generate a prototype"
+const GENERATE_MESSAGE = "Select layers in the same top-level frame to generate a prototype"
 
 const LINK_MESSAGE = "Select top-level frames to link into a prototype"
 
 const TAB_GENERATE = 'Generate'
 const TAB_LINK = 'Link'
-const TAB_DEBUG = 'Debug'
 const TAB_STATS = 'Stats'
 
 const HEIGHT_OFFSET = 16
@@ -28,7 +25,6 @@ const SAVE_CONFIG_DEBOUNCE_MS = 250
 
 interface UIState {
   activeTab: string
-  algorithm: PrototypeAlgorithm
   config: Config
   isOnboardingComplete: boolean
   stats: StatsModel
@@ -43,7 +39,6 @@ export class UI extends Component<{ config: Config }, UIState> {
     super(props);
     this.state = {
       activeTab: TAB_GENERATE,
-      algorithm: DEFAULT_PROTOTYPE_ALGORITHM,
       config: props.config,
       isOnboardingComplete: true,
       stats: {
@@ -66,7 +61,6 @@ export class UI extends Component<{ config: Config }, UIState> {
     this.updateOnboardingComplete = this.updateOnboardingComplete.bind(this)
     this.onOnboardingDismiss = this.onOnboardingDismiss.bind(this)
     this.requestStats = this.requestStats.bind(this)
-    this.onAlgorithmChange = this.onAlgorithmChange.bind(this)
     this.onConfigChange = this.onConfigChange.bind(this)
     this.flushConfigSave = this.flushConfigSave.bind(this)
   }
@@ -110,12 +104,6 @@ export class UI extends Component<{ config: Config }, UIState> {
     this.updateOnboardingComplete(true)
   }
 
-  onAlgorithmChange(algorithm: PrototypeAlgorithm) {
-    this.setState({
-      algorithm: algorithm
-    })
-  }
-
   componentDidUpdate() {
     emit(Constants.EVENT_UI_RESIZE, UI.getUIHeight())
   }
@@ -153,8 +141,8 @@ export class UI extends Component<{ config: Config }, UIState> {
           <OnboardingBanner onDismiss={this.onOnboardingDismiss} />
         }
 
-        <Tabs 
-        onChange={e => this.onTabChange(e.currentTarget.value)} 
+        <Tabs
+        onChange={e => this.onTabChange(e.currentTarget.value)}
         value={this.state.activeTab}
         options={
           [
@@ -166,7 +154,6 @@ export class UI extends Component<{ config: Config }, UIState> {
                   buttonTitle={BUTTON_GENERATE}
                   uiMessage={GENERATE_MESSAGE}
                   buttonEvent={Constants.EVENT_GENERATE}
-                  algorithm={state.algorithm}
                   onConfigChange={this.onConfigChange}
                   onConfigFlush={this.flushConfigSave}
                 />,
@@ -180,19 +167,10 @@ export class UI extends Component<{ config: Config }, UIState> {
                   buttonTitle={BUTTON_LINK}
                   uiMessage={LINK_MESSAGE}
                   buttonEvent={Constants.EVENT_LINK}
-                  algorithm={state.algorithm}
                   onConfigChange={this.onConfigChange}
                   onConfigFlush={this.flushConfigSave}
                 />,
               value: TAB_LINK
-            },
-            {
-              children:
-                <DebugOptions
-                  algorithm={state.algorithm}
-                  onAlgorithmChange={this.onAlgorithmChange}
-                />,
-              value: TAB_DEBUG
             },
             {
               children:

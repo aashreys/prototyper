@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { BeamStackGravity, NearestNeighbor, type Navigable, type Neighbors } from '../src/core/nearest_neighbor'
-import { DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm } from '../src/prototype_algorithm'
 import { PrototypeNode } from '../src/prototype_node'
 
 class TestNavigable implements Navigable {
@@ -44,10 +43,6 @@ class TestNavigable implements Navigable {
   setNeighbors(neighbors: Neighbors<TestNavigable>) {
     this.neighbors = neighbors
   }
-}
-
-function countNeighborReferences(origin: TestNavigable, target: TestNavigable): number {
-  return Object.values(origin.neighbors).filter(neighbor => neighbor === target).length
 }
 
 function createGrid() {
@@ -99,10 +94,6 @@ function createTallBarAndVerticalStack() {
   }
 }
 
-test('defaults nearest-neighbor assignment to beam aligned-first', () => {
-  assert.equal(DEFAULT_PROTOTYPE_ALGORITHM, PrototypeAlgorithm.BEAM_ALIGNED_FIRST)
-})
-
 test('creates anchor points from navigable geometry', () => {
   let nav = new TestNavigable('button', 10, 20, 80, 40)
 
@@ -115,32 +106,23 @@ test('creates anchor points from navigable geometry', () => {
   })
 })
 
-for (const algorithm of [
-  PrototypeAlgorithm.EDGE_ANCHOR_CURRENT,
-  PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
-  PrototypeAlgorithm.WEIGHTED_SCORE
-]) {
-  test(`${algorithm} assigns nearest cardinal neighbors in a grid`, () => {
-    let { topLeft, topRight, bottomLeft, bottomRight } = createGrid()
+test('assigns nearest cardinal neighbors in a grid', () => {
+  let { topLeft, topRight, bottomLeft, bottomRight } = createGrid()
 
-    NearestNeighbor.assignNeigbors([topLeft, topRight, bottomLeft, bottomRight], algorithm)
+  NearestNeighbor.assignNeigbors([topLeft, topRight, bottomLeft, bottomRight])
 
-    assert.equal(topLeft.neighbors.right, topRight)
-    assert.equal(topLeft.neighbors.bottom, bottomLeft)
-    assert.equal(bottomRight.neighbors.left, bottomLeft)
-    assert.equal(bottomRight.neighbors.top, topRight)
-  })
-}
+  assert.equal(topLeft.neighbors.right, topRight)
+  assert.equal(topLeft.neighbors.bottom, bottomLeft)
+  assert.equal(bottomRight.neighbors.left, bottomLeft)
+  assert.equal(bottomRight.neighbors.top, topRight)
+})
 
 test('beam ignores diagonal candidates without beam overlap', () => {
   let origin = new TestNavigable('origin', 100, 100)
   let aligned = new TestNavigable('aligned', 500, 100)
   let diagonal = new TestNavigable('diagonal', 210, -10)
 
-  NearestNeighbor.assignNeigbors(
-    [origin, aligned, diagonal],
-    PrototypeAlgorithm.BEAM_ALIGNED_FIRST
-  )
+  NearestNeighbor.assignNeigbors([origin, aligned, diagonal])
 
   assert.equal(origin.neighbors.right, aligned)
   assert.equal(origin.neighbors.top, undefined)
@@ -151,10 +133,7 @@ test('beam uses center direction for overlapping vertical bounds', () => {
   let overlappingBelow = new TestNavigable('overlappingBelow', 0, 90, 100, 100)
   let separatedBelow = new TestNavigable('separatedBelow', 0, 220, 100, 100)
 
-  NearestNeighbor.assignNeigbors(
-    [origin, overlappingBelow, separatedBelow],
-    PrototypeAlgorithm.BEAM_ALIGNED_FIRST
-  )
+  NearestNeighbor.assignNeigbors([origin, overlappingBelow, separatedBelow])
 
   assert.equal(origin.neighbors.bottom, overlappingBelow)
 })
@@ -164,10 +143,7 @@ test('beam uses center direction for overlapping horizontal bounds', () => {
   let overlappingRight = new TestNavigable('overlappingRight', 90, 0, 100, 100)
   let separatedRight = new TestNavigable('separatedRight', 220, 0, 100, 100)
 
-  NearestNeighbor.assignNeigbors(
-    [origin, overlappingRight, separatedRight],
-    PrototypeAlgorithm.BEAM_ALIGNED_FIRST
-  )
+  NearestNeighbor.assignNeigbors([origin, overlappingRight, separatedRight])
 
   assert.equal(origin.neighbors.right, overlappingRight)
 })
@@ -184,7 +160,7 @@ test('beam links unequal centered vertical stacks sequentially', () => {
     new TestNavigable('8', 68, 566, 343, 57)
   ]
 
-  NearestNeighbor.assignNeigbors(nodes, PrototypeAlgorithm.BEAM_ALIGNED_FIRST)
+  NearestNeighbor.assignNeigbors(nodes)
 
   assert.equal(NearestNeighbor.findStart(nodes), nodes[0])
   for (let i = 0; i < nodes.length - 1; i++) {
@@ -203,7 +179,7 @@ test('beam includes unequal vertical stack candidates that overlap the horizonta
   let bottom = new TestNavigable('bottom', 0, 180, 400, 60)
   let nodes = [top, middle, bottom]
 
-  NearestNeighbor.assignNeigbors(nodes, PrototypeAlgorithm.BEAM_ALIGNED_FIRST)
+  NearestNeighbor.assignNeigbors(nodes)
 
   assert.equal(top.neighbors.bottom, middle)
   assert.equal(middle.neighbors.top, top)
@@ -219,7 +195,7 @@ test('beam includes unequal horizontal row candidates that overlap the vertical 
   let right = new TestNavigable('right', 180, 0, 60, 400)
   let nodes = [left, middle, right]
 
-  NearestNeighbor.assignNeigbors(nodes, PrototypeAlgorithm.BEAM_ALIGNED_FIRST)
+  NearestNeighbor.assignNeigbors(nodes)
 
   assert.equal(left.neighbors.right, middle)
   assert.equal(middle.neighbors.left, left)
@@ -232,10 +208,7 @@ test('beam includes unequal horizontal row candidates that overlap the vertical 
 test('beam chooses the leftmost candidate when a wide origin points to a horizontal stack', () => {
   const { nodes, topBar, tile1, bottomBar } = createWideBarAndHorizontalStack()
 
-  NearestNeighbor.assignNeigbors(
-    nodes,
-    PrototypeAlgorithm.BEAM_ALIGNED_FIRST
-  )
+  NearestNeighbor.assignNeigbors(nodes)
 
   assert.equal(topBar.neighbors.bottom, tile1)
   assert.equal(bottomBar.neighbors.top, tile1)
@@ -244,11 +217,7 @@ test('beam chooses the leftmost candidate when a wide origin points to a horizon
 test('beam can center gravity when a wide origin points to a horizontal stack', () => {
   const { nodes, topBar, tile4, bottomBar } = createWideBarAndHorizontalStack()
 
-  NearestNeighbor.assignNeigbors(
-    nodes,
-    PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
-    { beamStackGravity: BeamStackGravity.CENTER }
-  )
+  NearestNeighbor.assignNeigbors(nodes, { beamStackGravity: BeamStackGravity.CENTER })
 
   assert.equal(topBar.neighbors.bottom, tile4)
   assert.equal(bottomBar.neighbors.top, tile4)
@@ -257,11 +226,7 @@ test('beam can center gravity when a wide origin points to a horizontal stack', 
 test('beam can end gravity when a wide origin points to a horizontal stack', () => {
   const { nodes, topBar, tile6, bottomBar } = createWideBarAndHorizontalStack()
 
-  NearestNeighbor.assignNeigbors(
-    nodes,
-    PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
-    { beamStackGravity: BeamStackGravity.END }
-  )
+  NearestNeighbor.assignNeigbors(nodes, { beamStackGravity: BeamStackGravity.END })
 
   assert.equal(topBar.neighbors.bottom, tile6)
   assert.equal(bottomBar.neighbors.top, tile6)
@@ -270,10 +235,7 @@ test('beam can end gravity when a wide origin points to a horizontal stack', () 
 test('beam chooses the topmost candidate when a tall origin points to a vertical stack', () => {
   const { nodes, leftBar, tile1, rightBar } = createTallBarAndVerticalStack()
 
-  NearestNeighbor.assignNeigbors(
-    nodes,
-    PrototypeAlgorithm.BEAM_ALIGNED_FIRST
-  )
+  NearestNeighbor.assignNeigbors(nodes)
 
   assert.equal(leftBar.neighbors.right, tile1)
   assert.equal(rightBar.neighbors.left, tile1)
@@ -282,11 +244,7 @@ test('beam chooses the topmost candidate when a tall origin points to a vertical
 test('beam can center gravity when a tall origin points to a vertical stack', () => {
   const { nodes, leftBar, tile4, rightBar } = createTallBarAndVerticalStack()
 
-  NearestNeighbor.assignNeigbors(
-    nodes,
-    PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
-    { beamStackGravity: BeamStackGravity.CENTER }
-  )
+  NearestNeighbor.assignNeigbors(nodes, { beamStackGravity: BeamStackGravity.CENTER })
 
   assert.equal(leftBar.neighbors.right, tile4)
   assert.equal(rightBar.neighbors.left, tile4)
@@ -295,28 +253,10 @@ test('beam can center gravity when a tall origin points to a vertical stack', ()
 test('beam can end gravity when a tall origin points to a vertical stack', () => {
   const { nodes, leftBar, tile6, rightBar } = createTallBarAndVerticalStack()
 
-  NearestNeighbor.assignNeigbors(
-    nodes,
-    PrototypeAlgorithm.BEAM_ALIGNED_FIRST,
-    { beamStackGravity: BeamStackGravity.END }
-  )
+  NearestNeighbor.assignNeigbors(nodes, { beamStackGravity: BeamStackGravity.END })
 
   assert.equal(leftBar.neighbors.right, tile6)
   assert.equal(rightBar.neighbors.left, tile6)
-})
-
-test('weighted scoring uses beam-overlap candidates only', () => {
-  let origin = new TestNavigable('origin', 100, 100)
-  let aligned = new TestNavigable('aligned', 500, 100)
-  let diagonal = new TestNavigable('diagonal', 210, -10)
-
-  NearestNeighbor.assignNeigbors(
-    [origin, aligned, diagonal],
-    PrototypeAlgorithm.WEIGHTED_SCORE
-  )
-
-  assert.equal(origin.neighbors.right, aligned)
-  assert.equal(origin.neighbors.top, undefined)
 })
 
 test('finds the top graph root for vertical lists without x-axis sorting', () => {
@@ -325,7 +265,7 @@ test('finds the top graph root for vertical lists without x-axis sorting', () =>
   let bottom = new TestNavigable('bottom', 500, 300)
   let nodes = [wideMiddle, bottom, top]
 
-  NearestNeighbor.assignNeigbors(nodes, PrototypeAlgorithm.BEAM_ALIGNED_FIRST)
+  NearestNeighbor.assignNeigbors(nodes)
 
   assert.equal(NearestNeighbor.findStart(nodes), top)
 })
@@ -336,20 +276,9 @@ test('finds the left graph root for horizontal rows without y-axis sorting', () 
   let right = new TestNavigable('right', 300, 200)
   let nodes = [highMiddle, right, left]
 
-  NearestNeighbor.assignNeigbors(nodes, PrototypeAlgorithm.BEAM_ALIGNED_FIRST)
+  NearestNeighbor.assignNeigbors(nodes)
 
   assert.equal(NearestNeighbor.findStart(nodes), left)
-})
-
-test('dedupes one target assigned to multiple directions', () => {
-  let origin = new TestNavigable('origin', 100, 100)
-  let diagonal = new TestNavigable('diagonal', 0, 0)
-
-  NearestNeighbor.assignNeigbors([origin, diagonal], PrototypeAlgorithm.EDGE_ANCHOR_CURRENT)
-
-  assert.equal(countNeighborReferences(origin, diagonal), 1)
-  assert.equal(origin.neighbors.left, diagonal)
-  assert.equal(origin.neighbors.top, undefined)
 })
 
 test('prototype nodes use absolute bounds for neighbor geometry', () => {
