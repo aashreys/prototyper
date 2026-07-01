@@ -1198,11 +1198,9 @@ export class NavigationFocusOptions extends Component<
     value: Exclude<PointerPositionPreset, "custom">,
     pointer: PointerFocusConfig,
   ): string {
-    const hiddenPreset = this.state.pointerPositionHoverPreset
-      ? this.state.pointerPositionHoverPreset
-      : pointer.positionPreset === "custom"
-        ? undefined
-        : pointer.positionPreset;
+    const isPlacedPreset =
+      pointer.positionPreset !== "custom" && pointer.positionPreset === value;
+    const isHoverPreset = this.state.pointerPositionHoverPreset === value;
     const positionClass =
       value === "top-left"
         ? styles.pointerPositionPresetTopLeft
@@ -1219,10 +1217,10 @@ export class NavigationFocusOptions extends Component<
                   : value === "bottom-left"
                     ? styles.pointerPositionPresetBottomLeft
                     : value === "bottom"
-                      ? styles.pointerPositionPresetBottom
-                      : styles.pointerPositionPresetBottomRight;
+                    ? styles.pointerPositionPresetBottom
+                    : styles.pointerPositionPresetBottomRight;
     return `${styles.pointerPositionPreset} ${positionClass} ${
-      hiddenPreset === value ? styles.pointerPositionPresetHidden : ""
+      isPlacedPreset || isHoverPreset ? styles.pointerPositionPresetHidden : ""
     }`;
   }
 
