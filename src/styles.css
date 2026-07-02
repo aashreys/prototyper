@@ -505,23 +505,23 @@
 }
 
 .pointerPositionPreview {
-    height: 20px;
+    height: 18px;
     object-fit: contain;
     pointer-events: none;
     position: absolute;
     transform: translate(-50%, -50%);
-    width: 20px;
+    width: 18px;
     z-index: 4;
 }
 
 .pointerPositionHoverPreview {
-    height: 20px;
+    height: 18px;
     object-fit: contain;
     opacity: 0.75;
     pointer-events: none;
     position: absolute;
     transform: translate(-50%, -50%);
-    width: 20px;
+    width: 18px;
     z-index: 5;
 }
 
