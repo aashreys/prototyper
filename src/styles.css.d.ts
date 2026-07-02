@@ -52,6 +52,7 @@ declare const styles: {
   readonly "pointerPositionPresetBottomRight": string;
   readonly "pointerPositionPresetCenter": string;
   readonly "pointerPositionPresetHidden": string;
+  readonly "pointerPositionPresetHover": string;
   readonly "pointerPositionPresetLeft": string;
   readonly "pointerPositionPresetRight": string;
   readonly "pointerPositionPresetTop": string;

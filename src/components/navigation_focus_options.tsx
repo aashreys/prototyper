@@ -105,8 +105,8 @@ const POINTER_POSITION_OPTIONS: Array<{
 const POINTER_UPLOAD_NOTE = "PNG & GIF cursors supported";
 const POINTER_LAYER_INSET = 14;
 const POINTER_LAYER_SIZE = 72;
-const POINTER_ANCHOR_INSET = 8;
-const POINTER_ANCHOR_TRACK_SIZE = 56;
+const POINTER_ANCHOR_INSET = 12;
+const POINTER_ANCHOR_TRACK_SIZE = 48;
 const POINTER_ANCHOR_HIT_RADIUS = 6.5;
 const POINTER_PREVIEW_REFERENCE_SIZE = 100;
 const POINTER_PREVIEW_MIN_SIZE = 12;
@@ -1236,21 +1236,6 @@ export class NavigationFocusOptions extends Component<
               )}
             />
         )}
-        {this.state.pointerPositionIsHovering &&
-          this.state.pointerPositionHoverPreset &&
-          this.state.pointerPositionHoverPreset !== pointer.positionPreset && (
-            <img
-              alt=""
-              class={styles.pointerPositionHoverPreview}
-              src={previewSrc}
-              style={this.getPointerPreviewImageStyle(
-                pointer,
-                this.getPointerAnchorPixelPosition(
-                  this.state.pointerPositionHoverPreset,
-                ),
-              )}
-            />
-          )}
         <img
           alt="Pointer position"
           class={styles.pointerPositionPreview}
@@ -1310,8 +1295,8 @@ export class NavigationFocusOptions extends Component<
                     ? styles.pointerPositionPresetBottom
                     : styles.pointerPositionPresetBottomRight;
     return `${styles.pointerPositionPreset} ${positionClass} ${
-      isPlacedPreset || isHoverPreset ? styles.pointerPositionPresetHidden : ""
-    }`;
+      isPlacedPreset ? styles.pointerPositionPresetHidden : ""
+    } ${isHoverPreset ? styles.pointerPositionPresetHover : ""}`;
   }
 
   getPointerPadPixelStyle(position: { readonly x: number; readonly y: number }): string {

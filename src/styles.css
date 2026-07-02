@@ -454,11 +454,18 @@
     border-radius: 999px;
     display: block;
     height: 3px;
+    transition: background-color 120ms ease, height 120ms ease, width 120ms ease;
     width: 3px;
 }
 
 .pointerPositionPresetHidden {
     opacity: 0;
+}
+
+.pointerPositionPresetHover .pointerPositionDot {
+    background: var(--figma-color-bg-brand);
+    height: 7px;
+    width: 7px;
 }
 
 .pointerPositionPresetCenter {
@@ -467,43 +474,43 @@
 }
 
 .pointerPositionPresetTopLeft {
-    left: 8px;
-    top: 8px;
+    left: 12px;
+    top: 12px;
 }
 
 .pointerPositionPresetTop {
     left: 36px;
-    top: 8px;
+    top: 12px;
 }
 
 .pointerPositionPresetTopRight {
-    left: 64px;
-    top: 8px;
+    left: 60px;
+    top: 12px;
 }
 
 .pointerPositionPresetLeft {
-    left: 8px;
+    left: 12px;
     top: 36px;
 }
 
 .pointerPositionPresetRight {
-    left: 64px;
+    left: 60px;
     top: 36px;
 }
 
 .pointerPositionPresetBottomLeft {
-    left: 8px;
-    top: 64px;
+    left: 12px;
+    top: 60px;
 }
 
 .pointerPositionPresetBottom {
     left: 36px;
-    top: 64px;
+    top: 60px;
 }
 
 .pointerPositionPresetBottomRight {
-    left: 64px;
-    top: 64px;
+    left: 60px;
+    top: 60px;
 }
 
 .pointerPositionPreview {
