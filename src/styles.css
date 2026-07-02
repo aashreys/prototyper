@@ -378,22 +378,24 @@
     border: 0;
     border-radius: 4px;
     height: 100px;
+    isolation: isolate;
     justify-self: end;
     overflow: hidden;
     position: relative;
     touch-action: none;
     width: 100px;
+    z-index: 0;
 }
 
 .pointerPositionLayer {
     background: var(--figma-color-bg-tertiary);
     border: 1px solid var(--figma-color-border-strong);
     border-radius: 4px;
-    height: 64px;
-    left: 18px;
+    height: 72px;
+    left: 14px;
     position: absolute;
-    top: 18px;
-    width: 64px;
+    top: 14px;
+    width: 72px;
     z-index: 2;
 }
 
@@ -401,10 +403,10 @@
     background: linear-gradient(
         to right,
         var(--figma-color-border) 0,
-        var(--figma-color-border) 10px,
-        transparent 10px,
-        transparent 74px,
-        var(--figma-color-border) 74px,
+        var(--figma-color-border) 6px,
+        transparent 6px,
+        transparent 78px,
+        var(--figma-color-border) 78px,
         var(--figma-color-border) 100%
     );
     height: 1px;
@@ -419,10 +421,10 @@
     background: linear-gradient(
         to bottom,
         var(--figma-color-border) 0,
-        var(--figma-color-border) 10px,
-        transparent 10px,
-        transparent 74px,
-        var(--figma-color-border) 74px,
+        var(--figma-color-border) 6px,
+        transparent 6px,
+        transparent 78px,
+        var(--figma-color-border) 78px,
         var(--figma-color-border) 100%
     );
     bottom: 8px;
@@ -460,8 +462,8 @@
 }
 
 .pointerPositionPresetCenter {
-    left: 32px;
-    top: 32px;
+    left: 36px;
+    top: 36px;
 }
 
 .pointerPositionPresetTopLeft {
@@ -470,38 +472,38 @@
 }
 
 .pointerPositionPresetTop {
-    left: 32px;
+    left: 36px;
     top: 8px;
 }
 
 .pointerPositionPresetTopRight {
-    left: 56px;
+    left: 64px;
     top: 8px;
 }
 
 .pointerPositionPresetLeft {
     left: 8px;
-    top: 32px;
+    top: 36px;
 }
 
 .pointerPositionPresetRight {
-    left: 56px;
-    top: 32px;
+    left: 64px;
+    top: 36px;
 }
 
 .pointerPositionPresetBottomLeft {
     left: 8px;
-    top: 56px;
+    top: 64px;
 }
 
 .pointerPositionPresetBottom {
-    left: 32px;
-    top: 56px;
+    left: 36px;
+    top: 64px;
 }
 
 .pointerPositionPresetBottomRight {
-    left: 56px;
-    top: 56px;
+    left: 64px;
+    top: 64px;
 }
 
 .pointerPositionPreview {

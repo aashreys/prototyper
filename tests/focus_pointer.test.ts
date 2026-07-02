@@ -95,8 +95,8 @@ function createFocus(pointerOverrides = {}) {
       enabled: true,
       assetSource: 'preset',
       presetId: 'arrow',
-      sizeMode: '96',
-      customSize: 96,
+      sizeMode: '48',
+      customSize: 48,
       positionPreset: 'bottom-right',
       position: { x: 1, y: 1 },
       ...pointerOverrides
@@ -124,15 +124,15 @@ test('creates one fitted pointer per prototype frame', async () => {
   assert.equal(count, 2)
   assert.equal(pointerA.name, '__Prototyper Focus Pointer')
   assert.equal(pointerB.name, '__Prototyper Focus Pointer')
-  assert.equal(pointerA.width, 96)
-  assert.equal(pointerA.height, 96)
-  assert.equal(pointerA.x, 82)
-  assert.equal(pointerA.y, 52)
+  assert.equal(pointerA.width, 48)
+  assert.equal(pointerA.height, 48)
+  assert.equal(pointerA.x, 106)
+  assert.equal(pointerA.y, 76)
   assert.equal(pointerA.fills[0].type, 'IMAGE')
   assert.equal(pointerA.fills[0].scaleMode, 'FIT')
   assert.equal(pointerA.getPluginData('prototyper_focus_pointer'), 'true')
-  assert.equal(pointerB.x, 82)
-  assert.equal(pointerB.y, 72)
+  assert.equal(pointerB.x, 106)
+  assert.equal(pointerB.y, 96)
 })
 
 test('uses custom proportional position and custom size', async () => {
@@ -168,13 +168,13 @@ test('uses custom proportional position outside the focused layer', async () => 
       sizeMode: 'custom',
       customSize: 40,
       positionPreset: 'custom',
-      position: { x: 1.25, y: -0.25 }
+      position: { x: 1.1, y: -0.1 }
     })
   )
 
   const pointer = frame.children[1]
-  assert.equal(pointer.x, 130)
-  assert.equal(pointer.y, 30)
+  assert.equal(pointer.x, 118)
+  assert.equal(pointer.y, 36)
 })
 
 test('removes old managed pointers before creating new pointers', async () => {

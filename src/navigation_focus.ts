@@ -2,8 +2,8 @@ import { ComponentFocusMapping, ComponentFocusMappingType, SwapVariant } from ".
 import { POINTER_PRESETS } from "./pointer_assets";
 export type { ComponentFocusMapping, ComponentFocusMappingType } from "./swap_variant";
 
-const POINTER_POSITION_MIN = -0.28125
-const POINTER_POSITION_MAX = 1.28125
+const POINTER_POSITION_MIN = -14 / 72
+const POINTER_POSITION_MAX = 86 / 72
 
 export enum NavigationFocusMode {
   VARIANT = 'variant',
@@ -146,8 +146,8 @@ export const DEFAULT_POINTER_FOCUS: PointerFocusConfig = {
   enabled: false,
   assetSource: 'preset',
   presetId: 'arrow',
-  sizeMode: '96',
-  customSize: 96,
+  sizeMode: '48',
+  customSize: 48,
   positionPreset: 'bottom-right',
   position: {
     x: 1,

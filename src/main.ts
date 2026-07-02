@@ -13,7 +13,7 @@ import {
   normalizeErrorMessage,
 } from "./errors.js";
 
-const WIDTH = 240;
+const WIDTH = 250;
 const HEIGHT = 460;
 
 export enum Mode {

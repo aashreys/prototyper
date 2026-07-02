@@ -65,8 +65,8 @@ test('defaults new configs to stroke focus', () => {
     enabled: false,
     assetSource: 'preset',
     presetId: 'arrow',
-    sizeMode: '96',
-    customSize: 96,
+    sizeMode: '48',
+    customSize: 48,
     positionPreset: 'bottom-right',
     position: {
       x: 1,
@@ -429,7 +429,8 @@ test('preserves and normalizes saved pointer settings', () => {
   assert.equal(config.focus.pointer.sizeMode, 'custom')
   assert.equal(config.focus.pointer.customSize, 1024)
   assert.equal(config.focus.pointer.positionPreset, 'custom')
-  assert.deepEqual(config.focus.pointer.position, { x: 1.28125, y: -0.28125 })
+  assert.equal(config.focus.pointer.position.x, 86 / 72)
+  assert.equal(config.focus.pointer.position.y, -14 / 72)
   assert.deepEqual(config.focus.pointer.additionalFocus, {
     enabled: true,
     mode: NavigationFocusMode.STROKE
