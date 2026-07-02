@@ -1,16 +1,21 @@
 import {
   Bold,
+  Button,
   Checkbox,
   Dropdown,
   DropdownOption,
+  IconClose24,
   IconExpand24,
   IconButton,
   IconMinusSmall24,
   IconPlus24,
   IconPlusSmall24,
   IconScaleSmall24,
+  IconSettings24,
   IconAutoLayoutSpacingHorizontal24,
   IconStrokeWeight24,
+  IconTrash24,
+  Modal,
   Text,
   Textbox,
   TextboxColor,
@@ -23,6 +28,7 @@ import { Constants } from "../constants";
 import {
   ComponentFocusMapping,
   ComponentFocusPropertyType,
+  DEFAULT_POINTER_HOTSPOT,
   DEFAULT_COMPONENT_FOCUS_MAPPING,
   DEFAULT_POINTER_FOCUS,
   DEFAULT_VARIANT_FOCUS,
@@ -48,9 +54,14 @@ import {
 } from "../pointer_assets";
 import {
   createPointerAssetPayload,
-  normalizePointerAssetPayload,
   PointerAssetPayload,
 } from "../pointer_asset_validation";
+import {
+  createStoredCustomPointerAsset,
+  CustomPointerAsset,
+  MAX_CUSTOM_POINTER_ASSETS,
+  normalizeCustomPointerAssets,
+} from "../pointer_asset_storage";
 import { SwapVariant } from "../swap_variant";
 import { ArrowRightIcon } from "../icons/arrow_right";
 import styles from "../styles.css";
@@ -111,6 +122,7 @@ const POINTER_ANCHOR_HIT_RADIUS = 6.5;
 const POINTER_PREVIEW_REFERENCE_SIZE = 100;
 const POINTER_PREVIEW_MIN_SIZE = 12;
 const POINTER_PREVIEW_MAX_SIZE = 72;
+const POINTER_UPLOAD_RULES = "PNG or GIF, max 1024 x 1024 px, max 5 MB";
 
 const COMPONENT_HELPER_TEXT =
   "Add properties to change components to their focused state";
@@ -259,17 +271,24 @@ export class NavigationFocusOptions extends Component<
   NavigationFocusOptionsProps,
   any
 > {
-  pointerUploadInput: HTMLInputElement | null = null;
+  pointerDialogUploadInput: HTMLInputElement | null = null;
 
   constructor(props) {
     super(props);
     this.state = {
-      customPointerAsset: undefined,
-      customPointerDataUrl: "",
+      customPointerAssets: [],
+      customPointerDataUrls: {},
+      pointerDialogAsset: undefined,
+      pointerDialogDragActive: false,
+      pointerDialogError: "",
+      pointerDialogHotspot: { ...DEFAULT_POINTER_HOTSPOT },
+      pointerDialogMode: "closed",
+      pointerDialogPendingAction: undefined,
+      pointerDialogPendingAssetId: undefined,
+      pointerDialogSaving: false,
       pointerPositionHover: undefined,
       pointerPositionIsHovering: false,
       pointerPositionHoverPreset: undefined,
-      pointerUploadError: "",
     };
     this.bindMethods();
     this.registerEventListeners();
@@ -280,6 +299,13 @@ export class NavigationFocusOptions extends Component<
     this.onStrokeColorChange = this.onStrokeColorChange.bind(this);
     this.onFillColorChange = this.onFillColorChange.bind(this);
     this.onPointerAssetSelected = this.onPointerAssetSelected.bind(this);
+    this.onPointerDialogClose = this.onPointerDialogClose.bind(this);
+    this.onPointerDialogDelete = this.onPointerDialogDelete.bind(this);
+    this.onPointerDialogDrop = this.onPointerDialogDrop.bind(this);
+    this.onPointerDialogDragOver = this.onPointerDialogDragOver.bind(this);
+    this.onPointerDialogDragLeave = this.onPointerDialogDragLeave.bind(this);
+    this.onPointerDialogHotspotInput = this.onPointerDialogHotspotInput.bind(this);
+    this.onPointerDialogSave = this.onPointerDialogSave.bind(this);
     this.onPointerAdditionalFocusEnabledChange =
       this.onPointerAdditionalFocusEnabledChange.bind(this);
     this.onPointerAdditionalFocusModeChange =
@@ -293,23 +319,43 @@ export class NavigationFocusOptions extends Component<
   }
 
   registerEventListeners() {
-    on(Constants.EVENT_RECEIVE_POINTER_ASSET, (asset) => {
-      const normalizedAsset = normalizePointerAssetPayload(asset);
+    on(Constants.EVENT_RECEIVE_POINTER_ASSET, (assets) => {
+      const normalizedAssets = normalizeCustomPointerAssets(assets);
+      const pendingAction = this.state.pointerDialogPendingAction;
+      const pendingAssetId = this.state.pointerDialogPendingAssetId;
       this.setState({
-        customPointerAsset: normalizedAsset,
-        customPointerDataUrl: normalizedAsset
-          ? pointerAssetToDataUrl(normalizedAsset)
-          : "",
-        pointerUploadError: "",
+        customPointerAssets: normalizedAssets,
+        customPointerDataUrls: pointerAssetsToDataUrls(normalizedAssets),
+        pointerDialogError: "",
       });
+      this.syncSelectedCustomPointer(normalizedAssets);
+      if (pendingAction === "save") {
+        const savedAsset = normalizedAssets.find(asset => asset.id === pendingAssetId);
+        if (savedAsset) {
+          this.selectCustomPointer(savedAsset);
+          this.closePointerDialog();
+        }
+      }
+      if (pendingAction === "delete") {
+        const deletedAssetExists = normalizedAssets.some(asset => asset.id === pendingAssetId);
+        if (!deletedAssetExists) {
+          if (this.getPointer().assetSource === "custom" && this.getPointer().customAssetId === pendingAssetId) {
+            this.onPointerPresetSelect(DEFAULT_POINTER_FOCUS.presetId);
+          }
+          this.closePointerDialog();
+        }
+      }
     });
 
     on(Constants.EVENT_POINTER_ASSET_ERROR, (message) => {
       this.setState({
-        pointerUploadError:
+        pointerDialogError:
           typeof message === "string" && message.length > 0
             ? message
             : "Could not save pointer image.",
+        pointerDialogPendingAction: undefined,
+        pointerDialogPendingAssetId: undefined,
+        pointerDialogSaving: false,
       });
     });
 
@@ -442,6 +488,29 @@ export class NavigationFocusOptions extends Component<
     });
   }
 
+  syncSelectedCustomPointer(assets: Array<CustomPointerAsset>) {
+    const pointer = this.getPointer();
+    if (pointer.assetSource !== "custom") return;
+    if (pointer.customAssetId && assets.some(asset => asset.id === pointer.customAssetId)) {
+      return;
+    }
+    const fallbackAsset = assets[0];
+    if (fallbackAsset) {
+      this.selectCustomPointer(fallbackAsset);
+      return;
+    }
+    this.onPointerPresetSelect(DEFAULT_POINTER_FOCUS.presetId);
+  }
+
+  selectCustomPointer(asset: CustomPointerAsset) {
+    this.updatePointer({
+      ...this.getPointer(),
+      assetSource: "custom",
+      customAssetId: asset.id,
+      hotspot: asset.hotspot,
+    });
+  }
+
   onPointerAdditionalFocusEnabledChange(enabled: boolean) {
     const pointer = this.getPointer();
     this.updatePointer({
@@ -464,35 +533,41 @@ export class NavigationFocusOptions extends Component<
     });
   }
 
-  onCustomPointerSelect() {
-    if (!this.state.customPointerAsset) {
-      this.setState({
-        pointerUploadError: "Upload a custom pointer image first.",
-      });
-      return;
-    }
-    this.updatePointer({
-      ...this.getPointer(),
-      assetSource: "custom",
-    });
+  onCustomPointerSelect(asset: CustomPointerAsset) {
+    this.selectCustomPointer(asset);
   }
 
-  onCustomPointerRemove(event: Event) {
+  onCustomPointerSettings(event: Event, asset: CustomPointerAsset) {
     event.stopPropagation();
     this.setState({
-      customPointerAsset: undefined,
-      customPointerDataUrl: "",
-      pointerUploadError: "",
+      pointerDialogAsset: asset,
+      pointerDialogError: "",
+      pointerDialogHotspot: { ...asset.hotspot },
+      pointerDialogMode: "hotspot",
+      pointerDialogPendingAction: undefined,
+      pointerDialogPendingAssetId: undefined,
+      pointerDialogSaving: false,
     });
-    this.updatePointer({
-      ...this.getPointer(),
-      assetSource: "preset",
-    });
-    emit(Constants.EVENT_DELETE_POINTER_ASSET);
   }
 
   onPointerUploadClick() {
-    if (this.pointerUploadInput) this.pointerUploadInput.click();
+    if (this.state.customPointerAssets.length >= MAX_CUSTOM_POINTER_ASSETS) {
+      this.setState({
+        pointerDialogError: "Delete a custom pointer before adding another.",
+        pointerDialogMode: "upload",
+      });
+      return;
+    }
+    this.setState({
+      pointerDialogAsset: undefined,
+      pointerDialogDragActive: false,
+      pointerDialogError: "",
+      pointerDialogHotspot: { ...DEFAULT_POINTER_HOTSPOT },
+      pointerDialogMode: "upload",
+      pointerDialogPendingAction: undefined,
+      pointerDialogPendingAssetId: undefined,
+      pointerDialogSaving: false,
+    });
   }
 
   onPointerUploadInputChange(event: JSX.TargetedEvent<HTMLInputElement>) {
@@ -505,25 +580,105 @@ export class NavigationFocusOptions extends Component<
   async onPointerAssetSelected(files: Array<File>) {
     const file = files[0];
     if (!file) return;
+    if (this.state.customPointerAssets.length >= MAX_CUSTOM_POINTER_ASSETS) {
+      this.setState({
+        pointerDialogError: "Delete a custom pointer before adding another.",
+      });
+      return;
+    }
     const bytes = new Uint8Array(await file.arrayBuffer());
     const result = createPointerAssetPayload(file, bytes);
     if (result.error || !result.payload) {
       this.setState({
-        pointerUploadError: result.error || "Could not use pointer image.",
+        pointerDialogError: result.error || "Could not use pointer image.",
       });
       return;
     }
 
+    const asset = createStoredCustomPointerAsset(result.payload);
     this.setState({
-      customPointerAsset: result.payload,
-      customPointerDataUrl: pointerAssetToDataUrl(result.payload),
-      pointerUploadError: "",
+      pointerDialogAsset: asset,
+      pointerDialogDragActive: false,
+      pointerDialogError: "",
+      pointerDialogHotspot: { ...asset.hotspot },
+      pointerDialogMode: "hotspot",
     });
-    this.updatePointer({
-      ...this.getPointer(),
-      assetSource: "custom",
+  }
+
+  onPointerDialogClose() {
+    this.closePointerDialog();
+  }
+
+  closePointerDialog() {
+    this.setState({
+      pointerDialogAsset: undefined,
+      pointerDialogDragActive: false,
+      pointerDialogError: "",
+      pointerDialogHotspot: { ...DEFAULT_POINTER_HOTSPOT },
+      pointerDialogMode: "closed",
+      pointerDialogPendingAction: undefined,
+      pointerDialogPendingAssetId: undefined,
+      pointerDialogSaving: false,
     });
-    emit(Constants.EVENT_SAVE_POINTER_ASSET, result.payload);
+  }
+
+  onPointerDialogDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.setState({ pointerDialogDragActive: true });
+  }
+
+  onPointerDialogDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.setState({ pointerDialogDragActive: false });
+  }
+
+  onPointerDialogDrop(event: DragEvent) {
+    event.preventDefault();
+    this.setState({ pointerDialogDragActive: false });
+    const files = Array.prototype.slice.call(event.dataTransfer?.files || []);
+    this.onPointerAssetSelected(files);
+  }
+
+  onPointerDialogHotspotInput(event: any) {
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const bounds = event.currentTarget.getBoundingClientRect();
+    this.setState({
+      pointerDialogHotspot: {
+        x: roundNumber(clampNumber((event.clientX - bounds.left) / bounds.width, 0, 1)),
+        y: roundNumber(clampNumber((event.clientY - bounds.top) / bounds.height, 0, 1)),
+      },
+    });
+  }
+
+  onPointerDialogSave() {
+    const asset = this.state.pointerDialogAsset as CustomPointerAsset | undefined;
+    if (!asset || this.state.pointerDialogSaving) return;
+    const hotspot = this.state.pointerDialogHotspot || DEFAULT_POINTER_HOTSPOT;
+    const savedAsset = {
+      ...asset,
+      hotspot: hotspot,
+    };
+    this.setState({
+      pointerDialogAsset: savedAsset,
+      pointerDialogError: "",
+      pointerDialogHotspot: hotspot,
+      pointerDialogPendingAction: "save",
+      pointerDialogPendingAssetId: savedAsset.id,
+      pointerDialogSaving: true,
+    });
+    emit(Constants.EVENT_SAVE_POINTER_ASSET, savedAsset);
+  }
+
+  onPointerDialogDelete() {
+    const asset = this.state.pointerDialogAsset as CustomPointerAsset | undefined;
+    if (!asset || this.state.pointerDialogSaving) return;
+    this.setState({
+      pointerDialogError: "",
+      pointerDialogPendingAction: "delete",
+      pointerDialogPendingAssetId: asset.id,
+      pointerDialogSaving: true,
+    });
+    emit(Constants.EVENT_DELETE_POINTER_ASSET, asset.id);
   }
 
   onPointerSizeChange(value: number) {
@@ -1058,11 +1213,9 @@ export class NavigationFocusOptions extends Component<
             {this.renderPointerPositionControls(pointer)}
           </div>
           <div class={styles.textTertiary}>{POINTER_UPLOAD_NOTE}</div>
-          {this.state.pointerUploadError.length > 0 && (
-            <text class={styles.errorText}>{this.state.pointerUploadError}</text>
-          )}
         </div>
         {this.renderPointerAdditionalFocusControls(props, pointer)}
+        {this.renderPointerDialog(pointer)}
       </div>
     );
   }
@@ -1114,7 +1267,129 @@ export class NavigationFocusOptions extends Component<
     return pointer.additionalFocus || DEFAULT_POINTER_FOCUS.additionalFocus;
   }
 
+  renderPointerDialog(pointer: PointerFocusConfig) {
+    const mode = this.state.pointerDialogMode;
+    const isOpen = mode !== "closed";
+    return (
+      <Modal
+        closeButtonIcon={<IconClose24 />}
+        closeButtonPosition="right"
+        onCloseButtonClick={this.onPointerDialogClose}
+        onEscapeKeyDown={this.onPointerDialogClose}
+        open={isOpen}
+        position="center"
+        title={mode === "hotspot" ? "Set cursor hotspot" : "Add cursor"}
+      >
+        <div class={styles.pointerDialog}>
+          {mode === "upload" && this.renderPointerUploadDialog()}
+          {mode === "hotspot" && this.renderPointerHotspotDialog(pointer)}
+        </div>
+      </Modal>
+    );
+  }
+
+  renderPointerUploadDialog() {
+    const isDisabled =
+      this.state.customPointerAssets.length >= MAX_CUSTOM_POINTER_ASSETS ||
+      this.state.pointerDialogSaving;
+    return (
+      <div class={styles.pointerDialogContent}>
+        <button
+          class={`${styles.pointerDropzone} ${
+            this.state.pointerDialogDragActive ? styles.pointerDropzoneActive : ""
+          }`}
+          disabled={isDisabled}
+          onClick={() => this.pointerDialogUploadInput?.click()}
+          onDragLeave={this.onPointerDialogDragLeave}
+          onDragOver={this.onPointerDialogDragOver}
+          onDrop={this.onPointerDialogDrop}
+          type="button"
+        >
+          <span class={styles.pointerDropzoneTitle}>Drop cursor file here</span>
+          <span class={styles.pointerDropzoneText}>{POINTER_UPLOAD_RULES}</span>
+        </button>
+        <input
+          accept="image/png,image/gif"
+          class={styles.pointerUploadInput}
+          disabled={isDisabled}
+          onChange={this.onPointerUploadInputChange}
+          ref={(element) => {
+            this.pointerDialogUploadInput = element;
+          }}
+          type="file"
+        />
+        {this.state.pointerDialogError.length > 0 && (
+          <Text class={styles.errorText}>{this.state.pointerDialogError}</Text>
+        )}
+        <Button
+          disabled={isDisabled}
+          fullWidth
+          onClick={() => this.pointerDialogUploadInput?.click()}
+        >
+          Upload
+        </Button>
+      </div>
+    );
+  }
+
+  renderPointerHotspotDialog(pointer: PointerFocusConfig) {
+    const asset = this.state.pointerDialogAsset as CustomPointerAsset | undefined;
+    const hotspot = this.state.pointerDialogHotspot || DEFAULT_POINTER_HOTSPOT;
+    const isExisting = Boolean(
+      asset &&
+      (this.state.customPointerAssets as Array<CustomPointerAsset>).some(
+        customAsset => customAsset.id === asset.id,
+      ),
+    );
+    const imageSrc = asset ? this.getCustomPointerDataUrl(asset) : this.getPointerPreviewSource(pointer);
+    return (
+      <div class={styles.pointerDialogContent}>
+        <div
+          class={styles.pointerHotspotEditor}
+          onPointerDown={this.onPointerDialogHotspotInput}
+          onPointerMove={(event) => {
+            if (event.buttons === 1) this.onPointerDialogHotspotInput(event);
+          }}
+        >
+          <img
+            alt="Custom pointer"
+            class={styles.pointerHotspotImage}
+            src={imageSrc}
+          />
+          <span
+            class={styles.pointerHotspotMarker}
+            style={`left: ${hotspot.x * 100}%; top: ${hotspot.y * 100}%;`}
+          />
+        </div>
+        {this.state.pointerDialogError.length > 0 && (
+          <Text class={styles.errorText}>{this.state.pointerDialogError}</Text>
+        )}
+        <div class={styles.pointerDialogActions}>
+          {isExisting && (
+            <Button
+              danger
+              disabled={this.state.pointerDialogSaving}
+              onClick={this.onPointerDialogDelete}
+              secondary
+            >
+              <IconTrash24 />
+            </Button>
+          )}
+          <Button
+            disabled={!asset || this.state.pointerDialogSaving}
+            fullWidth
+            loading={this.state.pointerDialogSaving}
+            onClick={this.onPointerDialogSave}
+          >
+            Save
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   renderPointerAssetControls(pointer: PointerFocusConfig) {
+    const customAssets = this.state.customPointerAssets as Array<CustomPointerAsset>;
     return (
       <div class={styles.pointerControlGroup}>
         <div class={styles.pointerAssetGrid}>
@@ -1138,50 +1413,44 @@ export class NavigationFocusOptions extends Component<
             </button>
           ))}
 
-          {this.state.customPointerAsset && (
+          {customAssets.map((asset) => (
             <button
               class={`${styles.pointerAssetButton} ${styles.pointerCustomAssetButton} ${
-                pointer.assetSource === "custom"
+                pointer.assetSource === "custom" &&
+                pointer.customAssetId === asset.id
                   ? styles.pointerAssetButtonSelected
                   : ""
               }`}
-              onClick={() => this.onCustomPointerSelect()}
-              title={this.state.customPointerAsset.metadata.name}
+              onClick={() => this.onCustomPointerSelect(asset)}
+              title={asset.metadata.name}
               type="button"
             >
               <img
                 alt="Custom pointer"
                 class={styles.pointerAssetPreview}
-                src={this.state.customPointerDataUrl}
+                src={this.getCustomPointerDataUrl(asset)}
               />
               <span
-                class={styles.pointerAssetRemoveButton}
-                onClick={(event) => this.onCustomPointerRemove(event)}
+                class={styles.pointerAssetSettingsButton}
+                onClick={(event) => this.onCustomPointerSettings(event, asset)}
                 onPointerDown={(event) => event.stopPropagation()}
-                title="Remove custom pointer"
+                title="Edit custom pointer"
               >
-                x
+                <IconSettings24 />
               </span>
             </button>
-          )}
+          ))}
 
-          <div class={styles.pointerUploadButton}>
+          {customAssets.length < MAX_CUSTOM_POINTER_ASSETS && (
+            <div class={styles.pointerUploadButton}>
             <IconButton
               onClick={() => this.onPointerUploadClick()}
               title="Upload pointer image"
             >
               <IconPlus24 />
             </IconButton>
-            <input
-              accept="image/png,image/gif"
-              class={styles.pointerUploadInput}
-              onChange={this.onPointerUploadInputChange}
-              ref={(element) => {
-                this.pointerUploadInput = element;
-              }}
-              type="file"
-            />
-          </div>
+            </div>
+          )}
         </div>
 
         <div class={styles.pointerSizeControl}>
@@ -1203,10 +1472,7 @@ export class NavigationFocusOptions extends Component<
 
   renderPointerPositionControls(pointer: PointerFocusConfig) {
     const position = getPointerPosition(pointer);
-    const previewSrc =
-      pointer.assetSource === "custom" && this.state.customPointerDataUrl
-        ? this.state.customPointerDataUrl
-        : getPointerPresetDataUrl(pointer.presetId);
+    const previewSrc = this.getPointerPreviewSource(pointer);
     return (
       <div
         class={styles.pointerPositionPad}
@@ -1323,7 +1589,7 @@ export class NavigationFocusOptions extends Component<
     pointer: PointerFocusConfig,
     position: { readonly x: number; readonly y: number },
   ): string {
-    const hotspot = getPointerHotspot(pointer);
+    const hotspot = this.getPointerPreviewHotspot(pointer);
     const previewSize = this.getPointerPreviewSize(pointer);
     return [
       this.getPointerPadPixelStyle(position),
@@ -1340,6 +1606,37 @@ export class NavigationFocusOptions extends Component<
       POINTER_PREVIEW_MIN_SIZE,
       POINTER_PREVIEW_MAX_SIZE,
     );
+  }
+
+  getSelectedCustomPointer(pointer: PointerFocusConfig): CustomPointerAsset | undefined {
+    const customAssets = this.state.customPointerAssets as Array<CustomPointerAsset>;
+    if (pointer.customAssetId) {
+      return customAssets.find(asset => asset.id === pointer.customAssetId);
+    }
+    return customAssets[0];
+  }
+
+  getCustomPointerDataUrl(asset: CustomPointerAsset): string {
+    const dataUrl = this.state.customPointerDataUrls[asset.id];
+    return typeof dataUrl === "string" && dataUrl.length > 0
+      ? dataUrl
+      : pointerAssetToDataUrl(asset);
+  }
+
+  getPointerPreviewSource(pointer: PointerFocusConfig): string {
+    if (pointer.assetSource === "custom") {
+      const asset = this.getSelectedCustomPointer(pointer);
+      if (asset) return this.getCustomPointerDataUrl(asset);
+    }
+    return getPointerPresetDataUrl(pointer.presetId);
+  }
+
+  getPointerPreviewHotspot(pointer: PointerFocusConfig) {
+    if (pointer.assetSource === "custom") {
+      const asset = this.getSelectedCustomPointer(pointer);
+      if (asset) return asset.hotspot;
+    }
+    return getPointerHotspot(pointer);
   }
 
   getPointerAnchorPixelPosition(
@@ -1426,6 +1723,14 @@ interface FocusNumberInputProps {
 
 function pointerAssetToDataUrl(asset: PointerAssetPayload): string {
   return `data:${asset.metadata.mimeType};base64,${bytesToBase64(asset.bytes)}`;
+}
+
+function pointerAssetsToDataUrls(assets: Array<CustomPointerAsset>): Record<string, string> {
+  const dataUrls: Record<string, string> = {};
+  for (const asset of assets) {
+    dataUrls[asset.id] = pointerAssetToDataUrl(asset);
+  }
+  return dataUrls;
 }
 
 function bytesToBase64(bytes: Uint8Array): string {

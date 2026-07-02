@@ -1,11 +1,13 @@
 import { getPointerPresetAsset, pointerAssetBase64ToBytes } from "./pointer_assets";
-import { PointerAssetStorage } from "./pointer_asset_storage";
+import { CustomPointerAsset, PointerAssetStorage } from "./pointer_asset_storage";
 import {
+  DEFAULT_POINTER_FOCUS,
   getPointerHotspot,
   getPointerPosition,
   getPointerSize,
   NavigationFocusConfig,
   NavigationFocusMode,
+  PointerHotspot,
   PointerFocusConfig
 } from "./navigation_focus";
 import { PrototypeFrame } from "./prototype_frame";
@@ -25,11 +27,11 @@ export class FocusPointer {
 
     if (focus.mode !== NavigationFocusMode.POINTER) return 0
 
-    const imageBytes = await FocusPointer.getPointerImageBytes(focus.pointer)
-    const image = figma.createImage(imageBytes)
+    const pointerAsset = await FocusPointer.getPointerAsset(focus.pointer)
+    const image = figma.createImage(pointerAsset.bytes)
     let pointersCreated = 0
     for (let protoFrame of protoFrames) {
-      FocusPointer.createPointer(protoFrame.topLevelFrame, protoFrame.instance, focus.pointer, image.hash)
+      FocusPointer.createPointer(protoFrame.topLevelFrame, protoFrame.instance, focus.pointer, image.hash, pointerAsset.hotspot)
       pointersCreated++
     }
     return pointersCreated
@@ -51,11 +53,11 @@ export class FocusPointer {
     topLevelFrame: FrameNode,
     target: SceneNode,
     pointer: PointerFocusConfig,
-    imageHash: string
+    imageHash: string,
+    hotspot: PointerHotspot = getPointerHotspot(pointer)
   ): RectangleNode {
     const size = getPointerSize(pointer)
     const position = getPointerPosition(pointer)
-    const hotspot = getPointerHotspot(pointer)
     const targetBounds = Utils.getAbsoluteBounds(target)
     const frameBounds = Utils.getAbsoluteBounds(topLevelFrame)
     const pointX = targetBounds.x - frameBounds.x + targetBounds.width * position.x
@@ -81,14 +83,37 @@ export class FocusPointer {
     return node
   }
 
-  private static async getPointerImageBytes(pointer: PointerFocusConfig): Promise<Uint8Array> {
+  private static async getPointerAsset(pointer: PointerFocusConfig): Promise<{
+    readonly bytes: Uint8Array
+    readonly hotspot: PointerHotspot
+  }> {
     if (pointer.assetSource !== 'custom') {
-      return pointerAssetBase64ToBytes(getPointerPresetAsset(pointer.presetId).base64)
+      return {
+        bytes: pointerAssetBase64ToBytes(getPointerPresetAsset(pointer.presetId).base64),
+        hotspot: getPointerHotspot(pointer)
+      }
     }
 
-    const asset = await PointerAssetStorage.getCustomAsset()
-    if (!asset) throw new Error('Upload a custom pointer image or choose a built-in pointer.')
-    return asset.bytes
+    const asset = await FocusPointer.getSelectedCustomPointerAsset(pointer)
+    if (!asset) {
+      const fallbackAsset = getPointerPresetAsset(DEFAULT_POINTER_FOCUS.presetId)
+      return {
+        bytes: pointerAssetBase64ToBytes(fallbackAsset.base64),
+        hotspot: DEFAULT_POINTER_FOCUS.hotspot
+      }
+    }
+    return {
+      bytes: asset.bytes,
+      hotspot: getPointerHotspot({ ...pointer, hotspot: asset.hotspot })
+    }
+  }
+
+  private static async getSelectedCustomPointerAsset(pointer: PointerFocusConfig): Promise<CustomPointerAsset | undefined> {
+    const assets = await PointerAssetStorage.getCustomAssets()
+    if (pointer.customAssetId) {
+      return assets.find(asset => asset.id === pointer.customAssetId)
+    }
+    return assets[0]
   }
 
   private static isManagedPointer(node): boolean {

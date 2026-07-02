@@ -81,14 +81,14 @@ export default function () {
   });
 
   on(Constants.EVENT_REQUEST_POINTER_ASSET, () => {
-    PointerAssetStorage.getCustomAsset().then((asset) => {
-      emit(Constants.EVENT_RECEIVE_POINTER_ASSET, asset);
+    PointerAssetStorage.getCustomAssets().then((assets) => {
+      emit(Constants.EVENT_RECEIVE_POINTER_ASSET, assets);
     });
   });
 
   on(Constants.EVENT_SAVE_POINTER_ASSET, (asset) => {
     PointerAssetStorage.saveCustomAsset(asset).then(
-      (savedAsset) => emit(Constants.EVENT_RECEIVE_POINTER_ASSET, savedAsset),
+      (assets) => emit(Constants.EVENT_RECEIVE_POINTER_ASSET, assets),
       (error) => {
         const message = normalizeErrorMessage(error);
         console.error('Failed to save custom pointer asset', {
@@ -99,9 +99,9 @@ export default function () {
     );
   });
 
-  on(Constants.EVENT_DELETE_POINTER_ASSET, () => {
-    PointerAssetStorage.deleteCustomAsset().then(() => {
-      emit(Constants.EVENT_RECEIVE_POINTER_ASSET, undefined);
+  on(Constants.EVENT_DELETE_POINTER_ASSET, (id) => {
+    PointerAssetStorage.deleteCustomAsset(id).then((assets) => {
+      emit(Constants.EVENT_RECEIVE_POINTER_ASSET, assets);
     });
   });
 

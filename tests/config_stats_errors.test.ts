@@ -65,6 +65,7 @@ test('defaults new configs to stroke focus', () => {
     enabled: false,
     assetSource: 'preset',
     presetId: 'arrow',
+    customAssetId: '',
     sizeMode: '48',
     customSize: 48,
     hotspot: {
@@ -405,6 +406,7 @@ test('preserves and normalizes saved pointer settings', () => {
       pointer: {
         enabled: true,
         assetSource: 'custom',
+        customAssetId: 'custom-1',
         presetId: 'hand',
         sizeMode: 'custom',
         customSize: 1200,
@@ -430,6 +432,7 @@ test('preserves and normalizes saved pointer settings', () => {
   assert.equal(config.focus.pointer.enabled, true)
   assert.equal(config.focus.pointer.assetSource, 'custom')
   assert.equal(config.focus.pointer.presetId, 'arrow')
+  assert.equal(config.focus.pointer.customAssetId, 'custom-1')
   assert.equal(config.focus.pointer.sizeMode, 'custom')
   assert.equal(config.focus.pointer.customSize, 1024)
   assert.deepEqual(config.focus.pointer.hotspot, { x: 0.21, y: 0.13 })

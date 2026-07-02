@@ -86,6 +86,7 @@ export interface PointerFocusConfig {
   readonly enabled: boolean
   readonly assetSource: PointerAssetSource
   readonly presetId: string
+  readonly customAssetId: string
   readonly sizeMode: PointerSizeMode
   readonly customSize: number
   readonly hotspot: PointerHotspot
@@ -157,6 +158,7 @@ export const DEFAULT_POINTER_FOCUS: PointerFocusConfig = {
   enabled: false,
   assetSource: 'preset',
   presetId: 'arrow',
+  customAssetId: '',
   sizeMode: '48',
   customSize: 48,
   hotspot: { ...DEFAULT_POINTER_HOTSPOT },
@@ -384,6 +386,7 @@ function normalizePointerFocus(value): PointerFocusConfig {
     enabled: normalizeBoolean(value?.enabled, defaultPointer.enabled),
     assetSource: value?.assetSource === 'custom' ? 'custom' : 'preset',
     presetId: normalizePointerPresetId(value?.presetId, defaultPointer.presetId),
+    customAssetId: normalizePointerCustomAssetId(value?.customAssetId, defaultPointer.customAssetId),
     sizeMode: normalizePointerSizeMode(value?.sizeMode, defaultPointer.sizeMode),
     customSize: normalizeNumber(value?.customSize, defaultPointer.customSize, 1024),
     hotspot: normalizePointerHotspot(value?.hotspot),
@@ -403,6 +406,10 @@ function normalizePointerAdditionalFocus(value): PointerAdditionalFocusConfig {
 function normalizePointerPresetId(value, fallback: string): string {
   if (typeof value !== 'string' || value.length === 0) return fallback
   return POINTER_PRESETS.some(asset => asset.id === value) ? value : fallback
+}
+
+function normalizePointerCustomAssetId(value, fallback: string): string {
+  return typeof value === 'string' ? value : fallback
 }
 
 function normalizePointerSizeMode(value, fallback: PointerSizeMode): PointerSizeMode {
@@ -443,7 +450,7 @@ function normalizePointerPosition(value): PointerPosition {
   }
 }
 
-function normalizePointerHotspot(value): PointerHotspot {
+export function normalizePointerHotspot(value): PointerHotspot {
   return {
     x: normalizeRangeNumber(value?.x, DEFAULT_POINTER_HOTSPOT.x, 0, 1),
     y: normalizeRangeNumber(value?.y, DEFAULT_POINTER_HOTSPOT.y, 0, 1)

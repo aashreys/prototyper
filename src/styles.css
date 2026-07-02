@@ -325,22 +325,29 @@
     position: relative;
 }
 
-.pointerAssetRemoveButton {
+.pointerAssetSettingsButton {
     align-items: center;
     background: var(--figma-color-bg);
     border: 1px solid var(--figma-color-border);
     border-radius: 999px;
     color: var(--figma-color-text-secondary);
-    display: flex;
-    font-size: 10px;
+    display: none;
     height: 14px;
     justify-content: center;
-    line-height: 1;
     position: absolute;
     right: -5px;
     top: -5px;
     width: 14px;
     z-index: 5;
+}
+
+.pointerCustomAssetButton:hover .pointerAssetSettingsButton {
+    display: flex;
+}
+
+.pointerAssetSettingsButton svg {
+    height: 10px;
+    width: 10px;
 }
 
 .pointerUploadButton {
@@ -532,6 +539,86 @@
     transform: translate(-50%, -50%);
     width: 18px;
     z-index: 5;
+}
+
+.pointerDialog {
+    padding: 12px;
+    width: 220px;
+}
+
+.pointerDialogContent {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pointerDropzone {
+    align-items: center;
+    background: var(--figma-color-bg-secondary);
+    border: 1px dashed var(--figma-color-border);
+    border-radius: 4px;
+    color: var(--figma-color-text);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+    min-height: 112px;
+    padding: 12px;
+    text-align: center;
+    width: 100%;
+}
+
+.pointerDropzoneActive,
+.pointerDropzone:hover {
+    border-color: var(--figma-color-border-brand-strong);
+}
+
+.pointerDropzoneTitle {
+    font-weight: 600;
+}
+
+.pointerDropzoneText {
+    color: var(--figma-color-text-secondary);
+    font-size: 11px;
+    line-height: 16px;
+}
+
+.pointerHotspotEditor {
+    align-items: center;
+    background: var(--figma-color-bg-secondary);
+    border-radius: 4px;
+    display: flex;
+    height: 156px;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    touch-action: none;
+    width: 156px;
+}
+
+.pointerHotspotImage {
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    width: 100%;
+}
+
+.pointerHotspotMarker {
+    background: #ffffff;
+    border: 2px solid var(--figma-color-border-brand-strong);
+    border-radius: 999px;
+    height: 12px;
+    pointer-events: none;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 12px;
+}
+
+.pointerDialogActions {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    width: 100%;
 }
 
 .componentMappingHeader {

@@ -2,18 +2,37 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { FocusPointer } from '../src/focus_pointer'
 import { NavigationFocusMode } from '../src/navigation_focus'
+import { createStoredCustomPointerAsset, PointerAssetStorage } from '../src/pointer_asset_storage'
+import { createPointerAssetPayload } from '../src/pointer_asset_validation'
 
 function assertApprox(actual: number, expected: number) {
   assert.equal(Math.round(actual * 100) / 100, expected)
 }
 
-function setFigmaForPointer() {
+function setFigmaForPointer(stored = new Map<string, unknown>()) {
   ;(globalThis as any).figma = {
     createImage: (bytes: Uint8Array) => ({
       hash: `hash-${bytes.byteLength}`
     }),
-    createRectangle: () => createRectangle()
+    createRectangle: () => createRectangle(),
+    clientStorage: {
+      getAsync: async (key: string) => stored.get(key),
+      setAsync: async (key: string, value: unknown) => {
+        stored.set(key, value)
+      },
+      deleteAsync: async (key: string) => {
+        stored.delete(key)
+      }
+    }
   }
+}
+
+function createGif(width: number, height: number): Uint8Array {
+  return new Uint8Array([
+    0x47, 0x49, 0x46, 0x38, 0x39, 0x61,
+    width & 0xff, (width >> 8) & 0xff,
+    height & 0xff, (height >> 8) & 0xff
+  ])
 }
 
 function createRectangle() {
@@ -99,6 +118,7 @@ function createFocus(pointerOverrides = {}) {
       enabled: true,
       assetSource: 'preset',
       presetId: 'arrow',
+      customAssetId: '',
       sizeMode: '48',
       customSize: 48,
       hotspot: { x: 0.21, y: 0.13 },
@@ -180,6 +200,52 @@ test('uses custom proportional position outside the focused layer', async () => 
   const pointer = frame.children[1]
   assertApprox(pointer.x, 129.6)
   assertApprox(pointer.y, 50.8)
+})
+
+test('uses selected custom pointer asset hotspot', async () => {
+  const stored = new Map<string, unknown>()
+  const result = createPointerAssetPayload(
+    { name: 'pointer.gif', type: 'image/gif', size: 10 },
+    createGif(40, 40),
+    123
+  )
+  stored.set(PointerAssetStorage.POINTER_ASSETS_KEY, [
+    createStoredCustomPointerAsset(result.payload!, { x: 0.5, y: 0.5 }, 'cursor-1')
+  ])
+  setFigmaForPointer(stored)
+  const frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  const target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
+
+  await FocusPointer.createPointers(
+    [{ topLevelFrame: frame, instance: target }] as any,
+    createFocus({
+      assetSource: 'custom',
+      customAssetId: 'cursor-1'
+    })
+  )
+
+  const pointer = frame.children[1]
+  assertApprox(pointer.x, 106)
+  assertApprox(pointer.y, 76)
+  assert.equal(pointer.fills[0].imageHash, `hash-${result.payload!.bytes.byteLength}`)
+})
+
+test('falls back to built-in pointer when selected custom pointer is missing', async () => {
+  setFigmaForPointer()
+  const frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  const target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
+
+  await FocusPointer.createPointers(
+    [{ topLevelFrame: frame, instance: target }] as any,
+    createFocus({
+      assetSource: 'custom',
+      customAssetId: 'missing'
+    })
+  )
+
+  const pointer = frame.children[1]
+  assertApprox(pointer.x, 119.92)
+  assertApprox(pointer.y, 93.76)
 })
 
 test('removes old managed pointers before creating new pointers', async () => {
