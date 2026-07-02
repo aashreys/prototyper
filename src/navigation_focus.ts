@@ -2,8 +2,8 @@ import { ComponentFocusMapping, ComponentFocusMappingType, SwapVariant } from ".
 import { POINTER_PRESETS } from "./pointer_assets";
 export type { ComponentFocusMapping, ComponentFocusMappingType } from "./swap_variant";
 
-const POINTER_POSITION_MIN = -14 / 72
-const POINTER_POSITION_MAX = 86 / 72
+const POINTER_POSITION_MIN = -18 / 64
+const POINTER_POSITION_MAX = 82 / 64
 
 export enum NavigationFocusMode {
   VARIANT = 'variant',
