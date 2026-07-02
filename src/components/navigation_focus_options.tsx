@@ -253,6 +253,7 @@ export class NavigationFocusOptions extends Component<
       customPointerAsset: undefined,
       customPointerDataUrl: "",
       pointerPositionHover: undefined,
+      pointerPositionIsHovering: false,
       pointerPositionHoverPreset: undefined,
       pointerUploadError: "",
     };
@@ -544,6 +545,7 @@ export class NavigationFocusOptions extends Component<
   onPointerPositionLeave() {
     this.setState({
       pointerPositionHover: undefined,
+      pointerPositionIsHovering: false,
       pointerPositionHoverPreset: undefined,
     });
   }
@@ -559,6 +561,7 @@ export class NavigationFocusOptions extends Component<
         x: pointerPositionHover.x,
         y: pointerPositionHover.y,
       },
+      pointerPositionIsHovering: true,
       pointerPositionHoverPreset:
         this.getPointerAnchorHit(pointerPositionHover) || undefined,
     };
@@ -1122,6 +1125,8 @@ export class NavigationFocusOptions extends Component<
     return (
       <div
         class={styles.pointerPositionPad}
+        onMouseLeave={this.onPointerPositionLeave}
+        onPointerCancel={this.onPointerPositionLeave}
         onPointerDown={this.onPointerPositionInput}
         onPointerLeave={this.onPointerPositionLeave}
         onPointerMove={this.onPointerPositionHover}
@@ -1129,7 +1134,8 @@ export class NavigationFocusOptions extends Component<
         {POINTER_POSITION_OPTIONS.map((option) =>
           this.renderPointerPositionPresetButton(option, pointer),
         )}
-        {this.state.pointerPositionHover &&
+        {this.state.pointerPositionIsHovering &&
+          this.state.pointerPositionHover &&
           !this.state.pointerPositionHoverPreset && (
             <img
               alt=""
@@ -1138,7 +1144,8 @@ export class NavigationFocusOptions extends Component<
               style={this.getPointerPadPixelStyle(this.state.pointerPositionHover)}
             />
         )}
-        {this.state.pointerPositionHoverPreset &&
+        {this.state.pointerPositionIsHovering &&
+          this.state.pointerPositionHoverPreset &&
           this.state.pointerPositionHoverPreset !== pointer.positionPreset && (
           <img
             alt=""

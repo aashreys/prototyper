@@ -252,19 +252,25 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0;
+    width: 100%;
 }
 
 .pointerPanel {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 0;
+    width: 100%;
 }
 
 .pointerLayout {
     display: grid;
     gap: 8px;
-    grid-template-columns: 110px 100px;
+    grid-template-columns: minmax(110px, 1fr) 100px;
     align-items: start;
+    min-width: 0;
+    width: 100%;
 }
 
 .pointerLeftColumn {
@@ -304,15 +310,15 @@
 }
 
 .pointerAssetButtonSelected {
-    border-color: var(--figma-color-border-brand);
-    box-shadow: 0 0 0 1px var(--figma-color-border-brand);
+    border-color: var(--figma-color-border-brand-strong);
+    box-shadow: 0 0 0 1px var(--figma-color-border-brand-strong);
 }
 
 .pointerAssetPreview {
     display: block;
-    height: 16px;
+    height: 20px;
     object-fit: contain;
-    width: 16px;
+    width: 20px;
 }
 
 .pointerCustomAssetButton {
@@ -356,6 +362,7 @@
     border: 0;
     border-radius: 4px;
     height: 100px;
+    justify-self: end;
     overflow: hidden;
     position: relative;
     touch-action: none;
@@ -434,23 +441,23 @@
 }
 
 .pointerPositionPreview {
-    height: 16px;
+    height: 20px;
     object-fit: contain;
     pointer-events: none;
     position: absolute;
     transform: translate(-50%, -50%);
-    width: 16px;
+    width: 20px;
     z-index: 2;
 }
 
 .pointerPositionHoverPreview {
-    height: 16px;
+    height: 20px;
     object-fit: contain;
     opacity: 0.75;
     pointer-events: none;
     position: absolute;
     transform: translate(-50%, -50%);
-    width: 16px;
+    width: 20px;
     z-index: 3;
 }
 
