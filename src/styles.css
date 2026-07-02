@@ -384,6 +384,7 @@
     background: var(--figma-color-bg-secondary);
     border: 0;
     border-radius: 4px;
+    cursor: none;
     height: 100px;
     isolation: isolate;
     justify-self: end;
@@ -392,6 +393,10 @@
     touch-action: none;
     width: 100px;
     z-index: 0;
+}
+
+.pointerPositionPad * {
+    cursor: none;
 }
 
 .pointerPositionLayer {
