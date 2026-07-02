@@ -33,7 +33,6 @@ import {
   DEFAULT_VARIANT_FOCUS,
   FillFocusConfig,
   getComponentFocusMappings,
-  getPointerHotspot,
   getPointerPosition,
   getPointerSize,
   NavigationFocusConfig,
@@ -48,7 +47,10 @@ import {
   StrokeFocusConfig,
 } from "../navigation_focus";
 import {
+  getLoopingGifBytes,
   getPointerPresetDataUrl,
+  getPointerPresetHotspot,
+  pointerAssetBytesToBase64,
   POINTER_PRESETS,
 } from "../pointer_assets";
 import {
@@ -1660,7 +1662,7 @@ export class NavigationFocusOptions extends Component<
       const asset = this.getSelectedCustomPointer(pointer);
       if (asset) return asset.hotspot;
     }
-    return getPointerHotspot(pointer);
+    return getPointerPresetHotspot(pointer.presetId);
   }
 
   getPointerAnchorPixelPosition(
@@ -1764,7 +1766,7 @@ function pointerAssetToDataUrl(asset: PointerAssetPayload): string {
     asset.metadata.mimeType === "image/gif"
       ? getLoopingGifBytes(asset.bytes)
       : asset.bytes;
-  return `data:${asset.metadata.mimeType};base64,${bytesToBase64(bytes)}`;
+  return `data:${asset.metadata.mimeType};base64,${pointerAssetBytesToBase64(bytes)}`;
 }
 
 function pointerAssetsToDataUrls(assets: Array<CustomPointerAsset>): Record<string, string> {
@@ -1773,79 +1775,4 @@ function pointerAssetsToDataUrls(assets: Array<CustomPointerAsset>): Record<stri
     dataUrls[asset.id] = pointerAssetToDataUrl(asset);
   }
   return dataUrls;
-}
-
-function getLoopingGifBytes(bytes: Uint8Array): Uint8Array {
-  const netscapeIdentifier = [
-    0x4e, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2e, 0x30,
-  ];
-  const identifierOffset = findByteSequence(bytes, netscapeIdentifier);
-  if (
-    identifierOffset >= 3 &&
-    bytes[identifierOffset - 3] === 0x21 &&
-    bytes[identifierOffset - 2] === 0xff &&
-    bytes[identifierOffset - 1] === 0x0b
-  ) {
-    const loopBlockOffset = identifierOffset + netscapeIdentifier.length;
-    if (
-      loopBlockOffset + 4 < bytes.length &&
-      bytes[loopBlockOffset] === 0x03 &&
-      bytes[loopBlockOffset + 1] === 0x01
-    ) {
-      const nextBytes = new Uint8Array(bytes);
-      nextBytes[loopBlockOffset + 2] = 0x00;
-      nextBytes[loopBlockOffset + 3] = 0x00;
-      return nextBytes;
-    }
-    return bytes;
-  }
-
-  const insertOffset = getGifApplicationExtensionInsertOffset(bytes);
-  if (insertOffset === undefined) return bytes;
-
-  const loopExtension = new Uint8Array([
-    0x21, 0xff, 0x0b,
-    ...netscapeIdentifier,
-    0x03, 0x01, 0x00, 0x00, 0x00,
-  ]);
-  const nextBytes = new Uint8Array(bytes.length + loopExtension.length);
-  nextBytes.set(bytes.subarray(0, insertOffset), 0);
-  nextBytes.set(loopExtension, insertOffset);
-  nextBytes.set(bytes.subarray(insertOffset), insertOffset + loopExtension.length);
-  return nextBytes;
-}
-
-function getGifApplicationExtensionInsertOffset(bytes: Uint8Array): number | undefined {
-  if (bytes.length < 13) return undefined;
-  const packedField = bytes[10];
-  let offset = 13;
-  if ((packedField & 0x80) !== 0) {
-    offset += 3 * (1 << ((packedField & 0x07) + 1));
-  }
-  return offset <= bytes.length ? offset : undefined;
-}
-
-function findByteSequence(bytes: Uint8Array, sequence: Array<number>): number {
-  if (sequence.length === 0 || bytes.length < sequence.length) return -1;
-  for (let i = 0; i <= bytes.length - sequence.length; i++) {
-    let matches = true;
-    for (let j = 0; j < sequence.length; j++) {
-      if (bytes[i + j] !== sequence[j]) {
-        matches = false;
-        break;
-      }
-    }
-    if (matches) return i;
-  }
-  return -1;
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = "";
-  const chunkSize = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    const chunk = bytes.subarray(i, i + chunkSize);
-    binary += String.fromCharCode.apply(null, Array.from(chunk));
-  }
-  return btoa(binary);
 }

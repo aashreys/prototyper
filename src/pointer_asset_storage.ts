@@ -14,7 +14,7 @@ export interface CustomPointerAsset extends PointerAssetPayload {
   readonly hotspot: PointerHotspot
 }
 
-export const MAX_CUSTOM_POINTER_ASSETS = 5
+export const MAX_CUSTOM_POINTER_ASSETS = 4
 
 export class PointerAssetStorage {
   static POINTER_ASSETS_KEY = 'com.aashreys.prototyper.pointer.customAssets'
