@@ -14,7 +14,6 @@ import {
   IconSettings24,
   IconAutoLayoutSpacingHorizontal24,
   IconStrokeWeight24,
-  IconTrash24,
   Modal,
   Text,
   Textbox,
@@ -120,7 +119,6 @@ const POINTER_POSITION_OPTIONS: Array<{
   { value: "bottom-right", title: "Bottom right" },
 ];
 
-const POINTER_UPLOAD_NOTE = "PNG & GIF cursors supported";
 const POINTER_ANCHOR_LEFT = POINTER_POSITION_ANCHOR_INSET;
 const POINTER_ANCHOR_CENTER_X = POINTER_POSITION_LAYER_WIDTH / 2;
 const POINTER_ANCHOR_RIGHT =
@@ -133,7 +131,9 @@ const POINTER_ANCHOR_HIT_RADIUS = 6.5;
 const POINTER_PREVIEW_REFERENCE_SIZE = 100;
 const POINTER_PREVIEW_MIN_SIZE = 12;
 const POINTER_PREVIEW_MAX_SIZE = 72;
-const POINTER_UPLOAD_RULES = "PNG or GIF, max 1024 x 1024 px, max 5 MB";
+const POINTER_UPLOAD_RULES = "PNG or GIF, max 1024 x 1024 px, max 1 MB";
+const POINTER_HOTSPOT_HELP =
+  "Move the hotspot below the to the tip of your cursor, or where you want the cursor to click. Prototyper uses this to position the cursor correctly.";
 
 const COMPONENT_HELPER_TEXT =
   "Add properties to change components to their focused state";
@@ -1234,7 +1234,6 @@ export class NavigationFocusOptions extends Component<
             </div>
             {this.renderPointerPositionControls(pointer)}
           </div>
-          <div class={styles.textTertiary}>{POINTER_UPLOAD_NOTE}</div>
         </div>
         {this.renderPointerAdditionalFocusControls(props, pointer)}
         {this.renderPointerDialog(pointer)}
@@ -1300,7 +1299,7 @@ export class NavigationFocusOptions extends Component<
         onEscapeKeyDown={this.onPointerDialogClose}
         open={isOpen}
         position="center"
-        title={mode === "hotspot" ? "Set cursor hotspot" : "Add cursor"}
+        title={mode === "hotspot" ? "Edit cursor" : "Add cursor"}
       >
         <div class={styles.pointerDialog}>
           {mode === "upload" && this.renderPointerUploadDialog()}
@@ -1366,6 +1365,9 @@ export class NavigationFocusOptions extends Component<
     const imageSrc = asset ? this.getCustomPointerDataUrl(asset) : this.getPointerPreviewSource(pointer);
     return (
       <div class={styles.pointerDialogContent}>
+        <Text class={styles.pointerHotspotHelp}>
+          {POINTER_HOTSPOT_HELP}
+        </Text>
         <div
           class={styles.pointerHotspotEditor}
           onPointerDown={this.onPointerDialogHotspotInput}
@@ -1391,10 +1393,10 @@ export class NavigationFocusOptions extends Component<
             <Button
               danger
               disabled={this.state.pointerDialogSaving}
+              fullWidth
               onClick={this.onPointerDialogDelete}
-              secondary
             >
-              <IconTrash24 />
+              Delete
             </Button>
           )}
           <Button
@@ -1758,7 +1760,11 @@ interface FocusNumberInputProps {
 }
 
 function pointerAssetToDataUrl(asset: PointerAssetPayload): string {
-  return `data:${asset.metadata.mimeType};base64,${bytesToBase64(asset.bytes)}`;
+  const bytes =
+    asset.metadata.mimeType === "image/gif"
+      ? getLoopingGifBytes(asset.bytes)
+      : asset.bytes;
+  return `data:${asset.metadata.mimeType};base64,${bytesToBase64(bytes)}`;
 }
 
 function pointerAssetsToDataUrls(assets: Array<CustomPointerAsset>): Record<string, string> {
@@ -1767,6 +1773,71 @@ function pointerAssetsToDataUrls(assets: Array<CustomPointerAsset>): Record<stri
     dataUrls[asset.id] = pointerAssetToDataUrl(asset);
   }
   return dataUrls;
+}
+
+function getLoopingGifBytes(bytes: Uint8Array): Uint8Array {
+  const netscapeIdentifier = [
+    0x4e, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2e, 0x30,
+  ];
+  const identifierOffset = findByteSequence(bytes, netscapeIdentifier);
+  if (
+    identifierOffset >= 3 &&
+    bytes[identifierOffset - 3] === 0x21 &&
+    bytes[identifierOffset - 2] === 0xff &&
+    bytes[identifierOffset - 1] === 0x0b
+  ) {
+    const loopBlockOffset = identifierOffset + netscapeIdentifier.length;
+    if (
+      loopBlockOffset + 4 < bytes.length &&
+      bytes[loopBlockOffset] === 0x03 &&
+      bytes[loopBlockOffset + 1] === 0x01
+    ) {
+      const nextBytes = new Uint8Array(bytes);
+      nextBytes[loopBlockOffset + 2] = 0x00;
+      nextBytes[loopBlockOffset + 3] = 0x00;
+      return nextBytes;
+    }
+    return bytes;
+  }
+
+  const insertOffset = getGifApplicationExtensionInsertOffset(bytes);
+  if (insertOffset === undefined) return bytes;
+
+  const loopExtension = new Uint8Array([
+    0x21, 0xff, 0x0b,
+    ...netscapeIdentifier,
+    0x03, 0x01, 0x00, 0x00, 0x00,
+  ]);
+  const nextBytes = new Uint8Array(bytes.length + loopExtension.length);
+  nextBytes.set(bytes.subarray(0, insertOffset), 0);
+  nextBytes.set(loopExtension, insertOffset);
+  nextBytes.set(bytes.subarray(insertOffset), insertOffset + loopExtension.length);
+  return nextBytes;
+}
+
+function getGifApplicationExtensionInsertOffset(bytes: Uint8Array): number | undefined {
+  if (bytes.length < 13) return undefined;
+  const packedField = bytes[10];
+  let offset = 13;
+  if ((packedField & 0x80) !== 0) {
+    offset += 3 * (1 << ((packedField & 0x07) + 1));
+  }
+  return offset <= bytes.length ? offset : undefined;
+}
+
+function findByteSequence(bytes: Uint8Array, sequence: Array<number>): number {
+  if (sequence.length === 0 || bytes.length < sequence.length) return -1;
+  for (let i = 0; i <= bytes.length - sequence.length; i++) {
+    let matches = true;
+    for (let j = 0; j < sequence.length; j++) {
+      if (bytes[i + j] !== sequence[j]) {
+        matches = false;
+        break;
+      }
+    }
+    if (matches) return i;
+  }
+  return -1;
 }
 
 function bytesToBase64(bytes: Uint8Array): string {

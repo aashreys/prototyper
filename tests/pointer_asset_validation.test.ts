@@ -70,11 +70,11 @@ test('rejects pointer assets larger than 1024 px', () => {
   assert.equal(result.error, 'File too large. Must be 1024 x 1024 px or smaller.')
 })
 
-test('rejects pointer assets larger than 5 MB', () => {
+test('rejects pointer assets larger than 1 MB', () => {
   const result = createPointerAssetPayload(
     { name: 'pointer.gif', type: 'image/gif', size: POINTER_MAX_FILE_BYTES + 1 },
     createGif(128, 128)
   )
 
-  assert.equal(result.error, 'File too large. Must be 5 MB or smaller.')
+  assert.equal(result.error, 'File too large. Must be 1 MB or smaller.')
 })

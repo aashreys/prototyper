@@ -8,7 +8,7 @@ export interface PointerPresetAsset {
 export type PointerAssetMimeType = 'image/png' | 'image/gif'
 
 export const POINTER_MAX_DIMENSION = 1024
-export const POINTER_MAX_FILE_BYTES = 5 * 1024 * 1024
+export const POINTER_MAX_FILE_BYTES = 1 * 1024 * 1024
 
 export const POINTER_PRESETS: ReadonlyArray<PointerPresetAsset> = [
   {

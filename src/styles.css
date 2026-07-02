@@ -535,7 +535,7 @@
     overflow: hidden;
     position: relative;
     touch-action: none;
-    width: 156px;
+    width: 100%;
 }
 
 .pointerHotspotImage {
@@ -556,11 +556,22 @@
     width: 12px;
 }
 
+.pointerHotspotHelp {
+    color: var(--figma-color-text-secondary);
+    font-size: 11px;
+    line-height: 16px;
+}
+
 .pointerDialogActions {
     align-items: center;
     display: flex;
     gap: 8px;
     width: 100%;
+}
+
+.pointerDialogActions > * {
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .componentMappingHeader {

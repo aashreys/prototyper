@@ -45,6 +45,7 @@ declare const styles: {
   readonly "pointerDropzoneText": string;
   readonly "pointerDropzoneTitle": string;
   readonly "pointerHotspotEditor": string;
+  readonly "pointerHotspotHelp": string;
   readonly "pointerHotspotImage": string;
   readonly "pointerHotspotMarker": string;
   readonly "pointerLayout": string;
