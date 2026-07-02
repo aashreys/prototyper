@@ -157,6 +157,26 @@ test('uses custom proportional position and custom size', async () => {
   assert.equal(pointer.y, 70)
 })
 
+test('uses custom proportional position outside the focused layer', async () => {
+  setFigmaForPointer()
+  const frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  const target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
+
+  await FocusPointer.createPointers(
+    [{ topLevelFrame: frame, instance: target }] as any,
+    createFocus({
+      sizeMode: 'custom',
+      customSize: 40,
+      positionPreset: 'custom',
+      position: { x: 1.25, y: -0.25 }
+    })
+  )
+
+  const pointer = frame.children[1]
+  assert.equal(pointer.x, 130)
+  assert.equal(pointer.y, 30)
+})
+
 test('removes old managed pointers before creating new pointers', async () => {
   setFigmaForPointer()
   const frame = createFrame('Frame', { x: 0, y: 0, width: 200, height: 200 })

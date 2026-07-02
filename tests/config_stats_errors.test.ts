@@ -429,7 +429,7 @@ test('preserves and normalizes saved pointer settings', () => {
   assert.equal(config.focus.pointer.sizeMode, 'custom')
   assert.equal(config.focus.pointer.customSize, 1024)
   assert.equal(config.focus.pointer.positionPreset, 'custom')
-  assert.deepEqual(config.focus.pointer.position, { x: 1, y: 1 })
+  assert.deepEqual(config.focus.pointer.position, { x: 1.28125, y: -0.28125 })
   assert.deepEqual(config.focus.pointer.additionalFocus, {
     enabled: true,
     mode: NavigationFocusMode.STROKE

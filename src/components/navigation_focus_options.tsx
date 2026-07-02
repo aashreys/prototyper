@@ -64,8 +64,8 @@ const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.STROKE, text: "Stroke" },
   { value: NavigationFocusMode.FILL, text: "Fill" },
   { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
+  { value: NavigationFocusMode.POINTER, text: "Pointer" },
   { value: NavigationFocusMode.VARIANT, text: "Components" },
-  { value: NavigationFocusMode.POINTER, text: "Hovering pointer" },
 ];
 
 const POINTER_ADDITIONAL_FOCUS_MODE_OPTIONS: Array<DropdownOption> = [
@@ -102,8 +102,10 @@ const POINTER_POSITION_OPTIONS: Array<{
 ];
 
 const POINTER_UPLOAD_NOTE = "PNG & GIF cursors supported";
-const POINTER_PAD_INSET = 12;
-const POINTER_PAD_TRACK_SIZE = 76;
+const POINTER_LAYER_INSET = 18;
+const POINTER_LAYER_SIZE = 64;
+const POINTER_ANCHOR_INSET = 8;
+const POINTER_ANCHOR_TRACK_SIZE = 48;
 const POINTER_ANCHOR_HIT_RADIUS = 6.5;
 
 const COMPONENT_HELPER_TEXT =
@@ -548,24 +550,15 @@ export class NavigationFocusOptions extends Component<
       this.onPointerPositionPresetChange(hoverState.pointerPositionHoverPreset);
       return;
     }
-    const x = clampNumber(
-      (hoverState.pointerPositionHover.x - POINTER_PAD_INSET) /
-        POINTER_PAD_TRACK_SIZE,
-      0,
-      1,
-    );
-    const y = clampNumber(
-      (hoverState.pointerPositionHover.y - POINTER_PAD_INSET) /
-        POINTER_PAD_TRACK_SIZE,
-      0,
-      1,
+    const position = this.getPointerPositionFromPadPixel(
+      hoverState.pointerPositionHover,
     );
     this.updatePointer({
       ...this.getPointer(),
       positionPreset: "custom",
       position: {
-        x: roundNumber(x),
-        y: roundNumber(y),
+        x: roundNumber(position.x),
+        y: roundNumber(position.y),
       },
     });
   }
@@ -1090,7 +1083,7 @@ export class NavigationFocusOptions extends Component<
           }
           value={additionalFocus.enabled}
         >
-          <Text>Show additional focus on hover</Text>
+          <Text>Show additional focus over layer</Text>
         </Checkbox>
         {additionalFocus.enabled && (
           <div class={styles.pointerAdditionalFocusContent}>
@@ -1219,9 +1212,13 @@ export class NavigationFocusOptions extends Component<
         onPointerLeave={this.onPointerPositionLeave}
         onPointerMove={this.onPointerPositionHover}
       >
-        {POINTER_POSITION_OPTIONS.map((option) =>
-          this.renderPointerPositionPresetButton(option, pointer),
-        )}
+        <div class={styles.pointerPositionCenterLineHorizontal} />
+        <div class={styles.pointerPositionCenterLineVertical} />
+        <div class={styles.pointerPositionLayer}>
+          {POINTER_POSITION_OPTIONS.map((option) =>
+            this.renderPointerPositionPresetButton(option, pointer),
+          )}
+        </div>
         {this.state.pointerPositionIsHovering &&
           this.state.pointerPositionHover &&
           !this.state.pointerPositionHoverPreset && (
@@ -1235,20 +1232,22 @@ export class NavigationFocusOptions extends Component<
         {this.state.pointerPositionIsHovering &&
           this.state.pointerPositionHoverPreset &&
           this.state.pointerPositionHoverPreset !== pointer.positionPreset && (
-          <img
-            alt=""
-            class={styles.pointerPositionHoverPreview}
-            src={previewSrc}
-            style={this.getPointerPadStyle(
-              POINTER_POSITION_PRESETS[this.state.pointerPositionHoverPreset],
-            )}
-          />
+            <img
+              alt=""
+              class={styles.pointerPositionHoverPreview}
+              src={previewSrc}
+              style={this.getPointerPadPixelStyle(
+                this.getPointerAnchorPixelPosition(
+                  this.state.pointerPositionHoverPreset,
+                ),
+              )}
+            />
           )}
         <img
           alt="Pointer position"
           class={styles.pointerPositionPreview}
           src={previewSrc}
-          style={this.getPointerPadStyle(position)}
+          style={this.getPointerPositionPreviewStyle(pointer, position)}
         />
       </div>
     );
@@ -1316,10 +1315,32 @@ export class NavigationFocusOptions extends Component<
     return `left: ${position.x}px; top: ${position.y}px;`;
   }
 
+  getPointerPositionPreviewStyle(
+    pointer: PointerFocusConfig,
+    position: { readonly x: number; readonly y: number },
+  ): string {
+    if (pointer.positionPreset !== "custom") {
+      return this.getPointerPadPixelStyle(
+        this.getPointerAnchorPixelPosition(pointer.positionPreset),
+      );
+    }
+    return this.getPointerPadStyle(position);
+  }
+
   getPointerAnchorPixelPosition(
     positionPreset: Exclude<PointerPositionPreset, "custom">,
   ): { readonly x: number; readonly y: number } {
-    return this.getPointerPadPixelPosition(POINTER_POSITION_PRESETS[positionPreset]);
+    const position = POINTER_POSITION_PRESETS[positionPreset];
+    return {
+      x:
+        POINTER_LAYER_INSET +
+        POINTER_ANCHOR_INSET +
+        position.x * POINTER_ANCHOR_TRACK_SIZE,
+      y:
+        POINTER_LAYER_INSET +
+        POINTER_ANCHOR_INSET +
+        position.y * POINTER_ANCHOR_TRACK_SIZE,
+    };
   }
 
   getPointerPadPixelPosition(position: {
@@ -1327,8 +1348,18 @@ export class NavigationFocusOptions extends Component<
     readonly y: number;
   }): { readonly x: number; readonly y: number } {
     return {
-      x: POINTER_PAD_INSET + position.x * POINTER_PAD_TRACK_SIZE,
-      y: POINTER_PAD_INSET + position.y * POINTER_PAD_TRACK_SIZE,
+      x: POINTER_LAYER_INSET + position.x * POINTER_LAYER_SIZE,
+      y: POINTER_LAYER_INSET + position.y * POINTER_LAYER_SIZE,
+    };
+  }
+
+  getPointerPositionFromPadPixel(position: {
+    readonly x: number;
+    readonly y: number;
+  }): { readonly x: number; readonly y: number } {
+    return {
+      x: (position.x - POINTER_LAYER_INSET) / POINTER_LAYER_SIZE,
+      y: (position.y - POINTER_LAYER_INSET) / POINTER_LAYER_SIZE,
     };
   }
 

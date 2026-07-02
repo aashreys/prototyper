@@ -40,8 +40,11 @@ declare const styles: {
   readonly "pointerLayout": string;
   readonly "pointerLeftColumn": string;
   readonly "pointerPanel": string;
+  readonly "pointerPositionCenterLineHorizontal": string;
+  readonly "pointerPositionCenterLineVertical": string;
   readonly "pointerPositionDot": string;
   readonly "pointerPositionHoverPreview": string;
+  readonly "pointerPositionLayer": string;
   readonly "pointerPositionPad": string;
   readonly "pointerPositionPreset": string;
   readonly "pointerPositionPresetBottom": string;

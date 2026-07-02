@@ -385,6 +385,54 @@
     width: 100px;
 }
 
+.pointerPositionLayer {
+    background: var(--figma-color-bg-tertiary);
+    border: 1px solid var(--figma-color-border-strong);
+    border-radius: 4px;
+    height: 64px;
+    left: 18px;
+    position: absolute;
+    top: 18px;
+    width: 64px;
+    z-index: 2;
+}
+
+.pointerPositionCenterLineHorizontal {
+    background: linear-gradient(
+        to right,
+        var(--figma-color-border) 0,
+        var(--figma-color-border) 10px,
+        transparent 10px,
+        transparent 74px,
+        var(--figma-color-border) 74px,
+        var(--figma-color-border) 100%
+    );
+    height: 1px;
+    left: 8px;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    z-index: 1;
+}
+
+.pointerPositionCenterLineVertical {
+    background: linear-gradient(
+        to bottom,
+        var(--figma-color-border) 0,
+        var(--figma-color-border) 10px,
+        transparent 10px,
+        transparent 74px,
+        var(--figma-color-border) 74px,
+        var(--figma-color-border) 100%
+    );
+    bottom: 8px;
+    left: 50%;
+    position: absolute;
+    top: 8px;
+    width: 1px;
+    z-index: 1;
+}
+
 .pointerPositionPreset {
     align-items: center;
     background: transparent;
@@ -412,48 +460,48 @@
 }
 
 .pointerPositionPresetCenter {
-    left: 49.5px;
-    top: 50.5px;
+    left: 32px;
+    top: 32px;
 }
 
 .pointerPositionPresetTopLeft {
-    left: 13.5px;
-    top: 13.5px;
+    left: 8px;
+    top: 8px;
 }
 
 .pointerPositionPresetTop {
-    left: 49.5px;
-    top: 13.5px;
+    left: 32px;
+    top: 8px;
 }
 
 .pointerPositionPresetTopRight {
-    left: 86.5px;
-    top: 13.5px;
+    left: 56px;
+    top: 8px;
 }
 
 .pointerPositionPresetLeft {
-    left: 13.5px;
-    top: 50.5px;
+    left: 8px;
+    top: 32px;
 }
 
 .pointerPositionPresetRight {
-    left: 86.5px;
-    top: 50.5px;
+    left: 56px;
+    top: 32px;
 }
 
 .pointerPositionPresetBottomLeft {
-    left: 13.5px;
-    top: 86.5px;
+    left: 8px;
+    top: 56px;
 }
 
 .pointerPositionPresetBottom {
-    left: 49.5px;
-    top: 86.5px;
+    left: 32px;
+    top: 56px;
 }
 
 .pointerPositionPresetBottomRight {
-    left: 86.5px;
-    top: 86.5px;
+    left: 56px;
+    top: 56px;
 }
 
 .pointerPositionPreview {
@@ -463,7 +511,7 @@
     position: absolute;
     transform: translate(-50%, -50%);
     width: 20px;
-    z-index: 2;
+    z-index: 4;
 }
 
 .pointerPositionHoverPreview {
@@ -474,7 +522,7 @@
     position: absolute;
     transform: translate(-50%, -50%);
     width: 20px;
-    z-index: 3;
+    z-index: 5;
 }
 
 .componentMappingHeader {

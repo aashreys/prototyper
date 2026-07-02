@@ -2,6 +2,9 @@ import { ComponentFocusMapping, ComponentFocusMappingType, SwapVariant } from ".
 import { POINTER_PRESETS } from "./pointer_assets";
 export type { ComponentFocusMapping, ComponentFocusMappingType } from "./swap_variant";
 
+const POINTER_POSITION_MIN = -0.28125
+const POINTER_POSITION_MAX = 1.28125
+
 export enum NavigationFocusMode {
   VARIANT = 'variant',
   STROKE = 'stroke',
@@ -417,14 +420,19 @@ function normalizePointerAdditionalFocusMode(value, fallback: PointerAdditionalF
 
 function normalizePointerPosition(value): PointerPosition {
   return {
-    x: normalizeNumber(value?.x, DEFAULT_POINTER_FOCUS.position.x, 1),
-    y: normalizeNumber(value?.y, DEFAULT_POINTER_FOCUS.position.y, 1)
+    x: normalizeRangeNumber(value?.x, DEFAULT_POINTER_FOCUS.position.x, POINTER_POSITION_MIN, POINTER_POSITION_MAX),
+    y: normalizeRangeNumber(value?.y, DEFAULT_POINTER_FOCUS.position.y, POINTER_POSITION_MIN, POINTER_POSITION_MAX)
   }
 }
 
 function normalizeNumber(value, fallback: number, maximum?: number): number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return fallback
   return typeof maximum === 'number' ? Math.min(value, maximum) : value
+}
+
+function normalizeRangeNumber(value, fallback: number, minimum: number, maximum: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
+  return Math.min(Math.max(value, minimum), maximum)
 }
 
 function normalizeColor(value, fallback: string): string {
