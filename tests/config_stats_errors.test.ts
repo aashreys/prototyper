@@ -67,6 +67,10 @@ test('defaults new configs to stroke focus', () => {
     presetId: 'arrow',
     sizeMode: '48',
     customSize: 48,
+    hotspot: {
+      x: 0.21,
+      y: 0.13
+    },
     positionPreset: 'bottom-right',
     position: {
       x: 1,
@@ -428,6 +432,7 @@ test('preserves and normalizes saved pointer settings', () => {
   assert.equal(config.focus.pointer.presetId, 'arrow')
   assert.equal(config.focus.pointer.sizeMode, 'custom')
   assert.equal(config.focus.pointer.customSize, 1024)
+  assert.deepEqual(config.focus.pointer.hotspot, { x: 0.21, y: 0.13 })
   assert.equal(config.focus.pointer.positionPreset, 'custom')
   assert.equal(config.focus.pointer.position.x, 86 / 72)
   assert.equal(config.focus.pointer.position.y, -14 / 72)

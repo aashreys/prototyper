@@ -28,6 +28,7 @@ import {
   DEFAULT_VARIANT_FOCUS,
   FillFocusConfig,
   getComponentFocusMappings,
+  getPointerHotspot,
   getPointerPosition,
   getPointerSize,
   NavigationFocusConfig,
@@ -107,6 +108,9 @@ const POINTER_LAYER_SIZE = 72;
 const POINTER_ANCHOR_INSET = 8;
 const POINTER_ANCHOR_TRACK_SIZE = 56;
 const POINTER_ANCHOR_HIT_RADIUS = 6.5;
+const POINTER_PREVIEW_REFERENCE_SIZE = 100;
+const POINTER_PREVIEW_MIN_SIZE = 12;
+const POINTER_PREVIEW_MAX_SIZE = 72;
 
 const COMPONENT_HELPER_TEXT =
   "Add properties to change components to their focused state";
@@ -1226,7 +1230,10 @@ export class NavigationFocusOptions extends Component<
               alt=""
               class={styles.pointerPositionHoverPreview}
               src={previewSrc}
-              style={this.getPointerPadPixelStyle(this.state.pointerPositionHover)}
+              style={this.getPointerPreviewImageStyle(
+                pointer,
+                this.state.pointerPositionHover,
+              )}
             />
         )}
         {this.state.pointerPositionIsHovering &&
@@ -1236,7 +1243,8 @@ export class NavigationFocusOptions extends Component<
               alt=""
               class={styles.pointerPositionHoverPreview}
               src={previewSrc}
-              style={this.getPointerPadPixelStyle(
+              style={this.getPointerPreviewImageStyle(
+                pointer,
                 this.getPointerAnchorPixelPosition(
                   this.state.pointerPositionHoverPreset,
                 ),
@@ -1306,11 +1314,6 @@ export class NavigationFocusOptions extends Component<
     }`;
   }
 
-  getPointerPadStyle(position: { readonly x: number; readonly y: number }): string {
-    const pixelPosition = this.getPointerPadPixelPosition(position);
-    return this.getPointerPadPixelStyle(pixelPosition);
-  }
-
   getPointerPadPixelStyle(position: { readonly x: number; readonly y: number }): string {
     return `left: ${position.x}px; top: ${position.y}px;`;
   }
@@ -1320,11 +1323,38 @@ export class NavigationFocusOptions extends Component<
     position: { readonly x: number; readonly y: number },
   ): string {
     if (pointer.positionPreset !== "custom") {
-      return this.getPointerPadPixelStyle(
+      return this.getPointerPreviewImageStyle(
+        pointer,
         this.getPointerAnchorPixelPosition(pointer.positionPreset),
       );
     }
-    return this.getPointerPadStyle(position);
+    return this.getPointerPreviewImageStyle(
+      pointer,
+      this.getPointerPadPixelPosition(position),
+    );
+  }
+
+  getPointerPreviewImageStyle(
+    pointer: PointerFocusConfig,
+    position: { readonly x: number; readonly y: number },
+  ): string {
+    const hotspot = getPointerHotspot(pointer);
+    const previewSize = this.getPointerPreviewSize(pointer);
+    return [
+      this.getPointerPadPixelStyle(position),
+      `height: ${previewSize}px`,
+      `transform: translate(${-hotspot.x * 100}%, ${-hotspot.y * 100}%)`,
+      `width: ${previewSize}px`,
+    ].join("; ");
+  }
+
+  getPointerPreviewSize(pointer: PointerFocusConfig): number {
+    return clampNumber(
+      (getPointerSize(pointer) / POINTER_PREVIEW_REFERENCE_SIZE) *
+        POINTER_LAYER_SIZE,
+      POINTER_PREVIEW_MIN_SIZE,
+      POINTER_PREVIEW_MAX_SIZE,
+    );
   }
 
   getPointerAnchorPixelPosition(

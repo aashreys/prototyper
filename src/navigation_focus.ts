@@ -72,6 +72,11 @@ export interface PointerPosition {
   readonly y: number
 }
 
+export interface PointerHotspot {
+  readonly x: number
+  readonly y: number
+}
+
 export interface PointerAdditionalFocusConfig {
   readonly enabled: boolean
   readonly mode: PointerAdditionalFocusMode
@@ -83,6 +88,7 @@ export interface PointerFocusConfig {
   readonly presetId: string
   readonly sizeMode: PointerSizeMode
   readonly customSize: number
+  readonly hotspot: PointerHotspot
   readonly positionPreset: PointerPositionPreset
   readonly position: PointerPosition
   readonly additionalFocus: PointerAdditionalFocusConfig
@@ -142,12 +148,18 @@ export const DEFAULT_SCALE_SHADOW_FOCUS: ScaleShadowFocusConfig = {
   cornerRadius: 12
 }
 
+export const DEFAULT_POINTER_HOTSPOT: PointerHotspot = {
+  x: 0.21,
+  y: 0.13
+}
+
 export const DEFAULT_POINTER_FOCUS: PointerFocusConfig = {
   enabled: false,
   assetSource: 'preset',
   presetId: 'arrow',
   sizeMode: '48',
   customSize: 48,
+  hotspot: { ...DEFAULT_POINTER_HOTSPOT },
   positionPreset: 'bottom-right',
   position: {
     x: 1,
@@ -184,6 +196,7 @@ export function getDefaultNavigationFocusConfig(variant: SwapVariant = DEFAULT_V
     scaleShadow: { ...DEFAULT_SCALE_SHADOW_FOCUS },
     pointer: {
       ...DEFAULT_POINTER_FOCUS,
+      hotspot: { ...DEFAULT_POINTER_FOCUS.hotspot },
       position: { ...DEFAULT_POINTER_FOCUS.position },
       additionalFocus: { ...DEFAULT_POINTER_FOCUS.additionalFocus }
     }
@@ -244,6 +257,10 @@ export function getPointerPosition(pointer: PointerFocusConfig): PointerPosition
     return POINTER_POSITION_PRESETS[pointer.positionPreset]
   }
   return normalizePointerPosition(pointer.position)
+}
+
+export function getPointerHotspot(pointer: PointerFocusConfig): PointerHotspot {
+  return normalizePointerHotspot(pointer.hotspot)
 }
 
 export function isVariantFocusConfigured(variant?: Partial<SwapVariant>): boolean {
@@ -369,6 +386,7 @@ function normalizePointerFocus(value): PointerFocusConfig {
     presetId: normalizePointerPresetId(value?.presetId, defaultPointer.presetId),
     sizeMode: normalizePointerSizeMode(value?.sizeMode, defaultPointer.sizeMode),
     customSize: normalizeNumber(value?.customSize, defaultPointer.customSize, 1024),
+    hotspot: normalizePointerHotspot(value?.hotspot),
     positionPreset: normalizePointerPositionPreset(value?.positionPreset, defaultPointer.positionPreset),
     position: normalizePointerPosition(value?.position),
     additionalFocus: normalizePointerAdditionalFocus(value?.additionalFocus)
@@ -422,6 +440,13 @@ function normalizePointerPosition(value): PointerPosition {
   return {
     x: normalizeRangeNumber(value?.x, DEFAULT_POINTER_FOCUS.position.x, POINTER_POSITION_MIN, POINTER_POSITION_MAX),
     y: normalizeRangeNumber(value?.y, DEFAULT_POINTER_FOCUS.position.y, POINTER_POSITION_MIN, POINTER_POSITION_MAX)
+  }
+}
+
+function normalizePointerHotspot(value): PointerHotspot {
+  return {
+    x: normalizeRangeNumber(value?.x, DEFAULT_POINTER_HOTSPOT.x, 0, 1),
+    y: normalizeRangeNumber(value?.y, DEFAULT_POINTER_HOTSPOT.y, 0, 1)
   }
 }
 

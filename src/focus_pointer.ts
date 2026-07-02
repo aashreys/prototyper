@@ -1,6 +1,7 @@
 import { getPointerPresetAsset, pointerAssetBase64ToBytes } from "./pointer_assets";
 import { PointerAssetStorage } from "./pointer_asset_storage";
 import {
+  getPointerHotspot,
   getPointerPosition,
   getPointerSize,
   NavigationFocusConfig,
@@ -54,16 +55,17 @@ export class FocusPointer {
   ): RectangleNode {
     const size = getPointerSize(pointer)
     const position = getPointerPosition(pointer)
+    const hotspot = getPointerHotspot(pointer)
     const targetBounds = Utils.getAbsoluteBounds(target)
     const frameBounds = Utils.getAbsoluteBounds(topLevelFrame)
-    const centerX = targetBounds.x - frameBounds.x + targetBounds.width * position.x
-    const centerY = targetBounds.y - frameBounds.y + targetBounds.height * position.y
+    const pointX = targetBounds.x - frameBounds.x + targetBounds.width * position.x
+    const pointY = targetBounds.y - frameBounds.y + targetBounds.height * position.y
     const node = figma.createRectangle()
     node.name = POINTER_NAME
     node.setPluginData(POINTER_PLUGIN_DATA_KEY, "true")
     node.resize(size, size)
-    node.x = centerX - size / 2
-    node.y = centerY - size / 2
+    node.x = pointX - size * hotspot.x
+    node.y = pointY - size * hotspot.y
     node.fills = [
       {
         type: 'IMAGE',
