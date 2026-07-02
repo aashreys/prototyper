@@ -409,7 +409,7 @@
 }
 
 .pointerPositionCenterLineHorizontal {
-    background: var(--figma-color-border);
+    background: var(--figma-color-border-strong);
     height: 1px;
     left: 8px;
     position: absolute;
@@ -419,7 +419,7 @@
 }
 
 .pointerPositionCenterLineVertical {
-    background: var(--figma-color-border);
+    background: var(--figma-color-border-strong);
     bottom: 8px;
     left: 50%;
     position: absolute;
