@@ -148,8 +148,8 @@ export const DEFAULT_SCALE_SHADOW_FOCUS: ScaleShadowFocusConfig = {
 }
 
 export const DEFAULT_POINTER_HOTSPOT: PointerHotspot = {
-  x: 0.204,
-  y: 0.1
+  x: 0.302,
+  y: 0.268
 }
 
 export const DEFAULT_POINTER_FOCUS: PointerFocusConfig = {
