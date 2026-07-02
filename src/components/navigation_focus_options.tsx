@@ -1514,8 +1514,7 @@ export class NavigationFocusOptions extends Component<
           this.renderPointerPositionPresetButton(option, pointer),
         )}
         {this.state.pointerPositionIsHovering &&
-          this.state.pointerPositionHover &&
-          !this.state.pointerPositionHoverPreset && (
+          this.state.pointerPositionHover && (
             <img
               alt=""
               class={styles.pointerPositionHoverPreview}
