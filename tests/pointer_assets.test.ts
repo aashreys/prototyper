@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  getPointerPresetBytes,
   getPointerPresetDataUrl,
   getPointerPresetHotspot,
   POINTER_PRESETS
@@ -14,7 +15,9 @@ test('includes animated hand cursor as the second pointer preset', () => {
   const dataUrl = getPointerPresetDataUrl('hand')
   assert.equal(dataUrl.startsWith('data:image/gif;base64,'), true)
   const bytes = Buffer.from(dataUrl.split(',')[1], 'base64')
+  assert.equal(bytes.subarray(0, 6).toString('ascii'), 'GIF89a')
   assert.equal(bytes.includes(Buffer.from('NETSCAPE2.0')), true)
+  assert.equal(Buffer.from(getPointerPresetBytes('hand')).includes(Buffer.from('NETSCAPE2.0')), true)
 })
 
 test('limits presets and custom cursors to six cursor slots', () => {

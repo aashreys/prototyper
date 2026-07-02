@@ -5,9 +5,10 @@ import { createPointerAssetPayload } from '../src/pointer_asset_validation'
 
 function createGif(width: number, height: number): Uint8Array {
   return new Uint8Array([
-    0x47, 0x49, 0x46, 0x38, 0x39, 0x61,
+    0x47, 0x49, 0x46, 0x38, 0x37, 0x61,
     width & 0xff, (width >> 8) & 0xff,
-    height & 0xff, (height >> 8) & 0xff
+    height & 0xff, (height >> 8) & 0xff,
+    0x00, 0x00, 0x00
   ])
 }
 
@@ -50,6 +51,8 @@ test('accepts GIF pointer assets', () => {
   assert.equal(result.payload?.metadata.mimeType, 'image/gif')
   assert.equal(result.payload?.metadata.width, 256)
   assert.equal(result.payload?.metadata.height, 128)
+  assert.equal(Buffer.from(result.payload?.bytes || []).subarray(0, 6).toString('ascii'), 'GIF89a')
+  assert.equal(Buffer.from(result.payload?.bytes || []).includes(Buffer.from('NETSCAPE2.0')), true)
 })
 
 test('rejects unsupported pointer assets', () => {

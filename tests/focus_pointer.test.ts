@@ -9,11 +9,14 @@ function assertApprox(actual: number, expected: number) {
   assert.equal(Math.round(actual * 100) / 100, expected)
 }
 
-function setFigmaForPointer(stored = new Map<string, unknown>()) {
+function setFigmaForPointer(stored = new Map<string, unknown>(), createdImageBytes: Array<Uint8Array> = []) {
   ;(globalThis as any).figma = {
-    createImage: (bytes: Uint8Array) => ({
-      hash: `hash-${bytes.byteLength}`
-    }),
+    createImage: (bytes: Uint8Array) => {
+      createdImageBytes.push(bytes)
+      return {
+        hash: `hash-${bytes.byteLength}`
+      }
+    },
     createRectangle: () => createRectangle(),
     clientStorage: {
       getAsync: async (key: string) => stored.get(key),
@@ -31,7 +34,8 @@ function createGif(width: number, height: number): Uint8Array {
   return new Uint8Array([
     0x47, 0x49, 0x46, 0x38, 0x39, 0x61,
     width & 0xff, (width >> 8) & 0xff,
-    height & 0xff, (height >> 8) & 0xff
+    height & 0xff, (height >> 8) & 0xff,
+    0x00, 0x00, 0x00
   ])
 }
 
@@ -200,6 +204,22 @@ test('uses custom proportional position outside the focused layer', async () => 
   const pointer = frame.children[1]
   assertApprox(pointer.x, 129.84)
   assertApprox(pointer.y, 52)
+})
+
+test('uses infinite loop bytes for animated pointer presets', async () => {
+  const createdImageBytes: Array<Uint8Array> = []
+  setFigmaForPointer(new Map(), createdImageBytes)
+  const frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
+  const target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
+
+  await FocusPointer.createPointers(
+    [{ topLevelFrame: frame, instance: target }] as any,
+    createFocus({ presetId: 'hand' })
+  )
+
+  const bytes = Buffer.from(createdImageBytes[0])
+  assert.equal(bytes.subarray(0, 6).toString('ascii'), 'GIF89a')
+  assert.equal(bytes.includes(Buffer.from('NETSCAPE2.0')), true)
 })
 
 test('uses selected custom pointer asset hotspot', async () => {

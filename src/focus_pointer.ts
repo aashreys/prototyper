@@ -1,7 +1,7 @@
 import {
   getPointerPresetAsset,
+  getPointerPresetBytes,
   getPointerPresetHotspot,
-  pointerAssetBase64ToBytes
 } from "./pointer_assets";
 import { CustomPointerAsset, PointerAssetStorage } from "./pointer_asset_storage";
 import {
@@ -93,7 +93,7 @@ export class FocusPointer {
   }> {
     if (pointer.assetSource !== 'custom') {
       return {
-        bytes: pointerAssetBase64ToBytes(getPointerPresetAsset(pointer.presetId).base64),
+        bytes: getPointerPresetBytes(pointer.presetId),
         hotspot: getPointerPresetHotspot(pointer.presetId)
       }
     }
@@ -102,7 +102,7 @@ export class FocusPointer {
     if (!asset) {
       const fallbackAsset = getPointerPresetAsset(DEFAULT_POINTER_FOCUS.presetId)
       return {
-        bytes: pointerAssetBase64ToBytes(fallbackAsset.base64),
+        bytes: getPointerPresetBytes(fallbackAsset.id),
         hotspot: getPointerPresetHotspot(DEFAULT_POINTER_FOCUS.presetId)
       }
     }

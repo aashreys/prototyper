@@ -42,8 +42,14 @@ export function getPointerPresetDataUrl(id: string): string {
   if (asset.mimeType !== 'image/gif') return `data:${asset.mimeType};base64,${asset.base64}`
 
   return `data:${asset.mimeType};base64,${pointerAssetBytesToBase64(
-    getLoopingGifBytes(pointerAssetBase64ToBytes(asset.base64))
+    getPointerPresetBytes(id)
   )}`
+}
+
+export function getPointerPresetBytes(id: string): Uint8Array {
+  const asset = getPointerPresetAsset(id)
+  const bytes = pointerAssetBase64ToBytes(asset.base64)
+  return asset.mimeType === 'image/gif' ? getLoopingGifBytes(bytes) : bytes
 }
 
 export function getPointerPresetHotspot(id: string): PointerPresetHotspot {
@@ -80,42 +86,56 @@ export function pointerAssetBytesToBase64(bytes: Uint8Array): string {
 }
 
 export function getLoopingGifBytes(bytes: Uint8Array): Uint8Array {
+  const gifBytes = getGif89aBytes(bytes)
   const netscapeIdentifier = [
     0x4e, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2e, 0x30
   ]
-  const identifierOffset = findByteSequence(bytes, netscapeIdentifier)
+  const identifierOffset = findByteSequence(gifBytes, netscapeIdentifier)
   if (
     identifierOffset >= 3 &&
-    bytes[identifierOffset - 3] === 0x21 &&
-    bytes[identifierOffset - 2] === 0xff &&
-    bytes[identifierOffset - 1] === 0x0b
+    gifBytes[identifierOffset - 3] === 0x21 &&
+    gifBytes[identifierOffset - 2] === 0xff &&
+    gifBytes[identifierOffset - 1] === 0x0b
   ) {
     const loopBlockOffset = identifierOffset + netscapeIdentifier.length
     if (
-      loopBlockOffset + 4 < bytes.length &&
-      bytes[loopBlockOffset] === 0x03 &&
-      bytes[loopBlockOffset + 1] === 0x01
+      loopBlockOffset + 4 < gifBytes.length &&
+      gifBytes[loopBlockOffset] === 0x03 &&
+      gifBytes[loopBlockOffset + 1] === 0x01
     ) {
-      const nextBytes = new Uint8Array(bytes)
+      const nextBytes = new Uint8Array(gifBytes)
       nextBytes[loopBlockOffset + 2] = 0x00
       nextBytes[loopBlockOffset + 3] = 0x00
       return nextBytes
     }
-    return bytes
+    return gifBytes
   }
 
-  const insertOffset = getGifApplicationExtensionInsertOffset(bytes)
-  if (insertOffset === undefined) return bytes
+  const insertOffset = getGifApplicationExtensionInsertOffset(gifBytes)
+  if (insertOffset === undefined) return gifBytes
 
   const loopExtension = new Uint8Array([
     0x21, 0xff, 0x0b,
     ...netscapeIdentifier,
     0x03, 0x01, 0x00, 0x00, 0x00
   ])
-  const nextBytes = new Uint8Array(bytes.length + loopExtension.length)
-  nextBytes.set(bytes.subarray(0, insertOffset), 0)
+  const nextBytes = new Uint8Array(gifBytes.length + loopExtension.length)
+  nextBytes.set(gifBytes.subarray(0, insertOffset), 0)
   nextBytes.set(loopExtension, insertOffset)
-  nextBytes.set(bytes.subarray(insertOffset), insertOffset + loopExtension.length)
+  nextBytes.set(gifBytes.subarray(insertOffset), insertOffset + loopExtension.length)
+  return nextBytes
+}
+
+function getGif89aBytes(bytes: Uint8Array): Uint8Array {
+  if (bytes.length < 6) return bytes
+  const header = String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5])
+  if (header !== 'GIF87a' && header !== 'GIF89a') return bytes
+  if (header === 'GIF89a') return bytes
+
+  const nextBytes = new Uint8Array(bytes)
+  nextBytes[3] = 0x38
+  nextBytes[4] = 0x39
+  nextBytes[5] = 0x61
   return nextBytes
 }
 

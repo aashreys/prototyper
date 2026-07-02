@@ -15,7 +15,8 @@ function createGif(width: number, height: number): Uint8Array {
   return new Uint8Array([
     0x47, 0x49, 0x46, 0x38, 0x39, 0x61,
     width & 0xff, (width >> 8) & 0xff,
-    height & 0xff, (height >> 8) & 0xff
+    height & 0xff, (height >> 8) & 0xff,
+    0x00, 0x00, 0x00
   ])
 }
 

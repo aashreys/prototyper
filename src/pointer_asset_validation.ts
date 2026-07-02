@@ -1,4 +1,9 @@
-import { POINTER_MAX_DIMENSION, POINTER_MAX_FILE_BYTES, PointerAssetMimeType } from "./pointer_assets";
+import {
+  getLoopingGifBytes,
+  POINTER_MAX_DIMENSION,
+  POINTER_MAX_FILE_BYTES,
+  PointerAssetMimeType
+} from "./pointer_assets";
 
 export interface PointerAssetMetadata {
   readonly name: string
@@ -45,7 +50,7 @@ export function createPointerAssetPayload(
 
   return {
     payload: {
-      bytes: bytes,
+      bytes: mimeType === 'image/gif' ? getLoopingGifBytes(bytes) : bytes,
       metadata: {
         name: file.name || 'Pointer',
         mimeType: mimeType,
