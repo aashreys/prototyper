@@ -36,7 +36,7 @@ export function createPointerAssetPayload(
 
   const size = typeof file.size === 'number' ? file.size : bytes.byteLength
   if (size > POINTER_MAX_FILE_BYTES) {
-    return { error: 'File too large. Must be 1 MB or smaller.' }
+    return { error: 'File too large. Must be 512 KB or smaller.' }
   }
 
   const dimensions = getPointerAssetDimensions(mimeType, bytes)
@@ -45,7 +45,7 @@ export function createPointerAssetPayload(
   }
 
   if (dimensions.width > POINTER_MAX_DIMENSION || dimensions.height > POINTER_MAX_DIMENSION) {
-    return { error: 'File too large. Must be 1024 x 1024 px or smaller.' }
+    return { error: 'File too large. Must be 512 x 512 px or smaller.' }
   }
 
   return {

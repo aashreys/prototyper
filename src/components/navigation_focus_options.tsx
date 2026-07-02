@@ -133,7 +133,7 @@ const POINTER_ANCHOR_HIT_RADIUS = 6.5;
 const POINTER_PREVIEW_REFERENCE_SIZE = 100;
 const POINTER_PREVIEW_MIN_SIZE = 12;
 const POINTER_PREVIEW_MAX_SIZE = 72;
-const POINTER_UPLOAD_RULES = "PNG or GIF, max 1024 x 1024 px, max 1 MB";
+const POINTER_UPLOAD_RULES = "PNG or GIF, max 512 x 512 px, max 512 KB";
 const POINTER_HOTSPOT_HELP =
   "Move the hotspot below the to the tip of your cursor, or where you want the cursor to click. Prototyper uses this to position the cursor correctly.";
 

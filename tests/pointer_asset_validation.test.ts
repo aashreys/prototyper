@@ -27,17 +27,17 @@ function writeUint32(bytes: Uint8Array, offset: number, value: number) {
   bytes[offset + 3] = value & 0xff
 }
 
-test('accepts PNG pointer assets up to 1024 px', () => {
+test('accepts PNG pointer assets up to 512 px', () => {
   const result = createPointerAssetPayload(
     { name: 'pointer.png', type: 'image/png', size: 24 },
-    createPng(1024, 512),
+    createPng(512, 256),
     123
   )
 
   assert.equal(result.error, undefined)
   assert.equal(result.payload?.metadata.mimeType, 'image/png')
-  assert.equal(result.payload?.metadata.width, 1024)
-  assert.equal(result.payload?.metadata.height, 512)
+  assert.equal(result.payload?.metadata.width, 512)
+  assert.equal(result.payload?.metadata.height, 256)
   assert.equal(result.payload?.metadata.updatedAt, 123)
 })
 
@@ -64,20 +64,20 @@ test('rejects unsupported pointer assets', () => {
   assert.equal(result.error, 'Use a PNG or GIF pointer image.')
 })
 
-test('rejects pointer assets larger than 1024 px', () => {
+test('rejects pointer assets larger than 512 px', () => {
   const result = createPointerAssetPayload(
     { name: 'pointer.png', type: 'image/png', size: 24 },
-    createPng(1025, 1024)
+    createPng(513, 512)
   )
 
-  assert.equal(result.error, 'File too large. Must be 1024 x 1024 px or smaller.')
+  assert.equal(result.error, 'File too large. Must be 512 x 512 px or smaller.')
 })
 
-test('rejects pointer assets larger than 1 MB', () => {
+test('rejects pointer assets larger than 512 KB', () => {
   const result = createPointerAssetPayload(
     { name: 'pointer.gif', type: 'image/gif', size: POINTER_MAX_FILE_BYTES + 1 },
     createGif(128, 128)
   )
 
-  assert.equal(result.error, 'File too large. Must be 1 MB or smaller.')
+  assert.equal(result.error, 'File too large. Must be 512 KB or smaller.')
 })

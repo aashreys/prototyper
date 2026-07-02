@@ -8,6 +8,17 @@ import {
 } from '../src/pointer_assets'
 import { MAX_CUSTOM_POINTER_ASSETS } from '../src/pointer_asset_storage'
 
+test('includes arrow cursor as the first pointer preset', () => {
+  assert.equal(POINTER_PRESETS[0].id, 'arrow')
+  assert.equal(POINTER_PRESETS[0].mimeType, 'image/png')
+  assert.deepEqual(getPointerPresetHotspot('arrow'), { x: 0.204, y: 0.1 })
+  const dataUrl = getPointerPresetDataUrl('arrow')
+  assert.equal(dataUrl.startsWith('data:image/png;base64,'), true)
+  const bytes = Buffer.from(dataUrl.split(',')[1], 'base64')
+  assert.equal(bytes.readUInt32BE(16), 392)
+  assert.equal(bytes.readUInt32BE(20), 401)
+})
+
 test('includes animated hand cursor as the second pointer preset', () => {
   assert.deepEqual(POINTER_PRESETS.map(asset => asset.id), ['arrow', 'hand'])
   assert.equal(POINTER_PRESETS[1].mimeType, 'image/gif')
