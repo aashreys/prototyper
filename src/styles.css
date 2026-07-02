@@ -398,10 +398,11 @@
     background: var(--figma-color-bg-tertiary);
     border: 1px solid var(--figma-color-border-strong);
     border-radius: 4px;
-    height: 64px;
+    box-sizing: border-box;
+    height: 52px;
     left: 18px;
     position: absolute;
-    top: 18px;
+    top: 24px;
     width: 64px;
     z-index: 2;
 }
@@ -428,10 +429,10 @@
     background: linear-gradient(
         to bottom,
         var(--figma-color-border) 0,
-        var(--figma-color-border) 10px,
-        transparent 10px,
-        transparent 74px,
-        var(--figma-color-border) 74px,
+        var(--figma-color-border) 16px,
+        transparent 16px,
+        transparent 68px,
+        var(--figma-color-border) 68px,
         var(--figma-color-border) 100%
     );
     bottom: 8px;
@@ -473,51 +474,6 @@
     background: var(--figma-color-bg-brand);
     height: 7px;
     width: 7px;
-}
-
-.pointerPositionPresetCenter {
-    left: 32px;
-    top: 32px;
-}
-
-.pointerPositionPresetTopLeft {
-    left: 12px;
-    top: 12px;
-}
-
-.pointerPositionPresetTop {
-    left: 32px;
-    top: 12px;
-}
-
-.pointerPositionPresetTopRight {
-    left: 52px;
-    top: 12px;
-}
-
-.pointerPositionPresetLeft {
-    left: 12px;
-    top: 32px;
-}
-
-.pointerPositionPresetRight {
-    left: 52px;
-    top: 32px;
-}
-
-.pointerPositionPresetBottomLeft {
-    left: 12px;
-    top: 52px;
-}
-
-.pointerPositionPresetBottom {
-    left: 32px;
-    top: 52px;
-}
-
-.pointerPositionPresetBottomRight {
-    left: 52px;
-    top: 52px;
 }
 
 .pointerPositionPreview {

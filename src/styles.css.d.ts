@@ -57,17 +57,8 @@ declare const styles: {
   readonly "pointerPositionLayer": string;
   readonly "pointerPositionPad": string;
   readonly "pointerPositionPreset": string;
-  readonly "pointerPositionPresetBottom": string;
-  readonly "pointerPositionPresetBottomLeft": string;
-  readonly "pointerPositionPresetBottomRight": string;
-  readonly "pointerPositionPresetCenter": string;
   readonly "pointerPositionPresetHidden": string;
   readonly "pointerPositionPresetHover": string;
-  readonly "pointerPositionPresetLeft": string;
-  readonly "pointerPositionPresetRight": string;
-  readonly "pointerPositionPresetTop": string;
-  readonly "pointerPositionPresetTopLeft": string;
-  readonly "pointerPositionPresetTopRight": string;
   readonly "pointerPositionPreview": string;
   readonly "pointerSizeControl": string;
   readonly "pointerUploadButton": string;

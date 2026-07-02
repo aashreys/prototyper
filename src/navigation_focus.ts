@@ -2,8 +2,10 @@ import { ComponentFocusMapping, ComponentFocusMappingType, SwapVariant } from ".
 import { POINTER_PRESETS } from "./pointer_assets";
 export type { ComponentFocusMapping, ComponentFocusMappingType } from "./swap_variant";
 
-const POINTER_POSITION_MIN = -18 / 64
-const POINTER_POSITION_MAX = 82 / 64
+const POINTER_POSITION_MIN_X = -18 / 64
+const POINTER_POSITION_MAX_X = 82 / 64
+const POINTER_POSITION_MIN_Y = -24 / 52
+const POINTER_POSITION_MAX_Y = 76 / 52
 
 export enum NavigationFocusMode {
   VARIANT = 'variant',
@@ -445,8 +447,8 @@ function normalizePointerAdditionalFocusMode(value, fallback: PointerAdditionalF
 
 function normalizePointerPosition(value): PointerPosition {
   return {
-    x: normalizeRangeNumber(value?.x, DEFAULT_POINTER_FOCUS.position.x, POINTER_POSITION_MIN, POINTER_POSITION_MAX),
-    y: normalizeRangeNumber(value?.y, DEFAULT_POINTER_FOCUS.position.y, POINTER_POSITION_MIN, POINTER_POSITION_MAX)
+    x: normalizeRangeNumber(value?.x, DEFAULT_POINTER_FOCUS.position.x, POINTER_POSITION_MIN_X, POINTER_POSITION_MAX_X),
+    y: normalizeRangeNumber(value?.y, DEFAULT_POINTER_FOCUS.position.y, POINTER_POSITION_MIN_Y, POINTER_POSITION_MAX_Y)
   }
 }
 

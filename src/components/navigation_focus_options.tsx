@@ -114,10 +114,17 @@ const POINTER_POSITION_OPTIONS: Array<{
 ];
 
 const POINTER_UPLOAD_NOTE = "PNG & GIF cursors supported";
-const POINTER_LAYER_INSET = 18;
-const POINTER_LAYER_SIZE = 64;
+const POINTER_LAYER_INSET_X = 18;
+const POINTER_LAYER_INSET_Y = 24;
+const POINTER_LAYER_WIDTH = 64;
+const POINTER_LAYER_HEIGHT = 52;
 const POINTER_ANCHOR_INSET = 12;
-const POINTER_ANCHOR_TRACK_SIZE = 40;
+const POINTER_ANCHOR_LEFT = POINTER_ANCHOR_INSET;
+const POINTER_ANCHOR_CENTER_X = POINTER_LAYER_WIDTH / 2;
+const POINTER_ANCHOR_RIGHT = POINTER_LAYER_WIDTH - POINTER_ANCHOR_INSET;
+const POINTER_ANCHOR_TOP = POINTER_ANCHOR_INSET;
+const POINTER_ANCHOR_CENTER_Y = POINTER_LAYER_HEIGHT / 2;
+const POINTER_ANCHOR_BOTTOM = POINTER_LAYER_HEIGHT - POINTER_ANCHOR_INSET;
 const POINTER_ANCHOR_HIT_RADIUS = 6.5;
 const POINTER_PREVIEW_REFERENCE_SIZE = 100;
 const POINTER_PREVIEW_MIN_SIZE = 12;
@@ -265,6 +272,17 @@ function clampNumber(value: number, minimum: number, maximum?: number): number {
 
 function roundNumber(value: number): number {
   return Number(value.toFixed(DECIMAL_PRECISION));
+}
+
+function getPointerAnchorCoordinate(
+  position: number,
+  start: number,
+  center: number,
+  end: number,
+): number {
+  if (position === 0) return start;
+  if (position === 1) return end;
+  return center;
 }
 
 export class NavigationFocusOptions extends Component<
@@ -1484,11 +1502,10 @@ export class NavigationFocusOptions extends Component<
       >
         <div class={styles.pointerPositionCenterLineHorizontal} />
         <div class={styles.pointerPositionCenterLineVertical} />
-        <div class={styles.pointerPositionLayer}>
-          {POINTER_POSITION_OPTIONS.map((option) =>
-            this.renderPointerPositionPresetButton(option, pointer),
-          )}
-        </div>
+        <div class={styles.pointerPositionLayer} />
+        {POINTER_POSITION_OPTIONS.map((option) =>
+          this.renderPointerPositionPresetButton(option, pointer),
+        )}
         {this.state.pointerPositionIsHovering &&
           this.state.pointerPositionHover &&
           !this.state.pointerPositionHoverPreset && (
@@ -1527,6 +1544,7 @@ export class NavigationFocusOptions extends Component<
           this.onPointerPositionPresetChange(option.value);
         }}
         onPointerDown={(event) => event.stopPropagation()}
+        style={this.getPointerPositionPresetStyle(option.value)}
         title={option.title}
         type="button"
       >
@@ -1542,27 +1560,16 @@ export class NavigationFocusOptions extends Component<
     const isPlacedPreset =
       pointer.positionPreset !== "custom" && pointer.positionPreset === value;
     const isHoverPreset = this.state.pointerPositionHoverPreset === value;
-    const positionClass =
-      value === "top-left"
-        ? styles.pointerPositionPresetTopLeft
-        : value === "top"
-          ? styles.pointerPositionPresetTop
-          : value === "top-right"
-            ? styles.pointerPositionPresetTopRight
-            : value === "left"
-              ? styles.pointerPositionPresetLeft
-              : value === "center"
-                ? styles.pointerPositionPresetCenter
-                : value === "right"
-                  ? styles.pointerPositionPresetRight
-                  : value === "bottom-left"
-                    ? styles.pointerPositionPresetBottomLeft
-                    : value === "bottom"
-                    ? styles.pointerPositionPresetBottom
-                    : styles.pointerPositionPresetBottomRight;
-    return `${styles.pointerPositionPreset} ${positionClass} ${
+    return `${styles.pointerPositionPreset} ${
       isPlacedPreset ? styles.pointerPositionPresetHidden : ""
     } ${isHoverPreset ? styles.pointerPositionPresetHover : ""}`;
+  }
+
+  getPointerPositionPresetStyle(
+    positionPreset: Exclude<PointerPositionPreset, "custom">,
+  ): string {
+    const position = this.getPointerAnchorPixelPosition(positionPreset);
+    return `left: ${position.x}px; top: ${position.y}px;`;
   }
 
   getPointerPadPixelStyle(position: { readonly x: number; readonly y: number }): string {
@@ -1602,7 +1609,7 @@ export class NavigationFocusOptions extends Component<
   getPointerPreviewSize(pointer: PointerFocusConfig): number {
     return clampNumber(
       (getPointerSize(pointer) / POINTER_PREVIEW_REFERENCE_SIZE) *
-        POINTER_LAYER_SIZE,
+        Math.min(POINTER_LAYER_WIDTH, POINTER_LAYER_HEIGHT),
       POINTER_PREVIEW_MIN_SIZE,
       POINTER_PREVIEW_MAX_SIZE,
     );
@@ -1642,16 +1649,30 @@ export class NavigationFocusOptions extends Component<
   getPointerAnchorPixelPosition(
     positionPreset: Exclude<PointerPositionPreset, "custom">,
   ): { readonly x: number; readonly y: number } {
+    const position = this.getPointerAnchorLayerPosition(positionPreset);
+    return {
+      x: POINTER_LAYER_INSET_X + position.x,
+      y: POINTER_LAYER_INSET_Y + position.y,
+    };
+  }
+
+  getPointerAnchorLayerPosition(
+    positionPreset: Exclude<PointerPositionPreset, "custom">,
+  ): { readonly x: number; readonly y: number } {
     const position = POINTER_POSITION_PRESETS[positionPreset];
     return {
-      x:
-        POINTER_LAYER_INSET +
-        POINTER_ANCHOR_INSET +
-        position.x * POINTER_ANCHOR_TRACK_SIZE,
-      y:
-        POINTER_LAYER_INSET +
-        POINTER_ANCHOR_INSET +
-        position.y * POINTER_ANCHOR_TRACK_SIZE,
+      x: getPointerAnchorCoordinate(
+        position.x,
+        POINTER_ANCHOR_LEFT,
+        POINTER_ANCHOR_CENTER_X,
+        POINTER_ANCHOR_RIGHT,
+      ),
+      y: getPointerAnchorCoordinate(
+        position.y,
+        POINTER_ANCHOR_TOP,
+        POINTER_ANCHOR_CENTER_Y,
+        POINTER_ANCHOR_BOTTOM,
+      ),
     };
   }
 
@@ -1660,8 +1681,8 @@ export class NavigationFocusOptions extends Component<
     readonly y: number;
   }): { readonly x: number; readonly y: number } {
     return {
-      x: POINTER_LAYER_INSET + position.x * POINTER_LAYER_SIZE,
-      y: POINTER_LAYER_INSET + position.y * POINTER_LAYER_SIZE,
+      x: POINTER_LAYER_INSET_X + position.x * POINTER_LAYER_WIDTH,
+      y: POINTER_LAYER_INSET_Y + position.y * POINTER_LAYER_HEIGHT,
     };
   }
 
@@ -1670,8 +1691,8 @@ export class NavigationFocusOptions extends Component<
     readonly y: number;
   }): { readonly x: number; readonly y: number } {
     return {
-      x: (position.x - POINTER_LAYER_INSET) / POINTER_LAYER_SIZE,
-      y: (position.y - POINTER_LAYER_INSET) / POINTER_LAYER_SIZE,
+      x: (position.x - POINTER_LAYER_INSET_X) / POINTER_LAYER_WIDTH,
+      y: (position.y - POINTER_LAYER_INSET_Y) / POINTER_LAYER_HEIGHT,
     };
   }
 
