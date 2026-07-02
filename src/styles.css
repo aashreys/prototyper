@@ -399,24 +399,12 @@
     border: 1px solid var(--figma-color-border-strong);
     border-radius: 4px;
     box-sizing: border-box;
-    height: 52px;
-    left: 18px;
     position: absolute;
-    top: 24px;
-    width: 64px;
     z-index: 2;
 }
 
 .pointerPositionCenterLineHorizontal {
-    background: linear-gradient(
-        to right,
-        var(--figma-color-border) 0,
-        var(--figma-color-border) 10px,
-        transparent 10px,
-        transparent 74px,
-        var(--figma-color-border) 74px,
-        var(--figma-color-border) 100%
-    );
+    background: var(--figma-color-border);
     height: 1px;
     left: 8px;
     position: absolute;
@@ -426,15 +414,7 @@
 }
 
 .pointerPositionCenterLineVertical {
-    background: linear-gradient(
-        to bottom,
-        var(--figma-color-border) 0,
-        var(--figma-color-border) 16px,
-        transparent 16px,
-        transparent 68px,
-        var(--figma-color-border) 68px,
-        var(--figma-color-border) 100%
-    );
+    background: var(--figma-color-border);
     bottom: 8px;
     left: 50%;
     position: absolute;

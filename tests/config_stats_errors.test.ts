@@ -5,6 +5,7 @@ import { Device } from '../src/device'
 import { normalizeErrorMessage } from '../src/errors'
 import { NavScheme, NavigationKeycodes } from '../src/navigation'
 import { getAppliedFocusMode, isVariantFocusMode, NavigationFocusMode } from '../src/navigation_focus'
+import { POINTER_POSITION_BOUNDS } from '../src/pointer_position_geometry'
 import { Stats } from '../src/stats'
 
 function setFigma(figma: unknown) {
@@ -437,8 +438,8 @@ test('preserves and normalizes saved pointer settings', () => {
   assert.equal(config.focus.pointer.customSize, 1024)
   assert.deepEqual(config.focus.pointer.hotspot, { x: 0.21, y: 0.13 })
   assert.equal(config.focus.pointer.positionPreset, 'custom')
-  assert.equal(config.focus.pointer.position.x, 82 / 64)
-  assert.equal(config.focus.pointer.position.y, -24 / 52)
+  assert.equal(config.focus.pointer.position.x, POINTER_POSITION_BOUNDS.maxX)
+  assert.equal(config.focus.pointer.position.y, POINTER_POSITION_BOUNDS.minY)
   assert.deepEqual(config.focus.pointer.additionalFocus, {
     enabled: true,
     mode: NavigationFocusMode.STROKE
