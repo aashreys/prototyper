@@ -5,10 +5,12 @@ import { FocusOverlay } from "../focus_overlay";
 import { FocusPointer } from "../focus_pointer";
 import {
   ComponentFocusMapping,
+  getAppliedFocusMode,
   getComponentFocusMappings,
   isVariantFocusMode,
   NavigationFocusConfig,
-  NavigationFocusMode
+  NavigationFocusMode,
+  withFocusMode
 } from "../navigation_focus";
 import { PrototypeFrame } from "../prototype_frame";
 import { PrototypeNode } from "../prototype_node";
@@ -242,11 +244,8 @@ function removeFlowStaringPoints(focusTargets: Array<SceneNode>) {
 
 function resetFocus(focusTargets: Array<SceneNode>, config: Config) {
   FocusPointer.resetManagedPointers(Utils.findTopLevelFrame(focusTargets[0]))
-  if (!isVariantFocusMode(config.focus)) {
-    FocusOverlay.resetManagedFocus(Utils.findTopLevelFrame(focusTargets[0]))
-    return
-  }
-  resetInstanceFocus(focusTargets as Array<InstanceNode>, config)
+  FocusOverlay.resetManagedFocus(Utils.findTopLevelFrame(focusTargets[0]))
+  if (isVariantFocusMode(config.focus)) resetInstanceFocus(focusTargets as Array<InstanceNode>, config)
 }
 
 export function resetInstanceFocus(instances: Array<InstanceNode>, config: Config) {
@@ -350,9 +349,12 @@ function positionFrames(frames: Array<PrototypeFrame>) {
 }
 
 function setFocus(protoFrames: Array<PrototypeFrame>, config: Config): number {
-  if (config.focus.mode === NavigationFocusMode.POINTER) return 0
-  if (!isVariantFocusMode(config.focus)) return setOverlayFocus(protoFrames, config.focus)
-  return setInstanceFocus(protoFrames, config)
+  const focusMode = getAppliedFocusMode(config.focus)
+  if (!focusMode || focusMode === NavigationFocusMode.POINTER) return 0
+
+  const focus = withFocusMode(config.focus, focusMode)
+  if (focusMode !== NavigationFocusMode.VARIANT) return setOverlayFocus(protoFrames, focus)
+  return setInstanceFocus(protoFrames, { ...config, focus: focus })
 }
 
 export function setInstanceFocus(protoFrames: Array<PrototypeFrame>, config: Config): number {

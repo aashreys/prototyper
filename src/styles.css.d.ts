@@ -27,6 +27,8 @@ declare const styles: {
   readonly "helperText": string;
   readonly "linkButton": string;
   readonly "onboardingContainer": string;
+  readonly "pointerAdditionalFocusContent": string;
+  readonly "pointerAdditionalFocusControls": string;
   readonly "pointerAssetButton": string;
   readonly "pointerAssetButtonSelected": string;
   readonly "pointerAssetGrid": string;

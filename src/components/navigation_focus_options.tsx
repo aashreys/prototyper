@@ -33,6 +33,7 @@ import {
   NavigationFocusConfig,
   NavigationFocusMode,
   POINTER_POSITION_PRESETS,
+  PointerAdditionalFocusMode,
   PointerFocusConfig,
   PointerPositionPreset,
   PointerSizeMode,
@@ -64,7 +65,14 @@ const MODE_OPTIONS: Array<DropdownOption> = [
   { value: NavigationFocusMode.FILL, text: "Fill" },
   { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
   { value: NavigationFocusMode.VARIANT, text: "Components" },
-  { value: NavigationFocusMode.POINTER, text: "Floating pointer" },
+  { value: NavigationFocusMode.POINTER, text: "Hovering pointer" },
+];
+
+const POINTER_ADDITIONAL_FOCUS_MODE_OPTIONS: Array<DropdownOption> = [
+  { value: NavigationFocusMode.STROKE, text: "Stroke" },
+  { value: NavigationFocusMode.FILL, text: "Fill" },
+  { value: NavigationFocusMode.SCALE_SHADOW, text: "Scale" },
+  { value: NavigationFocusMode.VARIANT, text: "Components" },
 ];
 
 const COMPONENT_MAPPING_TYPE_OPTIONS: Array<DropdownOption> = [
@@ -266,6 +274,10 @@ export class NavigationFocusOptions extends Component<
     this.onStrokeColorChange = this.onStrokeColorChange.bind(this);
     this.onFillColorChange = this.onFillColorChange.bind(this);
     this.onPointerAssetSelected = this.onPointerAssetSelected.bind(this);
+    this.onPointerAdditionalFocusEnabledChange =
+      this.onPointerAdditionalFocusEnabledChange.bind(this);
+    this.onPointerAdditionalFocusModeChange =
+      this.onPointerAdditionalFocusModeChange.bind(this);
     this.onPointerUploadClick = this.onPointerUploadClick.bind(this);
     this.onPointerUploadInputChange = this.onPointerUploadInputChange.bind(this);
     this.onPointerPositionInput = this.onPointerPositionInput.bind(this);
@@ -421,6 +433,28 @@ export class NavigationFocusOptions extends Component<
       ...this.getPointer(),
       assetSource: "preset",
       presetId: presetId,
+    });
+  }
+
+  onPointerAdditionalFocusEnabledChange(enabled: boolean) {
+    const pointer = this.getPointer();
+    this.updatePointer({
+      ...pointer,
+      additionalFocus: {
+        ...this.getPointerAdditionalFocus(pointer),
+        enabled: enabled,
+      },
+    });
+  }
+
+  onPointerAdditionalFocusModeChange(mode: PointerAdditionalFocusMode) {
+    const pointer = this.getPointer();
+    this.updatePointer({
+      ...pointer,
+      additionalFocus: {
+        ...this.getPointerAdditionalFocus(pointer),
+        mode: mode,
+      },
     });
   }
 
@@ -982,14 +1016,20 @@ export class NavigationFocusOptions extends Component<
   }
 
   renderFocusModeControls(props: NavigationFocusOptionsProps) {
-    if (props.focus.mode === NavigationFocusMode.VARIANT)
-      return this.renderVariantControls(props);
-    if (props.focus.mode === NavigationFocusMode.SCALE_SHADOW)
-      return this.renderScaleShadowControls(props);
-    if (props.focus.mode === NavigationFocusMode.FILL)
-      return this.renderFillControls(props);
-    if (props.focus.mode === NavigationFocusMode.POINTER)
+    if (props.focus.mode === NavigationFocusMode.POINTER) {
       return this.renderPointerControls(props);
+    }
+    return this.renderFocusModeControlsForMode(props, props.focus.mode);
+  }
+
+  renderFocusModeControlsForMode(
+    props: NavigationFocusOptionsProps,
+    mode: NavigationFocusMode,
+  ) {
+    if (mode === NavigationFocusMode.VARIANT) return this.renderVariantControls(props);
+    if (mode === NavigationFocusMode.SCALE_SHADOW)
+      return this.renderScaleShadowControls(props);
+    if (mode === NavigationFocusMode.FILL) return this.renderFillControls(props);
     return this.renderStrokeControls(props);
   }
 
@@ -1025,8 +1065,56 @@ export class NavigationFocusOptions extends Component<
             <text class={styles.errorText}>{this.state.pointerUploadError}</text>
           )}
         </div>
+        {this.renderPointerAdditionalFocusControls(props, pointer)}
       </div>
     );
+  }
+
+  renderPointerAdditionalFocusControls(
+    props: NavigationFocusOptionsProps,
+    pointer: PointerFocusConfig,
+  ) {
+    const additionalFocus = this.getPointerAdditionalFocus(pointer);
+    const propsForAdditionalFocus = {
+      ...props,
+      focus: {
+        ...props.focus,
+        mode: additionalFocus.mode,
+      },
+    };
+    return (
+      <div class={styles.pointerAdditionalFocusControls}>
+        <Checkbox
+          onChange={(e) =>
+            this.onPointerAdditionalFocusEnabledChange(e.currentTarget.checked)
+          }
+          value={additionalFocus.enabled}
+        >
+          <Text>Show additional focus on hover</Text>
+        </Checkbox>
+        {additionalFocus.enabled && (
+          <div class={styles.pointerAdditionalFocusContent}>
+            <Dropdown
+              onChange={(e) =>
+                this.onPointerAdditionalFocusModeChange(
+                  e.currentTarget.value as PointerAdditionalFocusMode,
+                )
+              }
+              options={POINTER_ADDITIONAL_FOCUS_MODE_OPTIONS}
+              value={additionalFocus.mode}
+            />
+            {this.renderFocusModeControlsForMode(
+              propsForAdditionalFocus,
+              additionalFocus.mode,
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  getPointerAdditionalFocus(pointer: PointerFocusConfig) {
+    return pointer.additionalFocus || DEFAULT_POINTER_FOCUS.additionalFocus;
   }
 
   renderPointerAssetControls(pointer: PointerFocusConfig) {

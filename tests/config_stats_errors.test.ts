@@ -4,7 +4,7 @@ import { Config } from '../src/config'
 import { Device } from '../src/device'
 import { normalizeErrorMessage } from '../src/errors'
 import { NavScheme, NavigationKeycodes } from '../src/navigation'
-import { NavigationFocusMode } from '../src/navigation_focus'
+import { getAppliedFocusMode, isVariantFocusMode, NavigationFocusMode } from '../src/navigation_focus'
 import { Stats } from '../src/stats'
 
 function setFigma(figma: unknown) {
@@ -71,6 +71,10 @@ test('defaults new configs to stroke focus', () => {
     position: {
       x: 1,
       y: 1
+    },
+    additionalFocus: {
+      enabled: false,
+      mode: NavigationFocusMode.STROKE
     }
   })
   assert.deepEqual(config.swapVariant, {
@@ -124,6 +128,10 @@ test('migrates stale config by merging saved settings with defaults', () => {
   assert.equal(migratedConfig.focus.pointer.enabled, false)
   assert.equal(migratedConfig.focus.pointer.presetId, 'arrow')
   assert.deepEqual(migratedConfig.focus.pointer.position, { x: 1, y: 1 })
+  assert.deepEqual(migratedConfig.focus.pointer.additionalFocus, {
+    enabled: false,
+    mode: NavigationFocusMode.STROKE
+  })
   assert.equal(migratedConfig.storedNavigation.keyboard.device, Device.KEYBOARD)
   assert.equal(migratedConfig.storedNavigation.controller.device, Device.PS4)
 })
@@ -400,6 +408,10 @@ test('preserves and normalizes saved pointer settings', () => {
         position: {
           x: 2,
           y: -1
+        },
+        additionalFocus: {
+          enabled: true,
+          mode: NavigationFocusMode.POINTER
         }
       }
     }
@@ -418,9 +430,13 @@ test('preserves and normalizes saved pointer settings', () => {
   assert.equal(config.focus.pointer.customSize, 1024)
   assert.equal(config.focus.pointer.positionPreset, 'custom')
   assert.deepEqual(config.focus.pointer.position, { x: 1, y: 1 })
+  assert.deepEqual(config.focus.pointer.additionalFocus, {
+    enabled: true,
+    mode: NavigationFocusMode.STROKE
+  })
 })
 
-test('preserves saved floating pointer mode', () => {
+test('preserves saved hovering pointer mode', () => {
   let savedConfig = {
     ...Config.getDefaultConfig(),
     focus: {
@@ -436,6 +452,59 @@ test('preserves saved floating pointer mode', () => {
   let config = Config.getSavedConfig()
 
   assert.equal(config.focus.mode, NavigationFocusMode.POINTER)
+})
+
+test('preserves saved hovering pointer additional focus mode', () => {
+  let savedConfig = {
+    ...Config.getDefaultConfig(),
+    focus: {
+      ...Config.getDefaultConfig().focus,
+      mode: NavigationFocusMode.POINTER,
+      pointer: {
+        ...Config.getDefaultConfig().focus.pointer,
+        additionalFocus: {
+          enabled: true,
+          mode: NavigationFocusMode.VARIANT
+        }
+      }
+    }
+  }
+  let data = new Map<string, string>([
+    [Config.CONFIG_KEY, JSON.stringify(savedConfig)]
+  ])
+  setFigma({ root: createRoot(data) })
+
+  let config = Config.getSavedConfig()
+
+  assert.equal(config.focus.mode, NavigationFocusMode.POINTER)
+  assert.deepEqual(config.focus.pointer.additionalFocus, {
+    enabled: true,
+    mode: NavigationFocusMode.VARIANT
+  })
+})
+
+test('uses hovering pointer additional focus as the applied focus mode', () => {
+  let focus = {
+    ...Config.getDefaultConfig().focus,
+    mode: NavigationFocusMode.POINTER
+  }
+
+  assert.equal(getAppliedFocusMode(focus), null)
+  assert.equal(isVariantFocusMode(focus), false)
+
+  focus = {
+    ...focus,
+    pointer: {
+      ...focus.pointer,
+      additionalFocus: {
+        enabled: true,
+        mode: NavigationFocusMode.VARIANT
+      }
+    }
+  }
+
+  assert.equal(getAppliedFocusMode(focus), NavigationFocusMode.VARIANT)
+  assert.equal(isVariantFocusMode(focus), true)
 })
 
 test('migrates legacy scale shadow percent to multiplier scale', () => {

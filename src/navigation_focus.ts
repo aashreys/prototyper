@@ -47,6 +47,11 @@ export interface ScaleShadowFocusConfig {
 
 export type PointerAssetSource = 'preset' | 'custom'
 export type PointerSizeMode = '48' | '64' | '96' | 'custom'
+export type PointerAdditionalFocusMode =
+  NavigationFocusMode.STROKE |
+  NavigationFocusMode.FILL |
+  NavigationFocusMode.SCALE_SHADOW |
+  NavigationFocusMode.VARIANT
 export type PointerPositionPreset =
   'top-left' |
   'top' |
@@ -64,6 +69,11 @@ export interface PointerPosition {
   readonly y: number
 }
 
+export interface PointerAdditionalFocusConfig {
+  readonly enabled: boolean
+  readonly mode: PointerAdditionalFocusMode
+}
+
 export interface PointerFocusConfig {
   readonly enabled: boolean
   readonly assetSource: PointerAssetSource
@@ -72,6 +82,7 @@ export interface PointerFocusConfig {
   readonly customSize: number
   readonly positionPreset: PointerPositionPreset
   readonly position: PointerPosition
+  readonly additionalFocus: PointerAdditionalFocusConfig
 }
 
 export interface NavigationFocusConfig {
@@ -138,6 +149,10 @@ export const DEFAULT_POINTER_FOCUS: PointerFocusConfig = {
   position: {
     x: 1,
     y: 1
+  },
+  additionalFocus: {
+    enabled: false,
+    mode: NavigationFocusMode.STROKE
   }
 }
 
@@ -164,7 +179,11 @@ export function getDefaultNavigationFocusConfig(variant: SwapVariant = DEFAULT_V
     fill: { ...DEFAULT_FILL_FOCUS },
     shadow: { ...DEFAULT_SHADOW_FOCUS },
     scaleShadow: { ...DEFAULT_SCALE_SHADOW_FOCUS },
-    pointer: { ...DEFAULT_POINTER_FOCUS, position: { ...DEFAULT_POINTER_FOCUS.position } }
+    pointer: {
+      ...DEFAULT_POINTER_FOCUS,
+      position: { ...DEFAULT_POINTER_FOCUS.position },
+      additionalFocus: { ...DEFAULT_POINTER_FOCUS.additionalFocus }
+    }
   }
 }
 
@@ -239,7 +258,7 @@ export function isComponentFocusConfigured(mappings?: ReadonlyArray<Partial<Comp
 }
 
 export function isVariantFocusMode(focus: NavigationFocusConfig): boolean {
-  return focus.mode === NavigationFocusMode.VARIANT
+  return getAppliedFocusMode(focus) === NavigationFocusMode.VARIANT
 }
 
 export function getComponentFocusMappings(focus: NavigationFocusConfig): Array<ComponentFocusMapping> {
@@ -248,6 +267,23 @@ export function getComponentFocusMappings(focus: NavigationFocusConfig): Array<C
   return hasAnyVariantFocusValue(variant)
     ? [componentMappingFromVariant(variant)]
     : []
+}
+
+export function getAppliedFocusMode(focus: NavigationFocusConfig): NavigationFocusMode | null {
+  if (focus.mode !== NavigationFocusMode.POINTER) return focus.mode
+  const additionalFocus = focus.pointer?.additionalFocus || DEFAULT_POINTER_FOCUS.additionalFocus
+  if (!additionalFocus.enabled) return null
+  return additionalFocus.mode
+}
+
+export function withFocusMode(
+  focus: NavigationFocusConfig,
+  mode: NavigationFocusMode
+): NavigationFocusConfig {
+  return {
+    ...focus,
+    mode: mode
+  }
 }
 
 function normalizeVariantFocus(value): SwapVariant {
@@ -331,7 +367,15 @@ function normalizePointerFocus(value): PointerFocusConfig {
     sizeMode: normalizePointerSizeMode(value?.sizeMode, defaultPointer.sizeMode),
     customSize: normalizeNumber(value?.customSize, defaultPointer.customSize, 1024),
     positionPreset: normalizePointerPositionPreset(value?.positionPreset, defaultPointer.positionPreset),
-    position: normalizePointerPosition(value?.position)
+    position: normalizePointerPosition(value?.position),
+    additionalFocus: normalizePointerAdditionalFocus(value?.additionalFocus)
+  }
+}
+
+function normalizePointerAdditionalFocus(value): PointerAdditionalFocusConfig {
+  return {
+    enabled: normalizeBoolean(value?.enabled, DEFAULT_POINTER_FOCUS.additionalFocus.enabled),
+    mode: normalizePointerAdditionalFocusMode(value?.mode, DEFAULT_POINTER_FOCUS.additionalFocus.mode)
   }
 }
 
@@ -360,6 +404,14 @@ function normalizePointerPositionPreset(value, fallback: PointerPositionPreset):
     value === 'bottom-right' ||
     value === 'custom'
   ) return value
+  return fallback
+}
+
+function normalizePointerAdditionalFocusMode(value, fallback: PointerAdditionalFocusMode): PointerAdditionalFocusMode {
+  if (value === NavigationFocusMode.STROKE) return NavigationFocusMode.STROKE
+  if (value === NavigationFocusMode.FILL) return NavigationFocusMode.FILL
+  if (value === NavigationFocusMode.SCALE_SHADOW) return NavigationFocusMode.SCALE_SHADOW
+  if (value === NavigationFocusMode.VARIANT) return NavigationFocusMode.VARIANT
   return fallback
 }
 
