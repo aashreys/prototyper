@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { FocusPointer } from '../src/focus_pointer'
-import { NavigationFocusMode } from '../src/navigation_focus'
+import { NavigationFocusMode, POINTER_POSITION_PRESETS } from '../src/navigation_focus'
 import { createStoredCustomPointerAsset, PointerAssetStorage } from '../src/pointer_asset_storage'
 import { createPointerAssetPayload } from '../src/pointer_asset_validation'
 
@@ -127,7 +127,7 @@ function createFocus(pointerOverrides = {}) {
       customSize: 48,
       hotspot: { x: 0.302, y: 0.268 },
       positionPreset: 'bottom-right',
-      position: { x: 1, y: 1 },
+      position: { ...POINTER_POSITION_PRESETS['bottom-right'] },
       ...pointerOverrides
     }
   } as any
@@ -155,13 +155,13 @@ test('creates one fitted pointer per prototype frame', async () => {
   assert.equal(pointerB.name, '__Prototyper Focus Pointer')
   assert.equal(pointerA.width, 48)
   assert.equal(pointerA.height, 48)
-  assertApprox(pointerA.x, 115.5)
-  assertApprox(pointerA.y, 87.14)
+  assertApprox(pointerA.x, 102.17)
+  assertApprox(pointerA.y, 78.86)
   assert.equal(pointerA.fills[0].type, 'IMAGE')
   assert.equal(pointerA.fills[0].scaleMode, 'FIT')
   assert.equal(pointerA.getPluginData('prototyper_focus_pointer'), 'true')
-  assertApprox(pointerB.x, 115.5)
-  assertApprox(pointerB.y, 107.14)
+  assertApprox(pointerB.x, 108.84)
+  assertApprox(pointerB.y, 103)
 })
 
 test('uses custom proportional position and custom size', async () => {
@@ -245,8 +245,8 @@ test('uses selected custom pointer asset hotspot', async () => {
   )
 
   const pointer = frame.children[1]
-  assertApprox(pointer.x, 106)
-  assertApprox(pointer.y, 76)
+  assertApprox(pointer.x, 92.67)
+  assertApprox(pointer.y, 67.72)
   assert.equal(pointer.fills[0].imageHash, `hash-${result.payload!.bytes.byteLength}`)
 })
 
@@ -264,8 +264,8 @@ test('falls back to built-in pointer when selected custom pointer is missing', a
   )
 
   const pointer = frame.children[1]
-  assertApprox(pointer.x, 115.5)
-  assertApprox(pointer.y, 87.14)
+  assertApprox(pointer.x, 102.17)
+  assertApprox(pointer.y, 78.86)
 })
 
 test('removes old managed pointers before creating new pointers', async () => {

@@ -4,7 +4,12 @@ import { Config } from '../src/config'
 import { Device } from '../src/device'
 import { normalizeErrorMessage } from '../src/errors'
 import { NavScheme, NavigationKeycodes } from '../src/navigation'
-import { getAppliedFocusMode, isVariantFocusMode, NavigationFocusMode } from '../src/navigation_focus'
+import {
+  getAppliedFocusMode,
+  isVariantFocusMode,
+  NavigationFocusMode,
+  POINTER_POSITION_PRESETS
+} from '../src/navigation_focus'
 import { POINTER_POSITION_BOUNDS } from '../src/pointer_position_geometry'
 import { Stats } from '../src/stats'
 
@@ -74,10 +79,7 @@ test('defaults new configs to stroke focus', () => {
       y: 0.268
     },
     positionPreset: 'bottom-right',
-    position: {
-      x: 1,
-      y: 1
-    },
+    position: { ...POINTER_POSITION_PRESETS['bottom-right'] },
     additionalFocus: {
       enabled: false,
       mode: NavigationFocusMode.STROKE
@@ -133,7 +135,7 @@ test('migrates stale config by merging saved settings with defaults', () => {
   ])
   assert.equal(migratedConfig.focus.pointer.enabled, false)
   assert.equal(migratedConfig.focus.pointer.presetId, 'arrow')
-  assert.deepEqual(migratedConfig.focus.pointer.position, { x: 1, y: 1 })
+  assert.deepEqual(migratedConfig.focus.pointer.position, POINTER_POSITION_PRESETS['bottom-right'])
   assert.deepEqual(migratedConfig.focus.pointer.additionalFocus, {
     enabled: false,
     mode: NavigationFocusMode.STROKE

@@ -64,7 +64,6 @@ import {
   normalizeCustomPointerAssets,
 } from "../pointer_asset_storage";
 import {
-  POINTER_POSITION_ANCHOR_INSET,
   POINTER_POSITION_LAYER_HEIGHT,
   POINTER_POSITION_LAYER_WIDTH,
   POINTER_POSITION_LAYER_X,
@@ -121,14 +120,6 @@ const POINTER_POSITION_OPTIONS: Array<{
   { value: "bottom-right", title: "Bottom right" },
 ];
 
-const POINTER_ANCHOR_LEFT = POINTER_POSITION_ANCHOR_INSET;
-const POINTER_ANCHOR_CENTER_X = POINTER_POSITION_LAYER_WIDTH / 2;
-const POINTER_ANCHOR_RIGHT =
-  POINTER_POSITION_LAYER_WIDTH - POINTER_POSITION_ANCHOR_INSET;
-const POINTER_ANCHOR_TOP = POINTER_POSITION_ANCHOR_INSET;
-const POINTER_ANCHOR_CENTER_Y = POINTER_POSITION_LAYER_HEIGHT / 2;
-const POINTER_ANCHOR_BOTTOM =
-  POINTER_POSITION_LAYER_HEIGHT - POINTER_POSITION_ANCHOR_INSET;
 const POINTER_ANCHOR_HIT_RADIUS = 6.5;
 const POINTER_PREVIEW_REFERENCE_SIZE = 100;
 const POINTER_PREVIEW_MIN_SIZE = 12;
@@ -278,17 +269,6 @@ function clampNumber(value: number, minimum: number, maximum?: number): number {
 
 function roundNumber(value: number): number {
   return Number(value.toFixed(DECIMAL_PRECISION));
-}
-
-function getPointerAnchorCoordinate(
-  position: number,
-  start: number,
-  center: number,
-  end: number,
-): number {
-  if (position === 0) return start;
-  if (position === 1) return end;
-  return center;
 }
 
 export class NavigationFocusOptions extends Component<
@@ -719,9 +699,14 @@ export class NavigationFocusOptions extends Component<
   }
 
   onPointerPositionPresetChange(positionPreset: PointerPositionPreset) {
+    const pointer = this.getPointer();
     this.updatePointer({
-      ...this.getPointer(),
+      ...pointer,
       positionPreset: positionPreset,
+      position:
+        positionPreset === "custom"
+          ? pointer.position
+          : { ...POINTER_POSITION_PRESETS[positionPreset] },
     });
   }
 
@@ -1680,18 +1665,8 @@ export class NavigationFocusOptions extends Component<
   ): { readonly x: number; readonly y: number } {
     const position = POINTER_POSITION_PRESETS[positionPreset];
     return {
-      x: getPointerAnchorCoordinate(
-        position.x,
-        POINTER_ANCHOR_LEFT,
-        POINTER_ANCHOR_CENTER_X,
-        POINTER_ANCHOR_RIGHT,
-      ),
-      y: getPointerAnchorCoordinate(
-        position.y,
-        POINTER_ANCHOR_TOP,
-        POINTER_ANCHOR_CENTER_Y,
-        POINTER_ANCHOR_BOTTOM,
-      ),
+      x: position.x * POINTER_POSITION_LAYER_WIDTH,
+      y: position.y * POINTER_POSITION_LAYER_HEIGHT,
     };
   }
 

@@ -1,6 +1,14 @@
 import { ComponentFocusMapping, ComponentFocusMappingType, SwapVariant } from "./swap_variant";
 import { POINTER_PRESETS } from "./pointer_assets";
-import { POINTER_POSITION_BOUNDS } from "./pointer_position_geometry";
+import {
+  POINTER_POSITION_ANCHOR_BOTTOM,
+  POINTER_POSITION_ANCHOR_CENTER_X,
+  POINTER_POSITION_ANCHOR_CENTER_Y,
+  POINTER_POSITION_ANCHOR_LEFT,
+  POINTER_POSITION_ANCHOR_RIGHT,
+  POINTER_POSITION_ANCHOR_TOP,
+  POINTER_POSITION_BOUNDS
+} from "./pointer_position_geometry";
 export type { ComponentFocusMapping, ComponentFocusMappingType } from "./swap_variant";
 
 export enum NavigationFocusMode {
@@ -152,6 +160,18 @@ export const DEFAULT_POINTER_HOTSPOT: PointerHotspot = {
   y: 0.268
 }
 
+export const POINTER_POSITION_PRESETS: Record<Exclude<PointerPositionPreset, 'custom'>, PointerPosition> = {
+  'top-left': { x: POINTER_POSITION_ANCHOR_LEFT, y: POINTER_POSITION_ANCHOR_TOP },
+  top: { x: POINTER_POSITION_ANCHOR_CENTER_X, y: POINTER_POSITION_ANCHOR_TOP },
+  'top-right': { x: POINTER_POSITION_ANCHOR_RIGHT, y: POINTER_POSITION_ANCHOR_TOP },
+  left: { x: POINTER_POSITION_ANCHOR_LEFT, y: POINTER_POSITION_ANCHOR_CENTER_Y },
+  center: { x: POINTER_POSITION_ANCHOR_CENTER_X, y: POINTER_POSITION_ANCHOR_CENTER_Y },
+  right: { x: POINTER_POSITION_ANCHOR_RIGHT, y: POINTER_POSITION_ANCHOR_CENTER_Y },
+  'bottom-left': { x: POINTER_POSITION_ANCHOR_LEFT, y: POINTER_POSITION_ANCHOR_BOTTOM },
+  bottom: { x: POINTER_POSITION_ANCHOR_CENTER_X, y: POINTER_POSITION_ANCHOR_BOTTOM },
+  'bottom-right': { x: POINTER_POSITION_ANCHOR_RIGHT, y: POINTER_POSITION_ANCHOR_BOTTOM }
+}
+
 export const DEFAULT_POINTER_FOCUS: PointerFocusConfig = {
   enabled: false,
   assetSource: 'preset',
@@ -161,26 +181,11 @@ export const DEFAULT_POINTER_FOCUS: PointerFocusConfig = {
   customSize: 48,
   hotspot: { ...DEFAULT_POINTER_HOTSPOT },
   positionPreset: 'bottom-right',
-  position: {
-    x: 1,
-    y: 1
-  },
+  position: { ...POINTER_POSITION_PRESETS['bottom-right'] },
   additionalFocus: {
     enabled: false,
     mode: NavigationFocusMode.STROKE
   }
-}
-
-export const POINTER_POSITION_PRESETS: Record<Exclude<PointerPositionPreset, 'custom'>, PointerPosition> = {
-  'top-left': { x: 0, y: 0 },
-  top: { x: 0.5, y: 0 },
-  'top-right': { x: 1, y: 0 },
-  left: { x: 0, y: 0.5 },
-  center: { x: 0.5, y: 0.5 },
-  right: { x: 1, y: 0.5 },
-  'bottom-left': { x: 0, y: 1 },
-  bottom: { x: 0.5, y: 1 },
-  'bottom-right': { x: 1, y: 1 }
 }
 
 export function getDefaultNavigationFocusConfig(variant: SwapVariant = DEFAULT_VARIANT_FOCUS): NavigationFocusConfig {
