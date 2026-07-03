@@ -8,6 +8,10 @@ import { OnboardingBanner } from './components/onboarding_banner';
 import { StatsPage } from './stats_ui';
 import { Config } from './config';
 import { StatsModel } from './stats';
+import {
+  OnboardingStatus,
+  shouldShowFocusOptionsTooltip
+} from './onboarding';
 
 const BUTTON_GENERATE = 'Generate Prototype'
 const BUTTON_LINK = 'Link Frames'
@@ -27,6 +31,7 @@ interface UIState {
   activeTab: string
   config: Config
   isOnboardingComplete: boolean
+  showFocusOptionsTooltip: boolean
   stats: StatsModel
 }
 
@@ -41,6 +46,7 @@ export class UI extends Component<{ config: Config }, UIState> {
       activeTab: TAB_GENERATE,
       config: props.config,
       isOnboardingComplete: true,
+      showFocusOptionsTooltip: false,
       stats: {
         secondsSaved: 0,
         prototypesCreated: 0,
@@ -58,16 +64,17 @@ export class UI extends Component<{ config: Config }, UIState> {
     this.onTabChange = this.onTabChange.bind(this)
     this.componentDidUpdate = this.componentDidUpdate.bind(this)
     this.registerEventListeners = this.registerEventListeners.bind(this)
-    this.updateOnboardingComplete = this.updateOnboardingComplete.bind(this)
+    this.updateOnboardingStatus = this.updateOnboardingStatus.bind(this)
     this.onOnboardingDismiss = this.onOnboardingDismiss.bind(this)
+    this.onFocusOptionsTooltipDismiss = this.onFocusOptionsTooltipDismiss.bind(this)
     this.requestStats = this.requestStats.bind(this)
     this.onConfigChange = this.onConfigChange.bind(this)
     this.flushConfigSave = this.flushConfigSave.bind(this)
   }
 
   registerEventListeners() {
-    on(Constants.EVENT_ONBOARDING_STATUS_LOADED, (isComplete) => {
-      this.updateOnboardingComplete(isComplete)
+    on(Constants.EVENT_ONBOARDING_STATUS_LOADED, (status) => {
+      this.updateOnboardingStatus(status)
     })
     on(Constants.EVENT_RECEIVE_STATS, (stats) => {
       this.setState(prevState => ({
@@ -80,14 +87,13 @@ export class UI extends Component<{ config: Config }, UIState> {
     emit(Constants.EVENT_REQUEST_STATS)
   }
 
-  updateOnboardingComplete(isComplete) {
+  updateOnboardingStatus(status: OnboardingStatus | boolean) {
+    const onboardingStatus = normalizeOnboardingStatus(status)
     this.setState(prevState => ({
       ...prevState,
-      isOnboardingComplete: isComplete
+      isOnboardingComplete: onboardingStatus.isComplete,
+      showFocusOptionsTooltip: shouldShowFocusOptionsTooltip(onboardingStatus)
     }));
-    if (isComplete) {
-      emit(Constants.EVENT_ONBOARDING_COMPLETE)
-    }
   }
 
   onTabChange(tab) {
@@ -101,7 +107,19 @@ export class UI extends Component<{ config: Config }, UIState> {
   }
 
   onOnboardingDismiss() {
-    this.updateOnboardingComplete(true)
+    this.setState(prevState => ({
+      ...prevState,
+      isOnboardingComplete: true
+    }))
+    emit(Constants.EVENT_ONBOARDING_COMPLETE)
+  }
+
+  onFocusOptionsTooltipDismiss() {
+    this.setState(prevState => ({
+      ...prevState,
+      showFocusOptionsTooltip: false
+    }))
+    emit(Constants.EVENT_FOCUS_OPTIONS_ONBOARDING_DISMISSED)
   }
 
   componentDidUpdate() {
@@ -133,6 +151,9 @@ export class UI extends Component<{ config: Config }, UIState> {
   }
 
   render(props, state) {
+    const showFocusOptionsTooltip =
+      state.showFocusOptionsTooltip && state.activeTab === TAB_GENERATE
+
     return (
       <div>
 
@@ -156,6 +177,8 @@ export class UI extends Component<{ config: Config }, UIState> {
                   buttonEvent={Constants.EVENT_GENERATE}
                   onConfigChange={this.onConfigChange}
                   onConfigFlush={this.flushConfigSave}
+                  onFocusOptionsTooltipDismiss={this.onFocusOptionsTooltipDismiss}
+                  showFocusOptionsTooltip={showFocusOptionsTooltip}
                 />,
               value: TAB_GENERATE
             },
@@ -169,6 +192,8 @@ export class UI extends Component<{ config: Config }, UIState> {
                   buttonEvent={Constants.EVENT_LINK}
                   onConfigChange={this.onConfigChange}
                   onConfigFlush={this.flushConfigSave}
+                  onFocusOptionsTooltipDismiss={this.onFocusOptionsTooltipDismiss}
+                  showFocusOptionsTooltip={false}
                 />,
               value: TAB_LINK
             },
@@ -188,6 +213,19 @@ export class UI extends Component<{ config: Config }, UIState> {
     return document.getElementById('create-figma-plugin').clientHeight + HEIGHT_OFFSET;
   }
 
+}
+
+function normalizeOnboardingStatus(status: OnboardingStatus | boolean): OnboardingStatus {
+  if (typeof status === 'boolean') {
+    return {
+      isComplete: status,
+      isFocusOptionsTooltipDismissed: true
+    }
+  }
+  return {
+    isComplete: status?.isComplete === true,
+    isFocusOptionsTooltipDismissed: status?.isFocusOptionsTooltipDismissed === true
+  }
 }
 
 function Plugin(props) {

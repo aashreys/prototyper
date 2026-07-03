@@ -279,6 +279,7 @@ export class NavigationFocusOptions extends Component<
   any
 > {
   pointerDialogUploadInput: HTMLInputElement | null = null;
+  focusModeDropdownElement: HTMLDivElement | null = null;
 
   constructor(props) {
     super(props);
@@ -303,6 +304,7 @@ export class NavigationFocusOptions extends Component<
 
   bindMethods() {
     this.onModeChange = this.onModeChange.bind(this);
+    this.onFocusOptionsTooltipShowMe = this.onFocusOptionsTooltipShowMe.bind(this);
     this.onStrokeColorChange = this.onStrokeColorChange.bind(this);
     this.onFillColorChange = this.onFillColorChange.bind(this);
     this.onPointerAssetSelected = this.onPointerAssetSelected.bind(this);
@@ -378,6 +380,20 @@ export class NavigationFocusOptions extends Component<
         enabled: mode === NavigationFocusMode.POINTER,
       },
     });
+  }
+
+  onFocusOptionsTooltipShowMe() {
+    this.props.onFocusOptionsTooltipDismiss();
+    window.setTimeout(() => {
+      if (!this.focusModeDropdownElement) return;
+      this.focusModeDropdownElement.focus();
+      this.focusModeDropdownElement.dispatchEvent(
+        new window.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    }, 0);
   }
 
   onStrokeColorChange(color: string) {
@@ -1209,16 +1225,28 @@ export class NavigationFocusOptions extends Component<
 
   renderFocusModeRow(props: NavigationFocusOptionsProps) {
     return (
-      <div class={styles.focusModeRow}>
-        <div class={styles.focusModeSelect}>
-          <Dropdown
-            onChange={(e) =>
-              this.onModeChange(e.currentTarget.value as NavigationFocusMode)
-            }
-            options={MODE_OPTIONS}
-            value={props.focus.mode}
-          />
+      <div
+        class={`${styles.focusModeTooltipAnchor} ${
+          props.showFocusOptionsTooltip ? styles.focusModeTooltipAnchorActive : ""
+        }`}
+      >
+        <div class={styles.focusModeRow}>
+          <div class={styles.focusModeSelect}>
+            <Dropdown
+              onChange={(e) =>
+                this.onModeChange(e.currentTarget.value as NavigationFocusMode)
+              }
+              options={MODE_OPTIONS}
+              ref={(element) => {
+                this.focusModeDropdownElement = element;
+              }}
+              value={props.focus.mode}
+            />
+          </div>
         </div>
+        {props.showFocusOptionsTooltip && (
+          <FocusOptionsTooltip onShowMe={this.onFocusOptionsTooltipShowMe} />
+        )}
       </div>
     );
   }
@@ -1727,6 +1755,10 @@ export class NavigationFocusOptions extends Component<
 
         {this.renderFocusModeRow(props)}
 
+        {props.showFocusOptionsTooltip && (
+          <div class={styles.focusOptionsOnboardingOverlay} />
+        )}
+
         <div
           style={
             props.focus.mode === NavigationFocusMode.VARIANT
@@ -1744,10 +1776,27 @@ export class NavigationFocusOptions extends Component<
 interface NavigationFocusOptionsProps {
   focus: NavigationFocusConfig;
   onComponentMappingAdd: () => void;
+  onFocusOptionsTooltipDismiss: () => void;
   onNavigationFocusChange: (focus: NavigationFocusConfig) => void;
+  showFocusOptionsTooltip: boolean;
   showPropertyError: boolean;
   showToVariantError: boolean;
   style?: string;
+}
+
+function FocusOptionsTooltip(props: { onShowMe: () => void }) {
+  return (
+    <div class={styles.focusOptionsTooltip} role="dialog">
+      <div class={styles.focusOptionsTooltipArrow} />
+      <Text>
+        <Bold>New focus options</Bold>
+      </Text>
+      <Text>Use stroke, fill, scale, or custom pointers to show focus without setting up components.</Text>
+      <Button fullWidth onClick={props.onShowMe}>
+        Show me
+      </Button>
+    </div>
+  )
 }
 
 interface FocusNumberInputProps {

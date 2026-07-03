@@ -38,12 +38,9 @@ export default function () {
     },
   );
 
-  Onboarding.isCompleteAsync().then(
-    (isComplete) => {
-      emit(
-        Constants.EVENT_ONBOARDING_STATUS_LOADED,
-        isComplete ? isComplete : false,
-      );
+  Onboarding.getStatusAsync().then(
+    (status) => {
+      emit(Constants.EVENT_ONBOARDING_STATUS_LOADED, status);
     },
     () => {
       console.error("Failed to loading onboarding status");
@@ -72,6 +69,15 @@ export default function () {
 
   on(Constants.EVENT_ONBOARDING_COMPLETE, () => {
     Onboarding.completed();
+  });
+
+  on(Constants.EVENT_FOCUS_OPTIONS_ONBOARDING_DISMISSED, () => {
+    Onboarding.focusOptionsTooltipDismissed().then(
+      () => undefined,
+      () => {
+        console.error("Failed to save focus options onboarding tooltip dismissal");
+      },
+    );
   });
 
   on(Constants.EVENT_REQUEST_STATS, () => {

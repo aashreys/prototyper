@@ -274,7 +274,9 @@ export class PrototypeForm extends Component<any, any>  {
             onComponentMappingAdd={this.clearComponentFocusErrors}
             onNavigationFocusChange={this.onNavigationFocusChange}
             showPropertyError={this.state.ui.showVariantPropertyError}
-            showToVariantError={this.state.ui.showVariantToValueError} />
+            showFocusOptionsTooltip={this.props.showFocusOptionsTooltip}
+            showToVariantError={this.state.ui.showVariantToValueError}
+            onFocusOptionsTooltipDismiss={this.props.onFocusOptionsTooltipDismiss} />
             <VerticalSpace space='large' />
           </div>
         }

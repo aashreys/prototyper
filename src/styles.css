@@ -229,6 +229,75 @@
     gap: 8px;
 }
 
+.focusModeTooltipAnchor {
+    position: relative;
+}
+
+.focusModeTooltipAnchorActive {
+    z-index: 1002;
+}
+
+.focusModeTooltipAnchorActive .focusModeRow {
+    background: var(--figma-color-bg);
+    border-radius: 6px;
+    box-shadow:
+        0 0 0 2px var(--figma-color-border-brand-strong),
+        0 4px 16px rgba(0, 0, 0, 0.16);
+    pointer-events: none;
+}
+
+.focusOptionsOnboardingOverlay {
+    background: rgba(0, 0, 0, 0.08);
+    bottom: 0;
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+:global(.figma-dark) .focusOptionsOnboardingOverlay {
+    background: rgba(0, 0, 0, 0.28);
+}
+
+.focusOptionsTooltip {
+    background: var(--figma-color-bg);
+    border: 1px solid var(--figma-color-border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    left: 0;
+    padding: 14px 12px 12px;
+    pointer-events: all;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    z-index: 1003;
+}
+
+.focusOptionsTooltip > :first-child + * {
+    margin-bottom: 2px;
+}
+
+.focusOptionsTooltip > :nth-child(3) {
+    margin-bottom: 4px;
+}
+
+.focusOptionsTooltipArrow {
+    background: var(--figma-color-bg);
+    border-left: 1px solid var(--figma-color-border);
+    border-top: 1px solid var(--figma-color-border);
+    height: 10px;
+    left: 20px;
+    position: absolute;
+    top: -6px;
+    transform: rotate(45deg);
+    width: 10px;
+}
+
 .focusModeLabel {
     flex: 0 0 auto;
     white-space: nowrap;

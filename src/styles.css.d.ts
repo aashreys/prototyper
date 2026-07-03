@@ -21,6 +21,11 @@ declare const styles: {
   readonly "focusModeLabel": string;
   readonly "focusModeRow": string;
   readonly "focusModeSelect": string;
+  readonly "focusModeTooltipAnchor": string;
+  readonly "focusModeTooltipAnchorActive": string;
+  readonly "focusOptionsOnboardingOverlay": string;
+  readonly "focusOptionsTooltip": string;
+  readonly "focusOptionsTooltipArrow": string;
   readonly "formContent": string;
   readonly "greyIcon": string;
   readonly "helpButton": string;
