@@ -127,8 +127,9 @@ const POINTER_PREVIEW_REFERENCE_SIZE = 100;
 const POINTER_PREVIEW_MIN_SIZE = 12;
 const POINTER_PREVIEW_MAX_SIZE = 72;
 const POINTER_UPLOAD_RULES = "PNG or GIF, max 512 x 512 px, max 512 KB";
+const NEW_POINTER_HOTSPOT = { x: 0.10, y: 0.14 };
 const POINTER_HOTSPOT_HELP =
-  "Move the hotspot below the to the tip of your cursor, or where you want the cursor to click. Prototyper uses this to position the cursor correctly.";
+  "Move the hotspot to the tip of the pointer to position it correctly in prototypes.";
 
 const COMPONENT_HELPER_TEXT =
   "Add properties to change components to their focused state";
@@ -497,7 +498,17 @@ export class NavigationFocusOptions extends Component<
   syncSelectedCustomPointer(assets: Array<CustomPointerAsset>) {
     const pointer = this.getPointer();
     if (pointer.assetSource !== "custom") return;
-    if (pointer.customAssetId && assets.some(asset => asset.id === pointer.customAssetId)) {
+    const selectedAsset = pointer.customAssetId
+      ? assets.find(asset => asset.id === pointer.customAssetId)
+      : assets[0];
+    if (selectedAsset) {
+      if (
+        pointer.customAssetId !== selectedAsset.id ||
+        pointer.hotspot.x !== selectedAsset.hotspot.x ||
+        pointer.hotspot.y !== selectedAsset.hotspot.y
+      ) {
+        this.selectCustomPointer(selectedAsset);
+      }
       return;
     }
     const fallbackAsset = assets[0];
@@ -601,7 +612,7 @@ export class NavigationFocusOptions extends Component<
       return;
     }
 
-    const asset = createStoredCustomPointerAsset(result.payload);
+    const asset = createStoredCustomPointerAsset(result.payload, NEW_POINTER_HOTSPOT);
     this.setState({
       pointerDialogAsset: asset,
       pointerDialogDragActive: false,
@@ -1288,7 +1299,8 @@ export class NavigationFocusOptions extends Component<
         onEscapeKeyDown={this.onPointerDialogClose}
         open={isOpen}
         position="center"
-        title={mode === "hotspot" ? "Edit cursor" : "Add cursor"}
+        style="border-radius: 8px; overflow: hidden;"
+        title={mode === "hotspot" ? "Edit pointer" : "Add pointer"}
       >
         <div class={styles.pointerDialog}>
           {mode === "upload" && this.renderPointerUploadDialog()}
@@ -1315,7 +1327,7 @@ export class NavigationFocusOptions extends Component<
           onDrop={this.onPointerDialogDrop}
           type="button"
         >
-          <span class={styles.pointerDropzoneTitle}>Drop cursor file here</span>
+          <span class={styles.pointerDropzoneTitle}>Drop pointer file here</span>
           <span class={styles.pointerDropzoneText}>{POINTER_UPLOAD_RULES}</span>
         </button>
         <input
