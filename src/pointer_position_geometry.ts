@@ -1,9 +1,9 @@
 export const POINTER_POSITION_PAD_SIZE = 100
 
-export const POINTER_POSITION_LAYER_X = 14
-export const POINTER_POSITION_LAYER_Y = 21
-export const POINTER_POSITION_LAYER_WIDTH = 72
-export const POINTER_POSITION_LAYER_HEIGHT = 58
+export const POINTER_POSITION_LAYER_X = 17
+export const POINTER_POSITION_LAYER_Y = 23
+export const POINTER_POSITION_LAYER_WIDTH = 66
+export const POINTER_POSITION_LAYER_HEIGHT = 54
 
 // Tune this value to change how far edge anchors sit inside the layer rectangle.
 export const POINTER_POSITION_ANCHOR_INSET = 12

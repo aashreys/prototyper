@@ -155,13 +155,13 @@ test('creates one fitted pointer per prototype frame', async () => {
   assert.equal(pointerB.name, '__Prototyper Focus Pointer')
   assert.equal(pointerA.width, 48)
   assert.equal(pointerA.height, 48)
-  assertApprox(pointerA.x, 102.17)
-  assertApprox(pointerA.y, 78.86)
+  assertApprox(pointerA.x, 100.96)
+  assertApprox(pointerA.y, 78.25)
   assert.equal(pointerA.fills[0].type, 'IMAGE')
   assert.equal(pointerA.fills[0].scaleMode, 'FIT')
   assert.equal(pointerA.getPluginData('prototyper_focus_pointer'), 'true')
-  assertApprox(pointerB.x, 108.84)
-  assertApprox(pointerB.y, 103)
+  assertApprox(pointerB.x, 108.23)
+  assertApprox(pointerB.y, 102.69)
 })
 
 test('uses custom proportional position and custom size', async () => {
@@ -245,8 +245,8 @@ test('uses selected custom pointer asset hotspot', async () => {
   )
 
   const pointer = frame.children[1]
-  assertApprox(pointer.x, 92.67)
-  assertApprox(pointer.y, 67.72)
+  assertApprox(pointer.x, 91.45)
+  assertApprox(pointer.y, 67.11)
   assert.equal(pointer.fills[0].imageHash, `hash-${result.payload!.bytes.byteLength}`)
 })
 
@@ -264,8 +264,8 @@ test('falls back to built-in pointer when selected custom pointer is missing', a
   )
 
   const pointer = frame.children[1]
-  assertApprox(pointer.x, 102.17)
-  assertApprox(pointer.y, 78.86)
+  assertApprox(pointer.x, 100.96)
+  assertApprox(pointer.y, 78.25)
 })
 
 test('removes old managed pointers before creating new pointers', async () => {

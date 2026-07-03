@@ -382,7 +382,11 @@
 }
 
 .pointerPositionPad {
-    background: var(--figma-color-bg-secondary);
+    --pointer-position-background: #f5f5f5;
+    --pointer-position-guide: #d7d7d7;
+    --pointer-position-layer-background: #ebebeb;
+    --pointer-position-layer-stroke: #bababa;
+    background: var(--pointer-position-background);
     border: 0;
     border-radius: 4px;
     cursor: none;
@@ -396,13 +400,20 @@
     z-index: 0;
 }
 
+:global(.figma-dark) .pointerPositionPad {
+    --pointer-position-background: #383838;
+    --pointer-position-guide: #4a4a4a;
+    --pointer-position-layer-background: #3e3e3e;
+    --pointer-position-layer-stroke: #636363;
+}
+
 .pointerPositionPad * {
     cursor: none;
 }
 
 .pointerPositionLayer {
-    background: var(--figma-color-bg-tertiary);
-    border: 1px solid var(--figma-color-border-strong);
+    background: var(--pointer-position-layer-background);
+    border: 1px solid var(--pointer-position-layer-stroke);
     border-radius: 4px;
     box-sizing: border-box;
     position: absolute;
@@ -410,7 +421,7 @@
 }
 
 .pointerPositionCenterLineHorizontal {
-    background: var(--figma-color-border-strong);
+    background: var(--pointer-position-guide);
     height: 1px;
     left: 8px;
     position: absolute;
@@ -420,7 +431,7 @@
 }
 
 .pointerPositionCenterLineVertical {
-    background: var(--figma-color-border-strong);
+    background: var(--pointer-position-guide);
     bottom: 8px;
     left: 50%;
     position: absolute;
