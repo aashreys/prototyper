@@ -383,7 +383,7 @@
 
 .pointerPositionPad {
     --pointer-position-background: #f5f5f5;
-    --pointer-position-guide: #d7d7d7;
+    --pointer-position-guide: #d0d0d0;
     --pointer-position-layer-background: #ebebeb;
     --pointer-position-layer-stroke: #bababa;
     background: var(--pointer-position-background);
@@ -402,7 +402,7 @@
 
 :global(.figma-dark) .pointerPositionPad {
     --pointer-position-background: #383838;
-    --pointer-position-guide: #4a4a4a;
+    --pointer-position-guide: #515151;
     --pointer-position-layer-background: #3e3e3e;
     --pointer-position-layer-stroke: #636363;
 }
