@@ -122,7 +122,7 @@ const POINTER_POSITION_OPTIONS: Array<{
   { value: "bottom-right", title: "Bottom right" },
 ];
 
-const POINTER_ANCHOR_HIT_RADIUS = 6.5;
+const POINTER_ANCHOR_HIT_RADIUS = 5;
 const POINTER_PREVIEW_REFERENCE_SIZE = 100;
 const POINTER_PREVIEW_MIN_SIZE = 12;
 const POINTER_PREVIEW_MAX_SIZE = 72;
