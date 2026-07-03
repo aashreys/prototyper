@@ -316,9 +316,9 @@
 
 .pointerAssetPreview {
     display: block;
-    height: 20px;
+    height: 24px;
     object-fit: contain;
-    width: 20px;
+    width: 24px;
 }
 
 .pointerCustomAssetButton {
