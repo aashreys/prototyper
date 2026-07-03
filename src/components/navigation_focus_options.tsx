@@ -64,10 +64,12 @@ import {
   normalizeCustomPointerAssets,
 } from "../pointer_asset_storage";
 import {
+  POINTER_POSITION_GUIDE_GAP,
   POINTER_POSITION_LAYER_HEIGHT,
   POINTER_POSITION_LAYER_WIDTH,
   POINTER_POSITION_LAYER_X,
   POINTER_POSITION_LAYER_Y,
+  POINTER_POSITION_PAD_SIZE,
 } from "../pointer_position_geometry";
 import { SwapVariant } from "../swap_variant";
 import { ArrowRightIcon } from "../icons/arrow_right";
@@ -1492,6 +1494,7 @@ export class NavigationFocusOptions extends Component<
         onPointerDown={this.onPointerPositionInput}
         onPointerLeave={this.onPointerPositionLeave}
         onPointerMove={this.onPointerPositionHover}
+        style={this.getPointerPositionPadStyle()}
       >
         <div class={styles.pointerPositionCenterLineHorizontal} />
         <div class={styles.pointerPositionCenterLineVertical} />
@@ -1573,6 +1576,17 @@ export class NavigationFocusOptions extends Component<
       `left: ${POINTER_POSITION_LAYER_X}px`,
       `top: ${POINTER_POSITION_LAYER_Y}px`,
       `width: ${POINTER_POSITION_LAYER_WIDTH}px`,
+    ].join("; ");
+  }
+
+  getPointerPositionPadStyle(): string {
+    return [
+      `--pointer-position-size: ${POINTER_POSITION_PAD_SIZE}px`,
+      `--pointer-position-guide-gap: ${POINTER_POSITION_GUIDE_GAP}px`,
+      `--pointer-position-layer-x: ${POINTER_POSITION_LAYER_X}px`,
+      `--pointer-position-layer-y: ${POINTER_POSITION_LAYER_Y}px`,
+      `--pointer-position-layer-width: ${POINTER_POSITION_LAYER_WIDTH}px`,
+      `--pointer-position-layer-height: ${POINTER_POSITION_LAYER_HEIGHT}px`,
     ].join("; ");
   }
 

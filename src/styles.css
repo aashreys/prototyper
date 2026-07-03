@@ -421,23 +421,80 @@
 }
 
 .pointerPositionCenterLineHorizontal {
-    background: var(--pointer-position-guide);
     height: 1px;
-    left: 8px;
+    left: var(--pointer-position-guide-gap);
     position: absolute;
-    right: 8px;
+    right: var(--pointer-position-guide-gap);
     top: 50%;
     z-index: 1;
 }
 
-.pointerPositionCenterLineVertical {
+.pointerPositionCenterLineHorizontal::before,
+.pointerPositionCenterLineHorizontal::after {
     background: var(--pointer-position-guide);
-    bottom: 8px;
+    content: "";
+    height: 1px;
+    position: absolute;
+    top: 0;
+}
+
+.pointerPositionCenterLineHorizontal::before {
+    left: 0;
+    width: calc(
+        var(--pointer-position-layer-x) -
+        var(--pointer-position-guide-gap) -
+        var(--pointer-position-guide-gap)
+    );
+}
+
+.pointerPositionCenterLineHorizontal::after {
+    right: 0;
+    width: calc(
+        var(--pointer-position-size) -
+        var(--pointer-position-guide-gap) -
+        var(--pointer-position-layer-x) -
+        var(--pointer-position-layer-width) -
+        var(--pointer-position-guide-gap)
+    );
+}
+
+.pointerPositionCenterLineVertical {
+    bottom: var(--pointer-position-guide-gap);
     left: 50%;
     position: absolute;
-    top: 8px;
+    top: var(--pointer-position-guide-gap);
+    transform: translateX(-50%);
     width: 1px;
     z-index: 1;
+}
+
+.pointerPositionCenterLineVertical::before,
+.pointerPositionCenterLineVertical::after {
+    background: var(--pointer-position-guide);
+    content: "";
+    left: 0;
+    position: absolute;
+    width: 1px;
+}
+
+.pointerPositionCenterLineVertical::before {
+    height: calc(
+        var(--pointer-position-layer-y) -
+        var(--pointer-position-guide-gap) -
+        var(--pointer-position-guide-gap)
+    );
+    top: 0;
+}
+
+.pointerPositionCenterLineVertical::after {
+    bottom: 0;
+    height: calc(
+        var(--pointer-position-size) -
+        var(--pointer-position-guide-gap) -
+        var(--pointer-position-layer-y) -
+        var(--pointer-position-layer-height) -
+        var(--pointer-position-guide-gap)
+    );
 }
 
 .pointerPositionPreset {
