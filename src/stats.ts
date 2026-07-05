@@ -52,7 +52,7 @@ export class Stats {
 
   public static clearStats() {
     figma.clientStorage.deleteAsync(Stats.STATS_KEY).then(
-      () => console.log('Cleared stats'),
+      () => undefined,
       (e) => {
         console.error('Failed to clear stats')
         console.error(e)

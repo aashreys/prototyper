@@ -113,7 +113,6 @@ export default function () {
 
   async function runPlugin(config: Config, mode: Mode) {
     try {
-      console.log(`Running ${Mode[mode]}`);
       saveConfig(config);
       if (mode === Mode.GENERATE) await doGeneratePrototype(config);
       if (mode === Mode.LINK) await doLinkFrames(config);

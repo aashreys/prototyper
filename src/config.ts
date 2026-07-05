@@ -49,7 +49,6 @@ export class Config {
     }
     catch (e) {
       console.error('Unable to retrieve saved config with error: ' + e)
-      console.log('Loading default config to recover...')
       return this.getDefaultConfig()
     }
   }
@@ -118,7 +117,6 @@ export class Config {
   static migrateConfig() {
     const prevConfigVersion = this.getConfigVersion();
     if (this.CONFIG_VERSION > prevConfigVersion) {
-      console.log(`Migrating config from version ${prevConfigVersion} to ${this.CONFIG_VERSION}`);
       const config = this.isConfigSaved() ? this.getSavedConfig() : this.getDefaultConfig();
       this.save(config); // Save known settings with missing defaults filled
       this.saveConfigVersion(this.CONFIG_VERSION); // Update current config version

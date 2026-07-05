@@ -1,7 +1,6 @@
-import { Animation, AnimationDirection, AnimationEasing, AnimationType } from "./animation";
+import { Animation, AnimationDirection, AnimationType } from "./animation";
 import { getTransitionDuration, getTransitionEasing } from "./custom_spring";
 import { Config } from "./config";
-import { DebugReport } from "./debug_report";
 import { Device } from "./device";
 import { NavigationKeycodes } from "./navigation";
 
@@ -285,51 +284,12 @@ export class Utils {
     }
 
     if (numInteractionsAdded === 0 && numStaleInteractionsRemoved === 0) {
-      DebugReport.addEvent(Utils.getReactionWriteDebugEvent(
-        'unchanged',
-        false,
-        frame,
-        left,
-        right,
-        top,
-        bottom,
-        device,
-        keycodesList,
-        intendedReactions,
-        reactions,
-        numInteractionsAdded,
-        numStaleInteractionsRemoved,
-        numDuplicateInteractionsSkipped
-      ))
-      if (numDuplicateInteractionsSkipped > 0) {
-        console.log('Skipped duplicate prototype reactions', {
-          frameId: frame.id,
-          duplicateInteractionsSkipped: numDuplicateInteractionsSkipped
-        })
-      }
       return numInteractionsAdded
     }
 
     try {
       await frame.setReactionsAsync(reactions)
     } catch (e) {
-      DebugReport.addEvent(Utils.getReactionWriteDebugEvent(
-        'failed',
-        false,
-        frame,
-        left,
-        right,
-        top,
-        bottom,
-        device,
-        keycodesList,
-        intendedReactions,
-        reactions,
-        numInteractionsAdded,
-        numStaleInteractionsRemoved,
-        numDuplicateInteractionsSkipped,
-        e
-      ))
       console.error('Failed to write prototype reactions', {
         frameId: frame.id,
         existingReactions: frame.reactions.length,
@@ -341,85 +301,7 @@ export class Utils {
       console.error(e)
       throw e
     }
-    DebugReport.addEvent(Utils.getReactionWriteDebugEvent(
-      'written',
-      true,
-      frame,
-      left,
-      right,
-      top,
-      bottom,
-      device,
-      keycodesList,
-      intendedReactions,
-      reactions,
-      numInteractionsAdded,
-      numStaleInteractionsRemoved,
-      numDuplicateInteractionsSkipped
-    ))
-    if (numDuplicateInteractionsSkipped > 0) {
-      console.log('Skipped duplicate prototype reactions', {
-        frameId: frame.id,
-        duplicateInteractionsSkipped: numDuplicateInteractionsSkipped
-      })
-    }
-    if (numStaleInteractionsRemoved > 0) {
-      console.log('Removed stale prototype reactions', {
-        frameId: frame.id,
-        staleInteractionsRemoved: numStaleInteractionsRemoved
-      })
-    }
     return numInteractionsAdded
-  }
-
-  private static isCustomSpringTransition(transition): boolean {
-    return transition?.easing?.type === AnimationEasing.CUSTOM_SPRING
-  }
-
-  private static getReactionWriteDebugEvent(
-    status: string,
-    didWrite: boolean,
-    frame: FrameNode,
-    left: FrameNode,
-    right: FrameNode,
-    top: FrameNode,
-    bottom: FrameNode,
-    device: Device,
-    keycodesList: Array<NavigationKeycodes>,
-    intendedReactions: Array<Reaction>,
-    nextReactions: Array<Reaction>,
-    numInteractionsAdded: number,
-    numStaleInteractionsRemoved: number,
-    numDuplicateInteractionsSkipped: number,
-    error?
-  ): Record<string, any> {
-    return {
-      type: 'reaction-write',
-      status: status,
-      didWrite: didWrite,
-      frame: DebugReport.getNodeRef(frame),
-      targets: {
-        left: DebugReport.getNodeRef(left),
-        right: DebugReport.getNodeRef(right),
-        top: DebugReport.getNodeRef(top),
-        bottom: DebugReport.getNodeRef(bottom)
-      },
-      device: device,
-      keycodes: keycodesList.map(keycodes => ({
-        left: keycodes.left,
-        right: keycodes.right,
-        up: keycodes.up,
-        down: keycodes.down
-      })),
-      existingReactionCount: frame.reactions.length,
-      intendedReactionCount: intendedReactions.length,
-      intendedReactions: intendedReactions.map(reaction => DebugReport.summarizeReaction(reaction)),
-      nextReactionCount: nextReactions.length,
-      interactionsAdded: numInteractionsAdded,
-      staleInteractionsRemoved: numStaleInteractionsRemoved,
-      duplicateInteractionsSkipped: numDuplicateInteractionsSkipped,
-      error: error ? DebugReport.summarizeError(error) : undefined
-    }
   }
 
   static hasReaction(reactions: Array<Reaction>, reaction: Reaction): boolean {
@@ -596,7 +478,6 @@ export class Utils {
           easing: getTransitionEasing(animation),
           duration: getTransitionDuration(animation) / 1000
         }
-        Utils.logCustomSpringTransition(animation, transition)
         return transition
       }
       case AnimationType.MOVE_IN:
@@ -611,21 +492,9 @@ export class Utils {
           easing: getTransitionEasing(animation),
           duration: getTransitionDuration(animation) / 1000
         }
-        Utils.logCustomSpringTransition(animation, transition)
         return transition
       }
     }
-  }
-
-  private static logCustomSpringTransition(animation: Animation, transition: Transition) {
-    if (!Utils.isCustomSpringTransition(transition)) return
-    if (typeof figma === 'undefined') return
-    console.log('Creating custom spring transition', {
-      sourceEasing: animation.easing,
-      sourceDuration: animation.duration,
-      duration: (transition as any).duration,
-      easingFunctionSpring: (transition as any).easing?.easingFunctionSpring
-    })
   }
 
   static clone(val): any {

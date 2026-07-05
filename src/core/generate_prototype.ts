@@ -17,7 +17,6 @@ import { PrototypeNode } from "../prototype_node";
 import { Stats } from "../stats";
 import { Utils } from "../utils";
 import { NearestNeighbor } from "./nearest_neighbor";
-import { DebugReport } from "../debug_report";
 
 export async function doGeneratePrototype(config: Config) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
@@ -53,14 +52,7 @@ export async function doGeneratePrototype(config: Config) {
   positionFrames(protoFrames);
   let statesChanged = setFocus(protoFrames, config);
   await FocusPointer.createPointers(protoFrames, config.focus);
-  saveGenerateDebugReport(focus, protoNodes, protoFrames, isLinked);
   let interactionsCreated = await createInteractions(protoFrames, config);
-  DebugReport.update({
-    phase: 'complete',
-    interactionsCreated: interactionsCreated,
-    framesDuplicated: protoFrames.length - 1,
-    frames: getPrototypeFrameDebug(protoFrames)
-  })
 
   if (!isLinked) addFlowStartingPoint(protoFrames);
 
@@ -408,54 +400,4 @@ function addFlowStartingPoint(protoFrames: Array<PrototypeFrame>) {
     let numFlows = figma.currentPage.flowStartingPoints.length
     Utils.addFlowStartingPoint(protoFrames[0].topLevelFrame, 'Flow ' + (numFlows + 1));
   }
-}
-
-function saveGenerateDebugReport(
-  focus: NavigationFocusConfig,
-  protoNodes: Array<PrototypeNode>,
-  protoFrames: Array<PrototypeFrame>,
-  isLinked: boolean
-) {
-  DebugReport.start({
-    mode: 'GENERATE',
-    phase: 'before-reactions',
-    focusMode: focus.mode,
-    topLevelFrame: DebugReport.getNodeRef(protoFrames[0].topLevelFrame),
-    wasLinkedBeforeRun: isLinked,
-    selection: figma.currentPage.selection.map(node => DebugReport.getNodeRef(node)),
-    startNode: getPrototypeNodeRef(protoNodes[0]),
-    nodes: protoNodes.map(node => getPrototypeNodeDebug(node)),
-    frames: getPrototypeFrameDebug(protoFrames)
-  })
-}
-
-function getPrototypeNodeDebug(node: PrototypeNode): Record<string, any> {
-  return {
-    ...getPrototypeNodeRef(node),
-    nodePath: node.nodePath,
-    bounds: DebugReport.getNavigableBounds(node),
-    neighbors: DebugReport.getNeighborRefs(node.neighbors, neighbor => getPrototypeNodeRef(neighbor))
-  }
-}
-
-function getPrototypeNodeRef(node: PrototypeNode): Record<string, any> {
-  return {
-    id: node.id(),
-    name: node.instance.name,
-    type: node.instance.type
-  }
-}
-
-function getPrototypeFrameDebug(protoFrames: Array<PrototypeFrame>): Array<Record<string, any>> {
-  return protoFrames.map(protoFrame => ({
-    frame: DebugReport.getNodeRef(protoFrame.topLevelFrame),
-    frameBounds: {
-      x: protoFrame.topLevelFrame.x,
-      y: protoFrame.topLevelFrame.y,
-      width: protoFrame.topLevelFrame.width,
-      height: protoFrame.topLevelFrame.height
-    },
-    instance: DebugReport.getNodeRef(protoFrame.instance),
-    neighbors: DebugReport.getNeighborRefs(protoFrame.neighbors, neighbor => DebugReport.getNodeRef(neighbor.topLevelFrame))
-  }))
 }

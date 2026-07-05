@@ -4,7 +4,6 @@ import { Constants } from "../constants";
 import { Stats } from "../stats";
 import { Utils } from "../utils";
 import { Navigable, NearestNeighbor, Neighbors } from "./nearest_neighbor";
-import { DebugReport } from "../debug_report";
 
 export async function doLinkFrames(config: Config) {
   figma.commitUndo() // Undo entire prototype to avoid overloading user's undo stack
@@ -17,13 +16,7 @@ export async function doLinkFrames(config: Config) {
 
   assignNeighbors(linkableFrames)
   linkableFrames = orderLinkableFramesFromStart(linkableFrames, NearestNeighbor.findStart(linkableFrames))
-  saveLinkDebugReport(linkableFrames, isLinked)
   let interactionsCreated = await createInteractions(linkableFrames, config)
-  DebugReport.update({
-    phase: 'complete',
-    interactionsCreated: interactionsCreated,
-    frames: getLinkableFrameDebug(linkableFrames)
-  })
 
   if (!isLinked) addStartingPoint(linkableFrames)
   
@@ -122,26 +115,4 @@ function addStartingPoint(linkableFrames: Array<LinkableFrame>) {
     let numFlows = figma.currentPage.flowStartingPoints.length
     Utils.addFlowStartingPoint(linkableFrames[0].frame, 'Flow ' + (numFlows + 1));
   }
-}
-
-function saveLinkDebugReport(
-  linkableFrames: Array<LinkableFrame>,
-  isLinked: boolean
-) {
-  DebugReport.start({
-    mode: 'LINK',
-    phase: 'before-reactions',
-    wasLinkedBeforeRun: isLinked,
-    selection: figma.currentPage.selection.map(node => DebugReport.getNodeRef(node)),
-    startFrame: DebugReport.getNodeRef(linkableFrames[0].frame),
-    frames: getLinkableFrameDebug(linkableFrames)
-  })
-}
-
-function getLinkableFrameDebug(linkableFrames: Array<LinkableFrame>): Array<Record<string, any>> {
-  return linkableFrames.map(linkableFrame => ({
-    frame: DebugReport.getNodeRef(linkableFrame.frame),
-    bounds: DebugReport.getNavigableBounds(linkableFrame),
-    neighbors: DebugReport.getNeighborRefs(linkableFrame.neighbors, neighbor => DebugReport.getNodeRef(neighbor.frame))
-  }))
 }
