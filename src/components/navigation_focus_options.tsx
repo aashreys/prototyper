@@ -430,13 +430,6 @@ export class NavigationFocusOptions extends Component<
     });
   }
 
-  onStrokeAddGlowChange(addGlow: boolean) {
-    this.updateStroke({
-      ...this.props.focus.stroke,
-      addGlow: addGlow,
-    });
-  }
-
   updateStroke(stroke: StrokeFocusConfig) {
     this.props.onNavigationFocusChange({
       ...this.props.focus,
@@ -475,13 +468,6 @@ export class NavigationFocusOptions extends Component<
     this.updateScaleShadow({
       ...this.props.focus.scaleShadow,
       [key]: this.toFocusNumber(value, this.props.focus.scaleShadow[key], 0.01),
-    });
-  }
-
-  onScaleShadowShowShadowChange(showShadow: boolean) {
-    this.updateScaleShadow({
-      ...this.props.focus.scaleShadow,
-      showShadow: showShadow,
     });
   }
 
@@ -1141,16 +1127,6 @@ export class NavigationFocusOptions extends Component<
           )}
         </div>
 
-        <div class={styles.strokeGlowControl}>
-          <Checkbox
-            onChange={(e) =>
-              this.onStrokeAddGlowChange(e.currentTarget.checked)
-            }
-            value={props.focus.stroke.addGlow}
-          >
-            <Text>Add glow</Text>
-          </Checkbox>
-        </div>
       </div>
     );
   }
@@ -1190,16 +1166,6 @@ export class NavigationFocusOptions extends Component<
             />
           </div>
 
-          <div class={styles.scaleShadowToggle}>
-            <Checkbox
-              onChange={(e) =>
-                this.onScaleShadowShowShadowChange(e.currentTarget.checked)
-              }
-              value={props.focus.scaleShadow.showShadow}
-            >
-              <Text>Add shadow</Text>
-            </Checkbox>
-          </div>
         </div>
       </div>
     );

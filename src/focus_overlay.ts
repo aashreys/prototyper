@@ -74,10 +74,7 @@ export class FocusOverlay {
     const scaledBounds = FocusOverlay.getScaledBounds(targetBounds, scale);
     FocusOverlay.saveDirectFocusState(target);
     FocusOverlay.scaleNodeCentered(target, scaledBounds, scale);
-    if (
-      focus.scaleShadow.showShadow &&
-      !FocusOverlay.applyDirectDropShadows(target, DEFAULT_SCALE_SHADOWS)
-    ) {
+    if (!FocusOverlay.applyDirectDropShadows(target, DEFAULT_SCALE_SHADOWS)) {
       FocusOverlay.logDirectFocusFailure(
         "Unable to apply Scale up shadow focus effect",
         target,
@@ -134,15 +131,13 @@ export class FocusOverlay {
     overlay.y = focusBounds.y;
     FocusOverlay.applyStrokeCornerRadius(overlay, target, padding, focusBounds);
     FocusOverlay.applyStroke(overlay, focus);
-    if (focus.stroke.addGlow) {
-      FocusOverlay.addStrokeGlow(
-        overlay,
-        topLevelFrame,
-        target,
-        targetBounds,
-        padding,
-      );
-    }
+    FocusOverlay.addStrokeGlow(
+      overlay,
+      topLevelFrame,
+      target,
+      targetBounds,
+      padding,
+    );
     return overlay;
   }
 

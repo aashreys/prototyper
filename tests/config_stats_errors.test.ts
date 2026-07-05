@@ -62,11 +62,9 @@ test('defaults new configs to stroke focus', () => {
   assert.equal(config.focus.stroke.opacity, 100)
   assert.equal(config.focus.stroke.weight, 6)
   assert.equal(config.focus.stroke.gap, 4)
-  assert.equal(config.focus.stroke.addGlow, true)
   assert.equal(config.focus.fill.color, '#FFFFFF')
   assert.equal(config.focus.fill.opacity, 50)
   assert.equal(config.focus.scaleShadow.scale, 1.2)
-  assert.equal(config.focus.scaleShadow.showShadow, true)
   assert.deepEqual(config.focus.pointer, {
     enabled: false,
     assetSource: 'preset',
@@ -349,7 +347,7 @@ test('preserves saved stroke align setting', () => {
   assert.equal(config.focus.stroke.align, 'INSIDE')
   assert.equal(config.focus.stroke.opacity, 72)
   assert.equal(config.focus.stroke.gap, 5)
-  assert.equal(config.focus.stroke.addGlow, false)
+  assert.equal((config.focus.stroke as any).addGlow, undefined)
 })
 
 test('preserves saved fill settings', () => {
@@ -398,7 +396,7 @@ test('preserves saved scale shadow settings', () => {
 
   assert.equal(config.focus.mode, NavigationFocusMode.SCALE_SHADOW)
   assert.equal(config.focus.scaleShadow.scale, 1.12)
-  assert.equal(config.focus.scaleShadow.showShadow, false)
+  assert.equal((config.focus.scaleShadow as any).showShadow, undefined)
 })
 
 test('preserves and normalizes saved pointer settings', () => {

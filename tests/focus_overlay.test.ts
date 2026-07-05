@@ -218,8 +218,7 @@ function createFocus(mode: NavigationFocusMode) {
       opacity: 80,
       weight: 6,
       align: 'OUTSIDE',
-      gap: 4,
-      addGlow: true
+      gap: 4
     },
     fill: {
       color: '#00AAFF',
@@ -234,7 +233,6 @@ function createFocus(mode: NavigationFocusMode) {
     },
     scaleShadow: {
       scale: 1.08,
-      showShadow: true,
       padding: 6,
       useAutoCornerRadius: true,
       cornerRadius: 12
@@ -311,19 +309,6 @@ test('applies center and inside stroke focus without user gap', () => {
   assert.equal(insideResult.strokeAlign, 'INSIDE')
 })
 
-test('omits stroke glow when disabled', () => {
-  setFigmaForOverlay()
-  let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
-  let target = createLayer('Target', frame, { x: 150, y: 260, width: 80, height: 40 })
-  let focus = createFocus(NavigationFocusMode.STROKE)
-  focus.stroke.addGlow = false
-
-  let result = FocusOverlay.create(frame, target, focus as any) as any
-
-  assert.equal(result.type, 'FRAME')
-  assert.equal(result.children.length, 0)
-})
-
 test('applies fill focus above existing fills', () => {
   setFigmaForOverlay()
   let frame = createFrame('Frame', { x: 100, y: 200, width: 500, height: 400 })
@@ -362,7 +347,7 @@ test('applies shadow focus directly to the target layer', () => {
   assert.equal(target.effects[0].color.b, 1)
 })
 
-test('applies Scale up directly with default shadows when enabled', () => {
+test('applies Scale up directly with default shadows', () => {
   setFigmaForOverlay()
   let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
   let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, { cornerRadius: 10 })
@@ -389,22 +374,6 @@ test('applies Scale up directly with default shadows when enabled', () => {
   assert.equal(target.effects[2].spread, 4)
   assert.equal(target.effects[2].offset.y, 38)
   assert.equal(target.effects[2].color.a, 0.12)
-})
-
-test('applies Scale up without shadows when disabled', () => {
-  setFigmaForOverlay()
-  let frame = createFrame('Frame', { x: 0, y: 0, width: 300, height: 200 })
-  let target = createLayer('Target', frame, { x: 30, y: 50, width: 100, height: 50 }, { cornerRadius: 10 })
-  let focus = createFocus(NavigationFocusMode.SCALE_SHADOW)
-  focus.scaleShadow.showShadow = false
-
-  FocusOverlay.create(frame, target, focus as any)
-
-  assert.equal(target.x, 26)
-  assert.equal(target.y, 48)
-  assert.equal(target.width, 108)
-  assert.equal(target.height, 54)
-  assert.equal(target.effects.length, 0)
 })
 
 test('removes only plugin-managed overlays', () => {

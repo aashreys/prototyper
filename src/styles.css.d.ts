@@ -71,14 +71,12 @@ declare const styles: {
   readonly "pointerUploadInput": string;
   readonly "scaleControl": string;
   readonly "scaleControls": string;
-  readonly "scaleShadowToggle": string;
   readonly "sectionHeading": string;
   readonly "separator": string;
   readonly "statsBigText": string;
   readonly "statsMedText": string;
   readonly "strokeControls": string;
   readonly "strokeGapIcon": string;
-  readonly "strokeGlowControl": string;
   readonly "strokeSecondaryControls": string;
   readonly "strokeSecondaryControlsWithGap": string;
   readonly "strokeWeightControl": string;

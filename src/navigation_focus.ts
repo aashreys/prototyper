@@ -30,7 +30,6 @@ export interface StrokeFocusConfig {
   readonly weight: number
   readonly align: StrokeAlign
   readonly gap: number
-  readonly addGlow: boolean
 }
 
 export interface FillFocusConfig {
@@ -48,7 +47,6 @@ export interface ShadowFocusConfig {
 
 export interface ScaleShadowFocusConfig {
   readonly scale: number
-  readonly showShadow: boolean
   readonly padding: number
   readonly useAutoCornerRadius: boolean
   readonly cornerRadius: number
@@ -130,8 +128,7 @@ export const DEFAULT_STROKE_FOCUS: StrokeFocusConfig = {
   opacity: 100,
   weight: 6,
   align: 'OUTSIDE',
-  gap: 4,
-  addGlow: true
+  gap: 4
 }
 
 export const DEFAULT_FILL_FOCUS: FillFocusConfig = {
@@ -149,7 +146,6 @@ export const DEFAULT_SHADOW_FOCUS: ShadowFocusConfig = {
 
 export const DEFAULT_SCALE_SHADOW_FOCUS: ScaleShadowFocusConfig = {
   scale: 1.2,
-  showShadow: true,
   padding: 6,
   useAutoCornerRadius: true,
   cornerRadius: 12
@@ -227,8 +223,7 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
       opacity: normalizeNumber(value.stroke?.opacity, DEFAULT_STROKE_FOCUS.opacity, 100),
       weight: normalizeNumber(value.stroke?.weight, DEFAULT_STROKE_FOCUS.weight),
       align: normalizeStrokeAlign(value.stroke?.align, DEFAULT_STROKE_FOCUS.align),
-      gap: normalizeNumber(value.stroke?.gap, DEFAULT_STROKE_FOCUS.gap),
-      addGlow: normalizeBoolean(value.stroke?.addGlow, DEFAULT_STROKE_FOCUS.addGlow)
+      gap: normalizeNumber(value.stroke?.gap, DEFAULT_STROKE_FOCUS.gap)
     },
     fill: {
       color: normalizeColor(value.fill?.color, DEFAULT_FILL_FOCUS.color),
@@ -243,7 +238,6 @@ export function normalizeNavigationFocusConfig(value, legacyVariant: SwapVariant
     },
     scaleShadow: {
       scale: normalizeScale(value.scaleShadow, DEFAULT_SCALE_SHADOW_FOCUS.scale),
-      showShadow: normalizeBoolean(value.scaleShadow?.showShadow, DEFAULT_SCALE_SHADOW_FOCUS.showShadow),
       padding: normalizeNumber(value.scaleShadow?.padding, DEFAULT_SCALE_SHADOW_FOCUS.padding),
       useAutoCornerRadius: normalizeBoolean(value.scaleShadow?.useAutoCornerRadius, DEFAULT_SCALE_SHADOW_FOCUS.useAutoCornerRadius),
       cornerRadius: normalizeNumber(value.scaleShadow?.cornerRadius, DEFAULT_SCALE_SHADOW_FOCUS.cornerRadius)
