@@ -443,6 +443,7 @@
 }
 
 .pointerPositionPad {
+    --pointer-position-anchor-hover: var(--figma-color-bg-brand);
     --pointer-position-background: #f5f5f5;
     --pointer-position-guide: #d0d0d0;
     --pointer-position-layer-background: #ebebeb;
@@ -462,6 +463,7 @@
 }
 
 :global(.figma-dark) .pointerPositionPad {
+    --pointer-position-anchor-hover: var(--figma-color-border-brand-strong);
     --pointer-position-background: #383838;
     --pointer-position-guide: #515151;
     --pointer-position-layer-background: #3e3e3e;
@@ -586,7 +588,7 @@
 }
 
 .pointerPositionPresetHover .pointerPositionDot {
-    background: var(--figma-color-bg-brand);
+    background: var(--pointer-position-anchor-hover);
     height: 7px;
     width: 7px;
 }
